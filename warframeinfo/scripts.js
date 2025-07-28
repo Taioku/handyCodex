@@ -465,13 +465,12 @@ const displaySortieInfo = (sortieData) => {
     
     content.innerHTML = `
         <p>Boss: ${sortieData.boss}</p>
-        <p>Remaining: <span class="timer"></span></p>
-        <p>Missions:</p>
         <ul>
-            ${sortieData.variants.map(variant => `
-                <li>${variant.missionType} - ${variant.modifier}</li>
+        ${sortieData.variants.map(variant => `
+            <li>${variant.missionType} - ${variant.modifier}</li>
             `).join('')}
         </ul>
+        <p>Remaining: <span class="timer"></span></p>
     `;
     
     const timer = content.querySelector('.timer');
@@ -506,7 +505,7 @@ const displayFissures = (fissures) => {
                     <h3>${tier}</h3>
                     ${fissures.map(fissure => `
                         <div class="fissure">
-                            <p>${fissure.missionType} - ${fissure.node}</p>
+                            <p>${fissure.missionType} - ${fissure.node} ${fissure.isSharkwing || fissure.archwingRequired ? `<img src="https://wiki.warframe.com/images/thumb/Amesha.png/32px-Amesha.png?bb937" alt="Amesha" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">` : ''}</p>
                             <p>Enemy: ${fissure.enemy || 'Unknown'}</p>
                             <p>Time remaining: <span class="timer" data-expiry="${fissure.expiry}"></span></p>
                         </div>
@@ -530,13 +529,12 @@ const displayArchonHunt = (archonData) => {
     const content = document.createElement('div');
     content.innerHTML = `
         <p>Boss: ${archonData.boss}</p>
-        <p>Remaining: <span class="timer"></span></p>
-        <p>Missions:</p>
         <ul>
-            ${archonData.missions.map(mission => `
-                <li>${mission.node} - ${mission.type}</li>
+        ${archonData.missions.map(mission => `
+            <li>${mission.node} - ${mission.type}</li>
             `).join('')}
         </ul>
+        <p>Remaining: <span class="timer"></span></p>
     `;
     
     const timer = content.querySelector('.timer');
@@ -621,7 +619,7 @@ const displayAlerts = (alerts) => {
                 <div class="alert-title">
                     <span class="mission-icon">${getMissionIcon(alert.mission.type)}</span>
                     <div class="alert-title-text">
-                        <h3>${alert.mission.node}</h3>
+                        <h3>${alert.mission.node} ${alert.mission.isSharkwing || alert.mission.archwingRequired ? `<img src="https://wiki.warframe.com/images/thumb/Amesha.png/32px-Amesha.png?bb937" alt="Amesha" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">` : ''}</h3>
                         <span class="alert-subtitle">${alert.mission.type}</span>
                     </div>
                 </div>
@@ -692,7 +690,7 @@ const displayInvasions = (invasions) => {
     content.innerHTML = `
         ${activeInvasions.map(invasion => `
             <div class="invasion">
-                <p>${invasion.node || 'Unknown Location'}</p>
+                <p>${invasion.node || 'Unknown Location'} ${invasion.isSharkwing || invasion.archwingRequired ? `<img src="https://wiki.warframe.com/images/thumb/Amesha.png/32px-Amesha.png?bb937" alt="Amesha" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">` : ''}</p>
                 <p>${invasion.attackingFaction || 'Unknown'} vs ${invasion.defendingFaction || 'Unknown'}</p>
                 <p>Rewards:</p>
                 <ul>
@@ -758,7 +756,7 @@ const displayVoidTrader = (voidTraderData, title = 'Void Trader') => {
             <p>Inventory:</p>
             <ul>
                 ${voidTraderData.inventory?.map(item => `
-                    <li>${item.item} (${item.ducats} ducats + ${item.credits} credits)</li>
+                    <li>${item.item} (${item.ducats} <img src="https://wiki.warframe.com/images/thumb/OrokinDucats.png/20px-OrokinDucats.png?23930" alt="Ducats" style="width: 16px; height: 16px; vertical-align: middle; margin: 0 2px;"> ducats + ${item.credits} credits)</li>
                 `).join('') || 'No items available'}
             </ul>
             <p>Leaves in: <span class="timer"></span></p>
@@ -802,7 +800,7 @@ const displayAllVoidTraders = (voidTraders) => {
                         <p><strong>Inventory:</strong></p>
                         <ul>
                             ${trader.inventory?.map(item => `
-                                <li>${item.item} <span class="price">(${item.ducats} ducats + ${item.credits} credits)</span></li>
+                                <li>${item.item} <span class="price">(${item.ducats} <img src="https://wiki.warframe.com/images/thumb/OrokinDucats.png/20px-OrokinDucats.png?23930" alt="Ducats" style="width: 16px; height: 16px; vertical-align: middle; margin: 0 2px;"> ducats + ${item.credits} credits)</span></li>
                             `).join('') || '<li>No items available</li>'}
                         </ul>
                     </div>
@@ -1028,32 +1026,6 @@ const displaySimaris = (simarisData) => {
     return createCard('Simaris', content);
 };
 
-const displayKuva = (kuva) => {
-    if (!Array.isArray(kuva) || kuva.length === 0) return null;
-    
-    const content = document.createElement('div');
-    content.innerHTML = `
-        ${kuva.map(mission => `
-            <div class="kuva-mission">
-                <h3>${mission.node}</h3>
-                <p>Type: ${mission.type}</p>
-                ${mission.expiry ? `
-                    <p>Ends in: <span class="timer" data-expiry="${mission.expiry}"></span></p>
-                ` : ''}
-            </div>
-        `).join('')}
-    `;
-    
-    const timers = content.querySelectorAll('.timer');
-    timers.forEach(timer => {
-        const expiry = timer.dataset.expiry;
-        setInterval(() => updateTimer(timer, expiry), 1000);
-        updateTimer(timer, expiry);
-    });
-    
-    return createCard('Kuva Missions', content);
-};
-
 const displaySentientOutposts = (outpost) => {
     if (!outpost) return null;
     
@@ -1075,7 +1047,7 @@ const displaySteelPath = (steelPathData) => {
     const content = document.createElement('div');
     content.innerHTML = `
         <p>Current Rotation: ${steelPathData.currentReward.name}</p>
-        <p>Cost: ${steelPathData.currentReward.cost} Steel Essence</p>
+        <p>Cost: ${steelPathData.currentReward.cost} <img src="https://wiki.warframe.com/images/thumb/SteelEssence.png/32px-SteelEssence.png?ee70b" alt="Steel Essence" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;"> Steel Essence</p>
         <p>Rotating in: <span class="timer"></span></p>
     `;
     
@@ -1084,6 +1056,513 @@ const displaySteelPath = (steelPathData) => {
     updateTimer(timer, steelPathData.expiry);
     
     return createCard('Steel Path', content);
+};
+
+const displayVaultTrader = (vaultTraderData) => {
+    if (!vaultTraderData) return null;
+    
+    const content = document.createElement('div');
+    
+    // Get faction color for visual consistency
+    const getFactionColor = (faction) => {
+        switch(faction?.toLowerCase()) {
+            case 'grineer': return '#ff6b35';
+            case 'corpus': return '#4fc3f7';
+            case 'infested': return '#8bc34a';
+            case 'corrupted': return '#ffc107';
+            case 'orokin': return '#ffeb3b';
+            default: return '#9e9e9e';
+        }
+    };
+    
+    content.innerHTML = `
+        <div class="vault-trader-mission">
+            <div class="mission-header">
+                <div class="mission-info">
+                    <h3>${vaultTraderData.character}</h3>
+                    <p class="mission-type">${vaultTraderData.location}</p>
+                </div>
+                <div class="mission-status ${vaultTraderData.active ? 'active' : 'inactive'}">
+                    ${vaultTraderData.active ? '🟢 Active' : '🔴 Inactive'}
+                </div>
+            </div>
+            
+            <div class="mission-details">
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">${vaultTraderData.active ? 'Available' : 'Not Available'}</span>
+                </div>
+                
+                ${vaultTraderData.active && vaultTraderData.inventory && vaultTraderData.inventory.length > 0 ? `
+                    <div class="vault-inventory">
+                        ${vaultTraderData.inventory.map(item => `
+                            <div class="vault-item">
+                                <span class="item-name">${item.item}</span>
+                                <span class="item-cost">
+                                    ${item.ducats !== null ? `${item.ducats} <img src="https://wiki.warframe.com/images/thumb/RegalAya.png/32px-RegalAya.png?dacfe" alt="Regal Aya" style="width: 16px; height: 16px; vertical-align: middle; margin: 0 2px;"> Regal Aya` : ''}
+                                    ${item.ducats !== null && item.credits !== null ? ' + ' : ''}
+                                    ${item.credits !== null ? `${item.credits.toLocaleString()} <img src="https://wiki.warframe.com/images/thumb/Aya.png/32px-Aya.png?0542b" alt="Aya" style="width: 16px; height: 16px; vertical-align: middle; margin: 0 2px;"> Aya` : ''}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : vaultTraderData.active ? `
+                    <div class="info-row">
+                        <span class="info-label">Inventory:</span>
+                        <span class="info-value">No items available</span>
+                    </div>
+                ` : ''}
+                
+                ${vaultTraderData.schedule && Array.isArray(vaultTraderData.schedule) && vaultTraderData.schedule.length > 0 ? `
+                    <div class="info-row">
+                        <span class="info-label">Upcoming Schedule:</span>
+                    </div>
+                    <div class="vault-schedule">
+                        ${(() => {
+                            const now = Date.now();
+                            const activeSchedule = vaultTraderData.schedule.filter(item => new Date(item.expiry).getTime() > now);
+                            const expiredSchedule = vaultTraderData.schedule.filter(item => new Date(item.expiry).getTime() <= now);
+                            
+                            let scheduleHTML = '';
+                            
+                            // Active schedule items
+                            if (activeSchedule.length > 0) {
+                                scheduleHTML += activeSchedule.map(scheduleItem => `
+                                    <div class="schedule-item">
+                                        <span class="schedule-item-name">${scheduleItem.item}</span>
+                                        <span class="schedule-item-time">
+                                            <span class="timer" data-expiry="${scheduleItem.expiry}"></span>
+                                        </span>
+                                    </div>
+                                `).join('');
+                            }
+                            
+                            // Expired schedule items in dropdown
+                            if (expiredSchedule.length > 0) {
+                                scheduleHTML += `
+                                    <div class="expired-schedule-toggle">
+                                        <button class="expired-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Show Expired Items (${expiredSchedule.length})' : '▼ Hide Expired Items (${expiredSchedule.length})'">
+                                            ▶ Show Expired Items (${expiredSchedule.length})
+                                        </button>
+                                    </div>
+                                    <div class="expired-schedule-items hidden">
+                                        ${expiredSchedule.map(scheduleItem => `
+                                            <div class="schedule-item expired">
+                                                <span class="schedule-item-name">${scheduleItem.item}</span>
+                                                <span class="schedule-item-time expired-time">
+                                                    Expired <span class="timer" data-expiry="${scheduleItem.expiry}"></span> ago
+                                                </span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                `;
+                            }
+                            
+                            return scheduleHTML;
+                        })()}
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+    
+    // Set up timer if expiry exists
+    if (vaultTraderData.expiry) {
+        const timer = content.querySelector('.timer');
+        setInterval(() => updateTimer(timer, vaultTraderData.expiry), 1000);
+        updateTimer(timer, vaultTraderData.expiry);
+    }
+    
+    // Set up timers for schedule items
+    if (vaultTraderData.schedule && Array.isArray(vaultTraderData.schedule)) {
+        const scheduleTimers = content.querySelectorAll('.schedule-item .timer');
+        scheduleTimers.forEach((timer) => {
+            const expiry = timer.dataset.expiry;
+            if (expiry) {
+                const scheduleItem = vaultTraderData.schedule.find(item => item.expiry === expiry);
+                if (scheduleItem) {
+                    const isExpired = timer.closest('.schedule-item').classList.contains('expired');
+                    if (isExpired) {
+                        // For expired items, show how long ago they expired
+                        const updateExpiredTimer = () => {
+                            const now = Date.now();
+                            const expiredTime = new Date(expiry).getTime();
+                            const timeAgo = now - expiredTime;
+                            timer.textContent = formatDuration(timeAgo);
+                        };
+                        setInterval(updateExpiredTimer, 1000);
+                        updateExpiredTimer();
+                    } else {
+                        // For active items, show countdown
+                        setInterval(() => updateTimer(timer, expiry), 1000);
+                        updateTimer(timer, expiry);
+                    }
+                }
+            }
+        });
+    }
+    
+    // Add CSS styles for the dropdown if not already added
+    if (!document.getElementById('vault-trader-styles')) {
+        const style = document.createElement('style');
+        style.id = 'vault-trader-styles';
+        style.textContent = `
+            /* Vault Trader Main Container */
+            .vault-trader-mission {
+                background: var(--color-panel, #2a211e);
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 12px;
+                border: 1px solid var(--color-accent2, #854442);
+            }
+            
+            /* Mission Header */
+            .mission-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid var(--color-accent2, #854442);
+            }
+            
+            .mission-icon {
+                font-size: 1.5em;
+                margin-right: 12px;
+            }
+            
+            .mission-info h3 {
+                margin: 0;
+                font-size: 1.2em;
+                color: var(--color-text, #fff);
+            }
+            
+            .mission-type {
+                margin: 2px 0 0 0;
+                color: var(--color-text-accent, #be9b7b);
+                font-size: 0.9em;
+            }
+            
+            .mission-status {
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 0.8em;
+                font-weight: bold;
+            }
+            
+            .mission-status.active {
+                background: rgba(76, 175, 80, 0.2);
+                color: #4caf50;
+                border: 1px solid #4caf50;
+            }
+            
+            .mission-status.inactive {
+                background: rgba(244, 67, 54, 0.2);
+                color: #f44336;
+                border: 1px solid #f44336;
+            }
+            
+            /* Mission Details */
+            .mission-details {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .info-row {
+                display: flex;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid rgba(190, 155, 123, 0.2);
+            }
+            
+            .info-row:last-child {
+                border-bottom: none;
+            }
+            
+            .info-label {
+                font-weight: bold;
+                color: var(--color-text-accent, #be9b7b);
+                min-width: 100px;
+                margin-right: 12px;
+            }
+            
+            .info-value {
+                color: var(--color-text, #fff);
+                flex: 1;
+            }
+            
+            /* Inventory Section */
+            .vault-inventory {
+                background: rgba(190, 155, 123, 0.1);
+                border-radius: 6px;
+                padding: 12px;
+                margin-top: 8px;
+            }
+            
+            .vault-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid rgba(190, 155, 123, 0.2);
+            }
+            
+            .vault-item:last-child {
+                border-bottom: none;
+            }
+            
+            .item-name {
+                font-weight: bold;
+                color: var(--color-text, #fff);
+                flex: 1;
+            }
+            
+            .item-cost {
+                color: var(--color-text-accent, #be9b7b);
+                font-size: 0.9em;
+                white-space: nowrap;
+                margin-left: 12px;
+            }
+            
+            /* Schedule Section */
+            .vault-schedule {
+                background: rgba(190, 155, 123, 0.1);
+                border-radius: 6px;
+                padding: 12px;
+                margin-top: 8px;
+            }
+            
+            .schedule-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid rgba(190, 155, 123, 0.2);
+            }
+            
+            .schedule-item:last-child {
+                border-bottom: none;
+            }
+            
+            .schedule-item-name {
+                font-weight: bold;
+                color: var(--color-text, #fff);
+                flex: 1;
+            }
+            
+            .schedule-item-time {
+                color: var(--color-text-accent, #be9b7b);
+                font-size: 0.9em;
+                white-space: nowrap;
+                margin-left: 12px;
+            }
+            
+            /* Expired Schedule Dropdown */
+            .expired-schedule-toggle {
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid rgba(190, 155, 123, 0.3);
+            }
+            
+            .expired-toggle-btn {
+                background: rgba(190, 155, 123, 0.1);
+                border: 1px solid var(--color-accent2, #854442);
+                border-radius: 4px;
+                color: var(--color-text-accent, #be9b7b);
+                cursor: pointer;
+                font-size: 0.9em;
+                padding: 8px 12px;
+                text-align: left;
+                width: 100%;
+                transition: all 0.2s ease;
+            }
+            
+            .expired-toggle-btn:hover {
+                background: rgba(190, 155, 123, 0.2);
+                color: var(--color-text, #fff);
+                border-color: var(--color-accent, #be9b7b);
+            }
+            
+            .expired-schedule-items {
+                margin-top: 8px;
+                background: rgba(133, 68, 66, 0.1);
+                border-radius: 4px;
+                border-left: 3px solid var(--color-accent2, #854442);
+                padding: 8px 12px;
+                transition: all 0.3s ease;
+            }
+            
+            .expired-schedule-items.hidden {
+                display: none;
+            }
+            
+            .schedule-item.expired {
+                opacity: 0.7;
+                background: rgba(133, 68, 66, 0.1);
+                margin: 4px 0;
+                padding: 6px 8px;
+                border-radius: 4px;
+                border-bottom: none;
+            }
+            
+            .schedule-item.expired .schedule-item-name {
+                text-decoration: line-through;
+                color: var(--color-text-accent, #be9b7b);
+            }
+            
+            .expired-time {
+                color: var(--color-text-accent, #be9b7b);
+                font-style: italic;
+            }
+            
+            /* Timer Styling */
+            .timer {
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+                color: var(--color-accent, #be9b7b);
+            }
+            
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .mission-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 8px;
+                }
+                
+                .vault-item,
+                .schedule-item {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 4px;
+                }
+                
+                .item-cost,
+                .schedule-item-time {
+                    margin-left: 0;
+                }
+                
+                .info-row {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 4px;
+                }
+                
+                .info-label {
+                    min-width: auto;
+                    margin-right: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    return createCard('Vault Trader', content);
+};
+
+const displayArbitration = (arbitrationData) => {
+    if (!arbitrationData) return null;
+    
+    const content = document.createElement('div');
+    
+    // Get mission type icon
+    const getMissionIcon = (missionType) => {
+        const type = missionType.toLowerCase();
+        switch(type) {
+            case 'exterminate': return '💀';
+            case 'capture': return '🎯';
+            case 'rescue': return '🚑';
+            case 'sabotage': return '💣';
+            case 'spy': return '🕵️';
+            case 'survival': return '⏱️';
+            case 'defense': return '🛡️';
+            case 'mobile defense': return '🚚';
+            case 'excavation': return '⛏️';
+            case 'interception': return '📡';
+            case 'assassination': return '🗡️';
+            case 'disruption': return '⚡';
+            case 'defection': return '🏃';
+            default: return '⚔️';
+        }
+    };
+    
+    // Get faction color
+    const getFactionColor = (faction) => {
+        switch(faction?.toLowerCase()) {
+            case 'grineer': return '#ff6b35';
+            case 'corpus': return '#4fc3f7';
+            case 'infested': return '#8bc34a';
+            case 'corrupted': return '#ffc107';
+            case 'orokin': return '#ffeb3b';
+            default: return '#9e9e9e';
+        }
+    };
+    
+    // Check if enemy is Tenno for special message
+    if (arbitrationData.enemy?.toLowerCase() === 'tenno') {
+        content.innerHTML = `
+            <div class="arbitration-offline">
+                <div class="offline-message">
+                    <h3>Hexis drones are offline at the moment</h3>
+                    <p>Arbitration missions are currently unavailable</p>
+                </div>
+            </div>
+        `;
+        return createCard('Arbitration', content);
+    }
+    
+    content.innerHTML = `
+        <div class="arbitration-mission">
+            <div class="mission-header">
+                <span class="mission-icon">${getMissionIcon(arbitrationData.type)}</span>
+                <div class="mission-info">
+                    <h3>${arbitrationData.node}</h3>
+                    <p class="mission-type">${arbitrationData.type}</p>
+                </div>
+                <div class="mission-status ${arbitrationData.active ? 'active' : 'inactive'}">
+                    ${arbitrationData.active ? '🟢 Active' : '🔴 Inactive'}
+                </div>
+            </div>
+            
+            <div class="mission-details">
+                <div class="info-row">
+                    <span class="info-label">Enemy:</span>
+                    <span class="info-value" style="color: ${getFactionColor(arbitrationData.enemy)}">${arbitrationData.enemy}</span>
+                </div>
+                
+                ${arbitrationData.archwing ? `
+                    <div class="info-row">
+                        <span class="info-label">Special:</span>
+                        <span class="info-value">Archwing Mission <img src="https://wiki.warframe.com/images/thumb/Amesha.png/32px-Amesha.png?bb937" alt="Amesha" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;"></span>
+                    </div>
+                ` : ''}
+                
+                ${arbitrationData.sharkwing ? `
+                    <div class="info-row">
+                        <span class="info-label">Special:</span>
+                        <span class="info-value">Sharkwing Mission <img src="https://wiki.warframe.com/images/thumb/Amesha.png/32px-Amesha.png?bb937" alt="Amesha" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;"></span>
+                    </div>
+                ` : ''}
+                
+                ${arbitrationData.expiry ? `
+                    <div class="info-row">
+                        <span class="info-label">Rotation:</span>
+                        <span class="info-value timer" data-expiry="${arbitrationData.expiry}"></span>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+    
+    // Set up timer if expiry exists
+    if (arbitrationData.expiry) {
+        const timer = content.querySelector('.timer');
+        setInterval(() => updateTimer(timer, arbitrationData.expiry), 1000);
+        updateTimer(timer, arbitrationData.expiry);
+    }
+    
+    return createCard('Arbitration', content);
 };
 
 const displayConstructionProgress = (constructionData) => {
@@ -1217,6 +1696,16 @@ const displayWarframeData = async (platform) => {
             if (steelPathCard) container.appendChild(steelPathCard);
         }
 
+        if (data.vaultTrader) {
+            const vaultTraderCard = displayVaultTrader(data.vaultTrader);
+            if (vaultTraderCard) container.appendChild(vaultTraderCard);
+        }
+
+        if (data.arbitration) {
+            const arbitrationCard = displayArbitration(data.arbitration);
+            if (arbitrationCard) container.appendChild(arbitrationCard);
+        }
+
         if (data.sentientOutposts) {
             const sentientCard = displaySentientOutposts(data.sentientOutposts);
             if (sentientCard) container.appendChild(sentientCard);
@@ -1326,12 +1815,6 @@ const displayWarframeData = async (platform) => {
             if (conclaveCard) sections.challenges.appendChild(conclaveCard);
         }
         
-        // Activities
-        if (data.kuva) {
-            const kuvaCard = displayKuva(data.kuva);
-            if (kuvaCard) sections.activities.appendChild(kuvaCard);
-        }
-        
         // Special Events
         if (data.nightwave) {
             const nightwaveCard = displayNightwave(data.nightwave);
@@ -1349,7 +1832,7 @@ const displayWarframeData = async (platform) => {
                 });
             }
         });
-        
+
         // If no data is displayed, show a message
         if (container.children.length === 0) {
             container.innerHTML = 'No data available for this platform at the moment.';

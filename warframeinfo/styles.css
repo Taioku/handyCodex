@@ -137,11 +137,6 @@ body::before {
     gap: var(--spacing-sm);
 }
 
-.sidebar-title::before {
-    content: '🚀';
-    font-size: 1.75rem;
-}
-
 .sidebar-subtitle {
     color: var(--color-text-accent);
     font-size: 0.875rem;
