@@ -889,13 +889,20 @@ const displayEvents = (events) => {
 const displaySyndicateMissions = (missions) => {
     if (!Array.isArray(missions) || missions.length === 0) return null;
     
+    // Filter out syndicates with no available nodes
+    const availableMissions = missions.filter(mission => 
+        mission.nodes && Array.isArray(mission.nodes) && mission.nodes.length > 0
+    );
+    
+    if (availableMissions.length === 0) return null;
+    
     const content = document.createElement('div');
     content.innerHTML = `
-        ${missions.map(mission => `
+        ${availableMissions.map(mission => `
             <div class="syndicate-mission">
                 <h3>${mission.syndicate}</h3>
                 <ul>
-                    ${mission.nodes?.map(node => `<li>${node}</li>`).join('') || 'No nodes available'}
+                    ${mission.nodes.map(node => `<li>${node}</li>`).join('')}
                 </ul>
                 ${mission.expiry ? `
                     <p>Ends in: <span class="timer" data-expiry="${mission.expiry}"></span></p>
@@ -917,9 +924,17 @@ const displaySyndicateMissions = (missions) => {
 const displaySales = (sales, title) => {
     if (!Array.isArray(sales) || sales.length === 0) return null;
     
+    // Sort sales from newer to older based on expiry date
+    const sortedSales = [...sales].sort((a, b) => {
+        if (!a.expiry && !b.expiry) return 0;
+        if (!a.expiry) return 1;
+        if (!b.expiry) return -1;
+        return new Date(b.expiry).getTime() - new Date(a.expiry).getTime();
+    });
+    
     const content = document.createElement('div');
     content.innerHTML = `
-        ${sales.map(sale => `
+        ${sortedSales.map(sale => `
             <div class="sale-item">
                 <h3>${sale.item}</h3>
                 <p>Price: ${sale.premiumCredits} Platinum</p>
@@ -1311,10 +1326,6 @@ const displayWarframeData = async (platform) => {
         }
         
         // Sales and Deals
-        if (data.flashSales) {
-            const flashSalesCard = displaySales(data.flashSales, 'Flash Sales');
-            if (flashSalesCard) sections.sales.appendChild(flashSalesCard);
-        }
         if (data.dailyDeals) {
             const dailyDealsCard = displaySales(data.dailyDeals, 'DARVO');
             if (dailyDealsCard) sections.sales.appendChild(dailyDealsCard);
