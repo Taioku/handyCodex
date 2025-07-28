@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warframe Checklist</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Warframe Task Checklist</h1>
+            <p>Stay organized with your daily Tenno duties</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="completedTasks">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalTasks">0</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="progressPercent">0%</div>
+                <div class="stat-label">Progress</div>
+            </div>
+            <div class="stat-item">
+                <div class="reset-menu-container">
+                    <button class="add-task-btn" id="resetMenuBtn">⚙️ Reset Options</button>
+                    <div class="reset-menu" id="resetMenu">
+                        <button id="uncheckAllBtn">Uncheck All Tasks</button>
+                        <button id="restoreDefaultsBtn">Restore Missing Defaults</button>
+                        <button id="resetPageBtn">Complete Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: center; align-items: center; margin-top: 15px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <button class="add-task-btn">📝 Add Task</button>
+        </div>
+
+        <div class="section" id="dailySection">
+            <div class="section-title">Daily Tasks</div>
+            <div class="task-list" id="dailyTasks"></div>
+        </div>
+
+        <div class="section" id="weeklySection">
+            <div class="section-title">Weekly Tasks</div>
+            <div class="task-list" id="weeklyTasks"></div>
+        </div>
+
+        <div class="section" id="otherSection">
+            <div class="section-title">Other Tasks</div>
+            <div class="task-list" id="otherTasks"></div>
+        </div>
+
+        <!-- Theme and Settings Controls -->
+        <div class="palette-picker">
+            <label for="paletteSelect" title="Choose color palette">🎨</label>
+            <select id="paletteSelect">
+                <option value="narmer">Narmer</option>
+                <option value="tenno">Tenno</option>
+                <option value="orokin">Orokin</option>
+                <option value="grineer">Grineer</option>
+                <option value="corpus">Corpus</option>
+                <option value="custom">Custom…</option>
+            </select>
+            <div id="customPaletteInputs" style="display:none; gap:4px;">
+                <input type="color" id="custom-bg" title="Background" />
+                <input type="color" id="custom-bg2" title="Background 2" />
+                <input type="color" id="custom-panel" title="Panel" />
+                <input type="color" id="custom-accent" title="Accent" />
+                <input type="color" id="custom-accent2" title="Accent 2" />
+                <input type="color" id="custom-text" title="Text" />
+            </div>
+            <span class="palette-picker-toggle" title="Toggle dark mode">
+                <label style="cursor:pointer;">
+                    <input type="checkbox" id="paletteDarkToggle" style="display:none;">
+                    <span class="palette-switch">
+                        <span class="palette-slider"></span>
+                    </span>
+                    <span>🌙</span>
+                </label>
+            </span>
+            <span class="palette-picker-toggle" title="Enable drag & drop">
+                <label style="cursor:pointer;">
+                    <input type="checkbox" id="dragDropToggle" style="display:none;">
+                    <span class="palette-drag">
+                        <span class="palette-drag-slider"></span>
+                    </span>
+                    <span>🔄</span>
+                </label>
+            </span>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div id="addTaskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Custom Task</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form>
+                <div class="form-group">
+                    <label class="form-label" for="taskText">Task Description</label>
+                    <input type="text" id="taskText" class="form-input" placeholder="You can use timer markup like &lt;mon-12:00-utc&gt;" required />
+                    <small class="form-help">Timer examples: &lt;12:00-utc&gt; (daily), &lt;mon-12:00-utc&gt; (weekly), &lt;every-04:00-utc&gt; (interval)</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="taskCategory">Category</label>
+                    <select id="taskCategory" class="form-select">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-secondary close">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Load JavaScript modules -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

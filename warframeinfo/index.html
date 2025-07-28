@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warframe Status Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Menu Toggle Button (outside sidebar, only when closed) -->
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+            ☰
+        </button>
+        
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
+        <!-- Mobile header for small screens -->
+        <div class="mobile-header" id="mobileHeader">
+            Warframe Status
+        </div>
+        
+        <header class="header" id="sidebar">
+            <div class="header-content">
+                <h1 class="sidebar-title">Warframe Status</h1>
+                <p class="sidebar-subtitle">Real-time game status and events tracker</p>
+                <div class="platform-selector">
+                    <label for="platformSelect" class="sr-only">Select Platform</label>
+                    <select id="platformSelect">
+                        <option value="pc">PC</option>
+                        <option value="ps4">PlayStation 4</option>
+                        <option value="xb1">Xbox One</option>
+                        <option value="swi">Nintendo Switch</option>
+                    </select>
+                </div>
+                
+                <!-- Theme Selector -->
+                <div class="theme-selector">
+                    <div class="theme-controls">
+                        <div class="theme-picker">
+                            <label for="themeSelect" class="theme-label">Theme</label>
+                            <select id="themeSelect">
+                                <option value="narmer">Narmer</option>
+                                <!-- Add more themes here in the future -->
+                            </select>
+                        </div>
+                        
+                        <div class="darkmode-toggle">
+                            <label for="darkModeToggle" class="darkmode-label">Dark Mode</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="darkModeToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <main class="main-content" id="mainContent">
+            <div class="grid" id="warframeData">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </main>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>

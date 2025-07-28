@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warframe Hub</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+    <style>
+        :root {
+            --color-bg: #0a0a0a;
+            --color-bg2: #1a1a1a;
+            --color-panel: rgba(20, 20, 20, 0.9);
+            --color-accent: #00d4ff;
+            --color-accent-dim: rgba(0, 212, 255, 0.3);
+            --color-text: #ffffff;
+            --color-text-dim: rgba(255, 255, 255, 0.7);
+            --color-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg2) 100%);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--color-panel);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid var(--color-accent);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--color-accent);
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px var(--color-accent-dim);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--color-text-dim);
+            margin-bottom: 40px;
+        }
+
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .hub-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--color-border);
+            border-radius: 15px;
+            padding: 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hub-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, var(--color-accent-dim), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .hub-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--color-accent);
+            box-shadow: 0 15px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .hub-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--color-text);
+        }
+
+        .card-description {
+            color: var(--color-text-dim);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--color-border);
+            color: var(--color-text-dim);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .hub-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .hub-card {
+                padding: 25px;
+            }
+        }
+
+        /* Loading animation */
+        .card-icon {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .hub-card:hover .card-icon {
+            animation: none;
+            transform: scale(1.1);
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">⚡ WARFRAME HUB</div>
+        <div class="subtitle">Your gateway to Warframe tools and information</div>
+        
+        <div class="hub-grid">
+            <a href="warframeinfo/" class="hub-card">
+                <div class="card-content">
+                    <span class="card-icon">🌐</span>
+                    <div class="card-title">Status Tracker</div>
+                    <div class="card-description">
+                        Real-time game status and events tracker. Monitor Warframe's current state, alerts, invasions, and ongoing events.
+                    </div>
+                </div>
+            </a>
+            
+            <a href="warframetaskchecklist/" class="hub-card">
+                <div class="card-content">
+                    <span class="card-icon">✅</span>
+                    <div class="card-title">Task Checklist</div>
+                    <div class="card-description">
+                        Comprehensive checklist for Warframe tasks, missions, and objectives. Keep track of your progress and never miss important activities.
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <div class="footer">
+            <p>Choose a tool above to get started with your Warframe experience</p>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.hub-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '1') {
+                window.location.href = 'warframeinfo/';
+            } else if (e.key === '2') {
+                window.location.href = 'warframetaskchecklist/';
+            }
+        });
+    </script>
+</body>
+</html>
