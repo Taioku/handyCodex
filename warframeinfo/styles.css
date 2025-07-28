@@ -468,16 +468,34 @@ select:focus {
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
 
-/* Grid Layout */
+/* Grid Layout - Modified for Masonry */
 .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-lg);
+    display: block; /* Change from grid to block for masonry */
     width: 100%;
-    align-items: start;
     animation: fadeInUp 0.6s ease-out;
-    /* Enable auto-placement for dynamic flow */
-    grid-auto-flow: row dense;
+}
+
+/* Masonry Layout Styles */
+.masonry-wrapper {
+    display: flex !important;
+    gap: var(--spacing-lg);
+    align-items: flex-start;
+    width: 100%;
+    margin-top: var(--spacing-lg);
+}
+
+.masonry-column {
+    flex: 1;
+    display: flex !important;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    min-width: 0; /* Prevent flex items from overflowing */
+}
+
+/* Ensure cards in masonry columns behave properly */
+.masonry-column .card {
+    width: 100%;
+    margin-bottom: 0; /* Remove any margin, gap handles spacing */
 }
 
 @keyframes fadeInUp {
@@ -504,7 +522,11 @@ select:focus {
     backdrop-filter: blur(10px);
     animation: cardFadeIn 0.5s ease-out forwards;
     opacity: 0;
-    min-height: 200px;
+    /* Allow cards to size naturally to their content */
+    display: flex;
+    flex-direction: column;
+    justify-self: stretch;
+    align-self: start;
 }
 
 .card::before {
@@ -613,8 +635,11 @@ select:focus {
         width: calc(100% - 320px);
     }
     
-    .grid {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    .masonry-wrapper {
+        gap: var(--spacing-xl);
+    }
+    
+    .masonry-column {
         gap: var(--spacing-xl);
     }
     
@@ -639,8 +664,12 @@ select:focus {
 
 /* Desktop (1024px - 1399px) */
 @media (min-width: 1024px) and (max-width: 1399px) {
-    .grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    .masonry-wrapper {
+        gap: var(--spacing-lg);
+    }
+    
+    .masonry-column {
+        gap: var(--spacing-lg);
     }
     
     /* On desktop, don't show overlay */
@@ -666,8 +695,11 @@ select:focus {
         padding: var(--spacing-lg);
     }
     
-    .grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    .masonry-wrapper {
+        gap: var(--spacing-md);
+    }
+    
+    .masonry-column {
         gap: var(--spacing-md);
     }
     
@@ -711,8 +743,12 @@ select:focus {
         width: 100%;
     }
     
-    .grid {
-        grid-template-columns: 1fr;
+    .masonry-wrapper {
+        flex-direction: column; /* Stack columns vertically on mobile */
+        gap: var(--spacing-sm);
+    }
+    
+    .masonry-column {
         gap: var(--spacing-sm);
     }
     
@@ -770,8 +806,12 @@ select:focus {
         right: var(--spacing-md);
     }
     
-    .grid {
-        grid-template-columns: 1fr;
+    .masonry-wrapper {
+        flex-direction: column; /* Single column on small mobile */
+        gap: var(--spacing-xs);
+    }
+    
+    .masonry-column {
         gap: var(--spacing-xs);
     }
     
@@ -830,8 +870,12 @@ select:focus {
         max-width: none; /* Remove max-width constraint */
     }
     
-    .grid {
-        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    .masonry-wrapper {
+        gap: var(--spacing-xl);
+    }
+    
+    .masonry-column {
+        gap: var(--spacing-xl);
     }
 }
 
@@ -936,6 +980,7 @@ select:focus {
 .cycles-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-auto-rows: min-content; /* Use min-content for tight fitting */
     gap: var(--spacing-md);
 }
 
@@ -1112,6 +1157,7 @@ select:focus {
     
     .cycles-grid {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-auto-rows: min-content; /* Use min-content for tight fitting */
         gap: var(--spacing-sm);
     }
     
@@ -1168,6 +1214,7 @@ select:focus {
     
     .cycles-grid {
         grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: min-content; /* Use min-content for tight fitting */
         gap: var(--spacing-xs);
     }
     

@@ -1094,7 +1094,12 @@ const displayVaultTrader = (vaultTraderData) => {
                 </div>
                 
                 ${vaultTraderData.active && vaultTraderData.inventory && vaultTraderData.inventory.length > 0 ? `
-                    <div class="vault-inventory">
+                    <div class="vault-inventory-toggle">
+                        <button class="inventory-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Show Items (${vaultTraderData.inventory.length})' : '▼ Hide Items (${vaultTraderData.inventory.length})'">
+                            ▶ Show Items (${vaultTraderData.inventory.length})
+                        </button>
+                    </div>
+                    <div class="vault-inventory hidden">
                         ${vaultTraderData.inventory.map(item => `
                             <div class="vault-item">
                                 <span class="item-name">${item.item}</span>
@@ -1214,6 +1219,7 @@ const displayVaultTrader = (vaultTraderData) => {
                 padding: 16px;
                 margin-bottom: 12px;
                 border: 1px solid var(--color-accent2, #854442);
+                min-width: 0;
             }
             
             /* Mission Header */
@@ -1293,11 +1299,40 @@ const displayVaultTrader = (vaultTraderData) => {
             }
             
             /* Inventory Section */
+            .vault-inventory-toggle {
+                margin-top: 8px;
+                margin-bottom: 8px;
+            }
+            
+            .inventory-toggle-btn {
+                background: rgba(190, 155, 123, 0.1);
+                border: 1px solid var(--color-accent2, #854442);
+                border-radius: 4px;
+                color: var(--color-text-accent, #be9b7b);
+                cursor: pointer;
+                font-size: 0.9em;
+                padding: 8px 12px;
+                text-align: left;
+                width: 100%;
+                transition: all 0.2s ease;
+            }
+            
+            .inventory-toggle-btn:hover {
+                background: rgba(190, 155, 123, 0.2);
+                color: var(--color-text, #fff);
+                border-color: var(--color-accent, #be9b7b);
+            }
+            
             .vault-inventory {
                 background: rgba(190, 155, 123, 0.1);
                 border-radius: 6px;
                 padding: 12px;
                 margin-top: 8px;
+                transition: all 0.3s ease;
+            }
+            
+            .vault-inventory.hidden {
+                display: none;
             }
             
             .vault-item {
@@ -1603,6 +1638,937 @@ const displayDuviriCycle = (duviriData) => {
     return createWorldCycle('Duviri', duviriData.state, duviriData.expiry, 'zariman');
 };
 
+const displayDeepArchimedea = (archimedeaData) => {
+    if (!archimedeaData) return null;
+    
+    const content = document.createElement('div');
+    content.className = 'deep-archimedea-container';
+    
+    content.innerHTML = `
+        <div class="archimedea-header">
+            <div class="archimedea-info">
+                <!-- Header info without expiry timer -->
+            </div>
+        </div>
+        
+        ${archimedeaData.missions && Array.isArray(archimedeaData.missions) && archimedeaData.missions.length > 0 ? `
+            <div class="archimedea-missions">
+                <h3>Missions (${archimedeaData.missions.length})</h3>
+                ${archimedeaData.missions.map((mission, index) => `
+                    <div class="mission-container">
+                        <div class="mission-toggle">
+                            <button class="mission-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}' : '▼ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}'">
+                                ▶ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}
+                            </button>
+                        </div>
+                        <div class="mission-content hidden">
+                            <div class="mission-item">
+                                ${mission.deviation && Object.keys(mission.deviation).length > 0 ? `
+                                    <div class="mission-deviation">
+                                        <strong>Deviation:</strong>
+                                        <div class="deviation-info">
+                                            ${mission.deviation.name ? `<div class="deviation-name">${mission.deviation.name}</div>` : ''}
+                                            ${mission.deviation.description ? `<div class="deviation-description">${mission.deviation.description}</div>` : ''}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                ${mission.riskVariables && Array.isArray(mission.riskVariables) && mission.riskVariables.length > 0 ? `
+                                    <div class="mission-risks">
+                                        <strong>Risk Variables:</strong>
+                                        <div class="risks-list">
+                                            ${mission.riskVariables.map(risk => `
+                                                <div class="risk-item">
+                                                    ${typeof risk === 'object' && risk.name ? `
+                                                        <div class="risk-name">${risk.name}</div>
+                                                        ${risk.description ? `<div class="risk-description">${risk.description}</div>` : ''}
+                                                    ` : `
+                                                        <div class="risk-name">${typeof risk === 'string' ? risk : JSON.stringify(risk)}</div>
+                                                    `}
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        ` : ''}
+        
+        ${archimedeaData.personalModifiers && Array.isArray(archimedeaData.personalModifiers) && archimedeaData.personalModifiers.length > 0 ? `
+            <div class="archimedea-modifiers">
+                <div class="modifiers-toggle">
+                    <button class="modifiers-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Personal Modifiers (${archimedeaData.personalModifiers.length})' : '▼ Hide Personal Modifiers (${archimedeaData.personalModifiers.length})'">
+                        ▶ Personal Modifiers (${archimedeaData.personalModifiers.length})
+                    </button>
+                </div>
+                <div class="modifiers-content hidden">
+                    <div class="modifiers-grid">
+                        ${archimedeaData.personalModifiers.map(modifier => `
+                            <div class="modifier-item">
+                                <div class="modifier-header">
+                                    <strong>${modifier.name || modifier.key || 'Unknown Modifier'}</strong>
+                                </div>
+                                ${modifier.description ? `
+                                    <div class="modifier-description">
+                                        ${modifier.description}
+                                    </div>
+                                ` : ''}
+                                ${modifier.key && modifier.key !== modifier.name ? `
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        ` : ''}
+        
+        ${archimedeaData.expiry ? `
+            <div class="archimedea-expiry">
+                <p><strong>Expires in:</strong> <span class="timer" data-expiry="${archimedeaData.expiry}"></span></p>
+            </div>
+        ` : ''}
+    `;
+    
+    // Set up timer if expiry exists
+    if (archimedeaData.expiry) {
+        const timer = content.querySelector('.timer');
+        if (timer) {
+            setInterval(() => updateTimer(timer, archimedeaData.expiry), 1000);
+            updateTimer(timer, archimedeaData.expiry);
+        }
+    }
+    
+    // Add CSS styles for Deep Archimedea if not already added
+    if (!document.getElementById('deep-archimedea-styles')) {
+        const style = document.createElement('style');
+        style.id = 'deep-archimedea-styles';
+        style.textContent = `
+            /* Deep Archimedea Container */
+            .deep-archimedea-container {
+                background: var(--color-panel, #2a211e);
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 12px;
+                border: 1px solid var(--color-accent2, #854442);
+            }
+            
+            /* Header Section */
+            .archimedea-header {
+                margin-bottom: 20px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid var(--color-accent2, #854442);
+            }
+            
+            .archimedea-info .info-row {
+                display: flex;
+                align-items: center;
+                padding: 4px 0;
+                margin-bottom: 8px;
+            }
+            
+            .archimedea-info .info-label {
+                font-weight: bold;
+                color: var(--color-text-accent, #be9b7b);
+                min-width: 80px;
+                margin-right: 12px;
+            }
+            
+            .archimedea-info .info-value {
+                color: var(--color-text, #fff);
+                flex: 1;
+            }
+            
+            /* Missions Section */
+            .archimedea-missions {
+                margin-bottom: 20px;
+            }
+            
+            .archimedea-missions h3 {
+                color: var(--color-text, #fff);
+                margin-bottom: 12px;
+                border-bottom: 1px solid rgba(190, 155, 123, 0.3);
+                padding-bottom: 6px;
+            }
+            
+            /* Individual Mission Container */
+            .mission-container {
+                margin-bottom: 12px;
+            }
+            
+            /* Individual Mission Toggle */
+            .mission-toggle {
+                margin-bottom: 8px;
+            }
+            
+            .mission-toggle-btn {
+                background: rgba(190, 155, 123, 0.1);
+                border: 1px solid var(--color-accent2, #854442);
+                border-radius: 4px;
+                color: var(--color-text-accent, #be9b7b);
+                cursor: pointer;
+                font-size: 0.9em;
+                font-weight: bold;
+                padding: 10px 14px;
+                text-align: left;
+                width: 100%;
+                transition: all 0.2s ease;
+            }
+            
+            .mission-toggle-btn:hover {
+                background: rgba(190, 155, 123, 0.2);
+                color: var(--color-text, #fff);
+                border-color: var(--color-accent, #be9b7b);
+            }
+            
+            /* Individual Mission Content */
+            .mission-content {
+                background: rgba(190, 155, 123, 0.05);
+                border-radius: 6px;
+                padding: 12px;
+                transition: all 0.3s ease;
+            }
+            
+            .mission-content.hidden {
+                display: none;
+            }
+            
+            /* Missions Toggle */
+            .missions-toggle {
+                margin-bottom: 12px;
+            }
+            
+            .missions-toggle-btn {
+                background: rgba(190, 155, 123, 0.1);
+                border: 1px solid var(--color-accent2, #854442);
+                border-radius: 4px;
+                color: var(--color-text-accent, #be9b7b);
+                cursor: pointer;
+                font-size: 0.9em;
+                font-weight: bold;
+                padding: 12px 16px;
+                text-align: left;
+                width: 100%;
+                transition: all 0.2s ease;
+            }
+            
+            .missions-toggle-btn:hover {
+                background: rgba(190, 155, 123, 0.2);
+                color: var(--color-text, #fff);
+                border-color: var(--color-accent, #be9b7b);
+            }
+            
+            /* Missions Content */
+            .missions-content {
+                background: rgba(190, 155, 123, 0.05);
+                border-radius: 6px;
+                padding: 12px;
+                transition: all 0.3s ease;
+            }
+            
+            .missions-content.hidden {
+                display: none;
+            }
+            
+            .mission-item {
+                background: rgba(190, 155, 123, 0.1);
+                border-radius: 6px;
+                padding: 12px;
+                margin-bottom: 12px;
+                border-left: 3px solid var(--color-accent, #be9b7b);
+            }
+            
+            .mission-header h4 {
+                color: var(--color-text, #fff);
+                margin: 0 0 12px 0;
+                font-size: 1.1em;
+            }
+            
+            .mission-item h4 {
+                color: var(--color-text, #fff);
+                margin: 0 0 12px 0;
+                font-size: 1.1em;
+            }
+            
+            /* Personal Modifiers Section */
+            .archimedea-modifiers {
+                margin-bottom: 20px;
+            }
+            
+            /* Modifiers Toggle */
+            .modifiers-toggle {
+                margin-bottom: 12px;
+            }
+            
+            .modifiers-toggle-btn {
+                background: rgba(190, 155, 123, 0.1);
+                border: 1px solid var(--color-accent2, #854442);
+                border-radius: 4px;
+                color: var(--color-text-accent, #be9b7b);
+                cursor: pointer;
+                font-size: 0.9em;
+                font-weight: bold;
+                padding: 12px 16px;
+                text-align: left;
+                width: 100%;
+                transition: all 0.2s ease;
+            }
+            
+            .modifiers-toggle-btn:hover {
+                background: rgba(190, 155, 123, 0.2);
+                color: var(--color-text, #fff);
+                border-color: var(--color-accent, #be9b7b);
+            }
+            
+            /* Modifiers Content */
+            .modifiers-content {
+                background: rgba(190, 155, 123, 0.05);
+                border-radius: 6px;
+                padding: 12px;
+                transition: all 0.3s ease;
+            }
+            
+            .modifiers-content.hidden {
+                display: none;
+            }
+            
+            .mission-deviation {
+                margin-bottom: 12px;
+            }
+            
+            .mission-deviation strong {
+                color: var(--color-text-accent, #be9b7b);
+                display: block;
+                margin-bottom: 6px;
+            }
+            
+            .deviation-info {
+                background: rgba(133, 68, 66, 0.2);
+                border-radius: 4px;
+                padding: 8px;
+                border: 1px solid rgba(190, 155, 123, 0.2);
+            }
+            
+            .deviation-name {
+                color: var(--color-text, #fff);
+                font-weight: bold;
+                margin-bottom: 4px;
+                font-size: 1.05em;
+            }
+            
+            .deviation-description {
+                color: var(--color-text-light, #fff4e6);
+                font-size: 0.95em;
+                line-height: 1.4;
+            }
+            
+            .mission-risks strong {
+                color: var(--color-text-accent, #be9b7b);
+                display: block;
+                margin-bottom: 6px;
+            }
+            
+            .risks-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .risk-item {
+                background: rgba(133, 68, 66, 0.15);
+                border-radius: 4px;
+                padding: 8px;
+                border-left: 3px solid var(--color-accent2, #854442);
+            }
+            
+            .risk-name {
+                color: var(--color-text, #fff);
+                font-weight: bold;
+                margin-bottom: 4px;
+                font-size: 1.05em;
+            }
+            
+            .risk-description {
+                color: var(--color-text-light, #fff4e6);
+                font-size: 0.95em;
+                line-height: 1.4;
+            }
+            
+            /* Personal Modifiers Section */
+            .archimedea-modifiers h3 {
+                color: var(--color-text, #fff);
+                margin-bottom: 12px;
+                border-bottom: 1px solid rgba(190, 155, 123, 0.3);
+                padding-bottom: 6px;
+            }
+            
+            .modifiers-content .modifiers-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                grid-auto-rows: min-content; /* Use min-content for tight fitting */
+                gap: 12px;
+            }
+            
+            .modifiers-content .modifier-item {
+                background: rgba(190, 155, 123, 0.1);
+                border-radius: 6px;
+                padding: 12px;
+                border: 1px solid rgba(190, 155, 123, 0.2);
+                transition: background-color 0.2s ease;
+            }
+            
+            .modifiers-content .modifier-item:hover {
+                background: rgba(190, 155, 123, 0.15);
+            }
+            
+            .modifiers-content .modifier-header strong {
+                color: var(--color-text, #fff);
+                font-size: 1.05em;
+                display: block;
+                margin-bottom: 8px;
+            }
+            
+            .modifiers-content .modifier-description {
+                color: var(--color-text-light, #fff4e6);
+                font-size: 0.9em;
+                line-height: 1.4;
+                margin-bottom: 6px;
+            }
+            
+            .modifiers-content .modifier-key {
+                color: var(--color-text-accent, #be9b7b);
+                font-size: 0.8em;
+                font-style: italic;
+            }
+            
+            /* Timer Styling */
+            .timer {
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+                color: var(--color-accent, #be9b7b);
+            }
+            
+            /* Expiry Section at Bottom */
+            .archimedea-expiry {
+                margin-top: 20px;
+                padding-top: 12px;
+                border-top: 1px solid var(--color-accent2, #854442);
+                text-align: center;
+            }
+            
+            .archimedea-expiry p {
+                margin: 0;
+                color: var(--color-text, #fff);
+                font-size: 1.1em;
+            }
+            
+            .archimedea-expiry strong {
+                color: var(--color-text-accent, #be9b7b);
+            }
+            
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .modifiers-grid {
+                    grid-template-columns: 1fr;
+                    grid-auto-rows: min-content; /* Use min-content for tight fitting */
+                }
+                
+                .archimedea-info .info-row {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 4px;
+                }
+                
+                .archimedea-info .info-label {
+                    min-width: auto;
+                    margin-right: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    return createCard('Deep Archimedea', content);
+};
+
+const displayTemporalArchimedea = (archimedeaData) => {
+    if (!archimedeaData) return null;
+    
+    const content = document.createElement('div');
+    content.className = 'temporal-archimedea-container';
+    
+    content.innerHTML = `
+        <div class="archimedea-header">
+            <div class="archimedea-info">
+                <!-- Header info without expiry timer -->
+            </div>
+        </div>
+        
+        ${archimedeaData.missions && Array.isArray(archimedeaData.missions) && archimedeaData.missions.length > 0 ? `
+            <div class="archimedea-missions">
+                <h3>Missions (${archimedeaData.missions.length})</h3>
+                ${archimedeaData.missions.map((mission, index) => `
+                    <div class="mission-container">
+                        <div class="mission-toggle">
+                            <button class="mission-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}' : '▼ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}'">
+                                ▶ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}
+                            </button>
+                        </div>
+                        <div class="mission-content hidden">
+                            <div class="mission-item">
+                                ${mission.deviation && Object.keys(mission.deviation).length > 0 ? `
+                                    <div class="mission-deviation">
+                                        <strong>Deviation:</strong>
+                                        <div class="deviation-info">
+                                            ${mission.deviation.name ? `<div class="deviation-name">${mission.deviation.name}</div>` : ''}
+                                            ${mission.deviation.description ? `<div class="deviation-description">${mission.deviation.description}</div>` : ''}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                ${mission.riskVariables && Array.isArray(mission.riskVariables) && mission.riskVariables.length > 0 ? `
+                                    <div class="mission-risks">
+                                        <strong>Risk Variables:</strong>
+                                        <div class="risks-list">
+                                            ${mission.riskVariables.map(risk => `
+                                                <div class="risk-item">
+                                                    ${typeof risk === 'object' && risk.name ? `
+                                                        <div class="risk-name">${risk.name}</div>
+                                                        ${risk.description ? `<div class="risk-description">${risk.description}</div>` : ''}
+                                                    ` : `
+                                                        <div class="risk-name">${typeof risk === 'string' ? risk : JSON.stringify(risk)}</div>
+                                                    `}
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        ` : ''}
+        
+        ${archimedeaData.personalModifiers && Array.isArray(archimedeaData.personalModifiers) && archimedeaData.personalModifiers.length > 0 ? `
+            <div class="archimedea-modifiers">
+                <div class="modifiers-toggle">
+                    <button class="modifiers-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Personal Modifiers (${archimedeaData.personalModifiers.length})' : '▼ Hide Personal Modifiers (${archimedeaData.personalModifiers.length})'">
+                        ▶ Personal Modifiers (${archimedeaData.personalModifiers.length})
+                    </button>
+                </div>
+                <div class="modifiers-content hidden">
+                    <div class="modifiers-grid">
+                        ${archimedeaData.personalModifiers.map(modifier => `
+                            <div class="modifier-item">
+                                <div class="modifier-header">
+                                    <strong>${modifier.name || modifier.key || 'Unknown Modifier'}</strong>
+                                </div>
+                                ${modifier.description ? `
+                                    <div class="modifier-description">
+                                        ${modifier.description}
+                                    </div>
+                                ` : ''}
+                                ${modifier.key && modifier.key !== modifier.name ? `
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        ` : ''}
+        
+        ${archimedeaData.expiry ? `
+            <div class="archimedea-expiry">
+                <p><strong>Expires in:</strong> <span class="timer" data-expiry="${archimedeaData.expiry}"></span></p>
+            </div>
+        ` : ''}
+    `;
+    
+    // Set up timer if expiry exists
+    if (archimedeaData.expiry) {
+        const timer = content.querySelector('.timer');
+        if (timer) {
+            setInterval(() => updateTimer(timer, archimedeaData.expiry), 1000);
+            updateTimer(timer, archimedeaData.expiry);
+        }
+    }
+    
+    // Add CSS styles for Temporal Archimedea if not already added
+    if (!document.getElementById('temporal-archimedea-styles')) {
+        const style = document.createElement('style');
+        style.id = 'temporal-archimedea-styles';
+        style.textContent = `
+            /* Temporal Archimedea Container */
+            .temporal-archimedea-container {
+                background: var(--color-panel, #2a211e);
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 12px;
+                border: 1px solid var(--color-accent2, #854442);
+            }
+            
+            /* Use same styles as Deep Archimedea */
+            .temporal-archimedea-container .archimedea-header {
+                margin-bottom: 20px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid var(--color-accent2, #854442);
+            }
+            
+            .temporal-archimedea-container .archimedea-info .info-row {
+                display: flex;
+                align-items: center;
+                padding: 4px 0;
+                margin-bottom: 8px;
+            }
+            
+            .temporal-archimedea-container .archimedea-info .info-label {
+                font-weight: bold;
+                color: var(--color-text-accent, #be9b7b);
+                min-width: 80px;
+                margin-right: 12px;
+            }
+            
+            .temporal-archimedea-container .archimedea-info .info-value {
+                color: var(--color-text, #fff);
+                flex: 1;
+            }
+            
+            .temporal-archimedea-container .archimedea-missions {
+                margin-bottom: 20px;
+            }
+            
+            .temporal-archimedea-container .archimedea-missions h3 {
+                color: var(--color-text, #fff);
+                margin-bottom: 12px;
+                border-bottom: 1px solid rgba(190, 155, 123, 0.3);
+                padding-bottom: 6px;
+            }
+            
+            /* Temporal Individual Mission Container */
+            .temporal-archimedea-container .mission-container {
+                margin-bottom: 12px;
+            }
+            
+            /* Temporal Individual Mission Toggle */
+            .temporal-archimedea-container .mission-toggle {
+                margin-bottom: 8px;
+            }
+            
+            .temporal-archimedea-container .mission-toggle-btn {
+                background: rgba(190, 155, 123, 0.1);
+                border: 1px solid var(--color-accent2, #854442);
+                border-radius: 4px;
+                color: var(--color-text-accent, #be9b7b);
+                cursor: pointer;
+                font-size: 0.9em;
+                font-weight: bold;
+                padding: 10px 14px;
+                text-align: left;
+                width: 100%;
+                transition: all 0.2s ease;
+            }
+            
+            .temporal-archimedea-container .mission-toggle-btn:hover {
+                background: rgba(190, 155, 123, 0.2);
+                color: var(--color-text, #fff);
+                border-color: var(--color-accent, #be9b7b);
+            }
+            
+            /* Temporal Individual Mission Content */
+            .temporal-archimedea-container .mission-content {
+                background: rgba(190, 155, 123, 0.05);
+                border-radius: 6px;
+                padding: 12px;
+                transition: all 0.3s ease;
+            }
+            
+            .temporal-archimedea-container .mission-content.hidden {
+                display: none;
+            }
+            
+            /* Temporal Archimedea Missions Toggle */
+            .temporal-archimedea-container .missions-toggle {
+                margin-bottom: 12px;
+            }
+            
+            .temporal-archimedea-container .missions-toggle-btn {
+                background: rgba(190, 155, 123, 0.1);
+                border: 1px solid var(--color-accent2, #854442);
+                border-radius: 4px;
+                color: var(--color-text-accent, #be9b7b);
+                cursor: pointer;
+                font-size: 0.9em;
+                font-weight: bold;
+                padding: 12px 16px;
+                text-align: left;
+                width: 100%;
+                transition: all 0.2s ease;
+            }
+            
+            .temporal-archimedea-container .missions-toggle-btn:hover {
+                background: rgba(190, 155, 123, 0.2);
+                color: var(--color-text, #fff);
+                border-color: var(--color-accent, #be9b7b);
+            }
+            
+            /* Temporal Archimedea Missions Content */
+            .temporal-archimedea-container .missions-content {
+                background: rgba(190, 155, 123, 0.05);
+                border-radius: 6px;
+                padding: 12px;
+                transition: all 0.3s ease;
+            }
+            
+            .temporal-archimedea-container .missions-content.hidden {
+                display: none;
+            }
+                color: var(--color-text, #fff);
+                margin-bottom: 12px;
+                border-bottom: 1px solid rgba(190, 155, 123, 0.3);
+                padding-bottom: 6px;
+            }
+            
+            .temporal-archimedea-container .mission-item {
+                background: rgba(190, 155, 123, 0.1);
+                border-radius: 6px;
+                padding: 12px;
+                margin-bottom: 12px;
+                border-left: 3px solid var(--color-accent, #be9b7b);
+            }
+            
+            .temporal-archimedea-container .mission-header h4 {
+                color: var(--color-text, #fff);
+                margin: 0 0 12px 0;
+                font-size: 1.1em;
+            }
+            
+            .temporal-archimedea-container .mission-item h4 {
+                color: var(--color-text, #fff);
+                margin: 0 0 12px 0;
+                font-size: 1.1em;
+            }
+            
+            .temporal-archimedea-container .mission-deviation {
+                margin-bottom: 12px;
+            }
+            
+            .temporal-archimedea-container .mission-deviation strong {
+                color: var(--color-text-accent, #be9b7b);
+                display: block;
+                margin-bottom: 6px;
+            }
+            
+            .temporal-archimedea-container .deviation-info {
+                background: rgba(133, 68, 66, 0.2);
+                border-radius: 4px;
+                padding: 8px;
+                border: 1px solid rgba(190, 155, 123, 0.2);
+            }
+            
+            .temporal-archimedea-container .deviation-name {
+                color: var(--color-text, #fff);
+                font-weight: bold;
+                margin-bottom: 4px;
+                font-size: 1.05em;
+            }
+            
+            .temporal-archimedea-container .deviation-description {
+                color: var(--color-text-light, #fff4e6);
+                font-size: 0.95em;
+                line-height: 1.4;
+            }
+            
+            .temporal-archimedea-container .mission-risks strong {
+                color: var(--color-text-accent, #be9b7b);
+                display: block;
+                margin-bottom: 6px;
+            }
+            
+            .temporal-archimedea-container .risks-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .temporal-archimedea-container .risk-item {
+                background: rgba(133, 68, 66, 0.15);
+                border-radius: 4px;
+                padding: 8px;
+                border-left: 3px solid var(--color-accent2, #854442);
+            }
+            
+            .temporal-archimedea-container .risk-name {
+                color: var(--color-text, #fff);
+                font-weight: bold;
+                margin-bottom: 4px;
+                font-size: 1.05em;
+            }
+            
+            .temporal-archimedea-container .risk-description {
+                color: var(--color-text-light, #fff4e6);
+                font-size: 0.95em;
+                line-height: 1.4;
+            }
+            
+            /* Temporal Personal Modifiers Section */
+            .temporal-archimedea-container .archimedea-modifiers {
+                margin-bottom: 20px;
+            }
+            
+            /* Temporal Modifiers Toggle */
+            .temporal-archimedea-container .modifiers-toggle {
+                margin-bottom: 12px;
+            }
+            
+            .temporal-archimedea-container .modifiers-toggle-btn {
+                background: rgba(190, 155, 123, 0.1);
+                border: 1px solid var(--color-accent2, #854442);
+                border-radius: 4px;
+                color: var(--color-text-accent, #be9b7b);
+                cursor: pointer;
+                font-size: 0.9em;
+                font-weight: bold;
+                padding: 12px 16px;
+                text-align: left;
+                width: 100%;
+                transition: all 0.2s ease;
+            }
+            
+            .temporal-archimedea-container .modifiers-toggle-btn:hover {
+                background: rgba(190, 155, 123, 0.2);
+                color: var(--color-text, #fff);
+                border-color: var(--color-accent, #be9b7b);
+            }
+            
+            /* Temporal Modifiers Content */
+            .temporal-archimedea-container .modifiers-content {
+                background: rgba(190, 155, 123, 0.05);
+                border-radius: 6px;
+                padding: 12px;
+                transition: all 0.3s ease;
+            }
+            
+            .temporal-archimedea-container .modifiers-content.hidden {
+                display: none;
+            }
+            
+            .temporal-archimedea-container .archimedea-modifiers h3 {
+                color: var(--color-text, #fff);
+                margin-bottom: 12px;
+                border-bottom: 1px solid rgba(190, 155, 123, 0.3);
+                padding-bottom: 6px;
+            }
+            
+            .temporal-archimedea-container .modifiers-content .modifiers-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                grid-auto-rows: min-content; /* Use min-content for tight fitting */
+                gap: 12px;
+            }
+            
+            .temporal-archimedea-container .modifiers-content .modifier-item {
+                background: rgba(190, 155, 123, 0.1);
+                border-radius: 6px;
+                padding: 12px;
+                border: 1px solid rgba(190, 155, 123, 0.2);
+                transition: background-color 0.2s ease;
+            }
+            
+            .temporal-archimedea-container .modifiers-content .modifier-item:hover {
+                background: rgba(190, 155, 123, 0.15);
+            }
+            
+            .temporal-archimedea-container .modifiers-content .modifier-header strong {
+                color: var(--color-text, #fff);
+                font-size: 1.05em;
+                display: block;
+                margin-bottom: 8px;
+            }
+            
+            .temporal-archimedea-container .modifiers-content .modifier-description {
+                color: var(--color-text-light, #fff4e6);
+                font-size: 0.9em;
+                line-height: 1.4;
+                margin-bottom: 6px;
+            }
+            
+            .temporal-archimedea-container .modifiers-content .modifier-key {
+                color: var(--color-text-accent, #be9b7b);
+                font-size: 0.8em;
+                font-style: italic;
+            }
+            
+            .temporal-archimedea-container .timer {
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+                color: var(--color-accent, #be9b7b);
+            }
+            
+            .temporal-archimedea-container .archimedea-expiry {
+                margin-top: 20px;
+                padding-top: 12px;
+                border-top: 1px solid var(--color-accent2, #854442);
+                text-align: center;
+            }
+            
+            .temporal-archimedea-container .archimedea-expiry p {
+                margin: 0;
+                color: var(--color-text, #fff);
+                font-size: 1.1em;
+            }
+            
+            .temporal-archimedea-container .archimedea-expiry strong {
+                color: var(--color-text-accent, #be9b7b);
+            }
+            
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .temporal-archimedea-container .modifiers-grid {
+                    grid-template-columns: 1fr;
+                    grid-auto-rows: min-content; /* Use min-content for tight fitting */
+                }
+                
+                .temporal-archimedea-container .archimedea-info .info-row {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 4px;
+                }
+                
+                .temporal-archimedea-container .archimedea-info .info-label {
+                    min-width: auto;
+                    margin-right: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    return createCard('Temporal Archimedea', content);
+};
+
+// Function to update sidebar with kinepage message
+const updateSidebarKinepage = (kinepageData) => {
+    const sidebar = document.getElementById('sidebar');
+    const headerContent = sidebar.querySelector('.header-content');
+    
+    // Remove existing kinepage element if it exists
+    const existingKinepage = sidebar.querySelector('.sidebar-kinepage');
+    if (existingKinepage) {
+        existingKinepage.remove();
+    }
+    
+    // Add kinepage message if available
+    if (kinepageData && kinepageData.message) {
+        const kinepageElement = document.createElement('p');
+        kinepageElement.className = 'sidebar-kinepage';
+        kinepageElement.textContent = kinepageData.message;
+        headerContent.appendChild(kinepageElement);
+    }
+};
+
 // Main display function
 const displayWarframeData = async (platform) => {
     const container = document.getElementById('warframeData');
@@ -1691,14 +2657,29 @@ const displayWarframeData = async (platform) => {
             if (archonCard) container.appendChild(archonCard);
         }
 
-        if (data.steelPath) {
-            const steelPathCard = displaySteelPath(data.steelPath);
-            if (steelPathCard) container.appendChild(steelPathCard);
-        }
-
         if (data.vaultTrader) {
             const vaultTraderCard = displayVaultTrader(data.vaultTrader);
             if (vaultTraderCard) container.appendChild(vaultTraderCard);
+        }
+
+        if (data.news) {
+            const news = displayNews(data.news);
+            if (news) container.appendChild(news);
+        }
+
+        if (data.deepArchimedea) {
+            const archimedeaCard = displayDeepArchimedea(data.deepArchimedea);
+            if (archimedeaCard) container.appendChild(archimedeaCard);
+        }
+
+        if (data.temporalArchimedea) {
+            const temporalArchimedeaCard = displayTemporalArchimedea(data.temporalArchimedea);
+            if (temporalArchimedeaCard) container.appendChild(temporalArchimedeaCard);
+        }
+
+        if (data.steelPath) {
+            const steelPathCard = displaySteelPath(data.steelPath);
+            if (steelPathCard) container.appendChild(steelPathCard);
         }
 
         if (data.arbitration) {
@@ -1752,14 +2733,14 @@ const displayWarframeData = async (platform) => {
                 }
             } else {
                 // Show peace message when no alerts
-                const noAlertsCard = createCard('Alerts', '<p class="peace-message">🕊️ The Origin System is at peace for now</p>');
+                const noAlertsCard = createCard('Alerts', '<p class="peace-message">The Origin System is at peace for now</p>');
                 container.appendChild(noAlertsCard);
             }
         }
         
         // News and Events
-        if (data.news) sections.news.appendChild(displayNews(data.news));
         if (data.events) sections.news.appendChild(displayEvents(data.events));
+
         if (data.constructionProgress) {
             const constructionCard = displayConstructionProgress(data.constructionProgress);
             if (constructionCard) sections.news.appendChild(constructionCard);
@@ -1833,10 +2814,25 @@ const displayWarframeData = async (platform) => {
             }
         });
 
+        // Update sidebar with kinepage message
+        updateSidebarKinepage(data.kinepage);
+
         // If no data is displayed, show a message
         if (container.children.length === 0) {
             container.innerHTML = 'No data available for this platform at the moment.';
         }
+
+        // Initialize masonry layout after content is loaded
+        setTimeout(() => {
+            if (window.masonryInstance) {
+                window.masonryInstance.destroy();
+            }
+            window.masonryInstance = new MasonryLayout(container, {
+                columns: 5,
+                gap: 24
+            });
+            window.masonryInstance.refresh();
+        }, 100); // Small delay to ensure DOM is fully rendered
 
     } catch (error) {
         console.error('Error in displayWarframeData:', error);
@@ -1859,4 +2855,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial load
     displayWarframeData('pc');
+    
+    // Add window resize handler for masonry
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (window.masonryInstance) {
+                window.masonryInstance.handleResize();
+            }
+        }, 250);
+    });
 });
