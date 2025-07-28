@@ -713,7 +713,6 @@ const displayNightwave = (nightwaveData) => {
     const content = document.createElement('div');
     content.innerHTML = `
         <p>Season: ${nightwaveData.season} - Phase ${nightwaveData.phase}</p>
-        <p>Challenges:</p>
         <ul>
             ${nightwaveData.activeChallenges.map(challenge => `
                 <li>
@@ -937,7 +936,10 @@ const displaySales = (sales, title) => {
         ${sortedSales.map(sale => `
             <div class="sale-item">
                 <h3>${sale.item}</h3>
-                <p>Price: ${sale.premiumCredits} Platinum</p>
+                <p>Price: 
+                    ${sale.originalPrice ? `<span style="text-decoration: line-through; color: #888; margin-right: 8px;"><img src="https://www-static.warframe.com/images/icons/material/platinum.png" alt="Platinum" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">${sale.originalPrice}</span>` : ''}
+                    <img src="https://www-static.warframe.com/images/icons/material/platinum.png" alt="Platinum" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">${sale.salePrice || sale.premiumCredits} Platinum
+                </p>
                 ${sale.discount ? `<p>Discount: ${sale.discount}% OFF</p>` : ''}
                 ${sale.expiry ? `
                     <p>Ends in: <span class="timer" data-expiry="${sale.expiry}"></span></p>
@@ -954,24 +956,6 @@ const displaySales = (sales, title) => {
     });
     
     return createCard(title, content);
-};
-
-const displayDarkSectors = (sectors) => {
-    if (!Array.isArray(sectors) || sectors.length === 0) return null;
-    
-    const content = document.createElement('div');
-    content.innerHTML = `
-        ${sectors.map(sector => `
-            <div class="dark-sector">
-                <h3>${sector.node}</h3>
-                <p>Type: ${sector.type}</p>
-                <p>Reward Multiplier: ${sector.reward}x</p>
-                ${sector.boss ? `<p>Boss: ${sector.boss}</p>` : ''}
-            </div>
-        `).join('')}
-    `;
-    
-    return createCard('Dark Sectors', content);
 };
 
 const displayChallenges = (challenges, title) => {
@@ -1001,6 +985,33 @@ const displayChallenges = (challenges, title) => {
     return createCard(title, content);
 };
 
+const displayConclaveChallenges = (challenges) => {
+    if (!Array.isArray(challenges) || challenges.length === 0) return null;
+    
+    const content = document.createElement('div');
+    content.innerHTML = `
+        <p>Challenges:</p>
+        <ul>
+            ${challenges.map(challenge => `
+                <li>
+                    <p>${challenge.title || challenge.description}${challenge.standing ? ` (${challenge.standing} Standing)` : ''}</p>
+                    ${challenge.description && challenge.title !== challenge.description ? `<p>${challenge.description}</p>` : ''}
+                    ${challenge.expiry ? `<p>Expires in: <span class="timer" data-expiry="${challenge.expiry}"></span></p>` : ''}
+                </li>
+            `).join('')}
+        </ul>
+    `;
+    
+    const timers = content.querySelectorAll('.timer');
+    timers.forEach(timer => {
+        const expiry = timer.dataset.expiry;
+        setInterval(() => updateTimer(timer, expiry), 1000);
+        updateTimer(timer, expiry);
+    });
+    
+    return createCard('Conclave Challenges', content);
+};
+
 const displaySimaris = (simarisData) => {
     if (!simarisData) return null;
     
@@ -1008,31 +1019,13 @@ const displaySimaris = (simarisData) => {
     content.innerHTML = `
         <h3>Daily Target: ${simarisData.target || 'None'}</h3>
         ${simarisData.isTargetActive ? `
-            <p>Target is Active</p>
+            <p>Is Active: Yes</p>
         ` : `
-            <p>No Active Target</p>
+            <p>Is Active: No</p>
         `}
     `;
     
     return createCard('Simaris', content);
-};
-
-const displayEnemies = (enemies) => {
-    if (!Array.isArray(enemies) || enemies.length === 0) return null;
-    
-    const content = document.createElement('div');
-    content.innerHTML = `
-        ${enemies.map(enemy => `
-            <div class="enemy">
-                <h3>${enemy.agentType}</h3>
-                <p>Level: ${enemy.rank}</p>
-                <p>Location: ${enemy.lastDiscoveredAt}</p>
-                <p>Health: ${Math.round(enemy.healthPercent * 100)}%</p>
-            </div>
-        `).join('')}
-    `;
-    
-    return createCard('Persistent Enemies', content);
 };
 
 const displayKuva = (kuva) => {
@@ -1288,10 +1281,6 @@ const displayWarframeData = async (platform) => {
             const invasionsCard = displayInvasions(data.invasions);
             if (invasionsCard) sections.missions.appendChild(invasionsCard);
         }
-        if (data.darkSectors) {
-            const darkSectorsCard = displayDarkSectors(data.darkSectors);
-            if (darkSectorsCard) sections.missions.appendChild(darkSectorsCard);
-        }
         
         // Void Activities
         if (data.fissures) {
@@ -1333,12 +1322,8 @@ const displayWarframeData = async (platform) => {
         
         // Challenges
         if (data.conclaveChallenges) {
-            const conclaveCard = displayChallenges(data.conclaveChallenges, 'Conclave Challenges');
+            const conclaveCard = displayConclaveChallenges(data.conclaveChallenges);
             if (conclaveCard) sections.challenges.appendChild(conclaveCard);
-        }
-        if (data.weeklyChallenges) {
-            const weeklyCard = displayChallenges(data.weeklyChallenges, 'Weekly Challenges');
-            if (weeklyCard) sections.challenges.appendChild(weeklyCard);
         }
         
         // Activities
