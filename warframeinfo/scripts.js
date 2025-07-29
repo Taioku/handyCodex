@@ -1639,7 +1639,9 @@ const displayVaultTrader = (vaultTraderData) => {
                         ${(() => {
                             const now = Date.now();
                             const activeSchedule = vaultTraderData.schedule.filter(item => new Date(item.expiry).getTime() > now);
-                            const expiredSchedule = vaultTraderData.schedule.filter(item => new Date(item.expiry).getTime() <= now);
+                            const expiredSchedule = vaultTraderData.schedule
+                                .filter(item => new Date(item.expiry).getTime() <= now)
+                                .sort((a, b) => new Date(b.expiry).getTime() - new Date(a.expiry).getTime()); // Most recently expired first
                             
                             let scheduleHTML = '';
                             
@@ -1666,10 +1668,12 @@ const displayVaultTrader = (vaultTraderData) => {
                                     <div class="expired-schedule-items hidden">
                                         ${expiredSchedule.map(scheduleItem => `
                                             <div class="schedule-item expired">
-                                                <span class="schedule-item-name">${scheduleItem.item}</span>
-                                                <span class="schedule-item-time expired-time">
-                                                    Expired <span class="timer" data-expiry="${scheduleItem.expiry}"></span> ago
-                                                </span>
+                                                <div class="schedule-item-content">
+                                                    <span class="schedule-item-name">${scheduleItem.item}</span>
+                                                    <div class="schedule-item-timer">
+                                                        Expired <span class="timer" data-expiry="${scheduleItem.expiry}"></span> ago
+                                                    </div>
+                                                </div>
                                             </div>
                                         `).join('')}
                                     </div>
@@ -1954,9 +1958,23 @@ const displayVaultTrader = (vaultTraderData) => {
                 border-bottom: none;
             }
             
+            .schedule-item.expired .schedule-item-content {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+            
             .schedule-item.expired .schedule-item-name {
                 text-decoration: line-through;
                 color: var(--color-text-accent, #be9b7b);
+                font-weight: bold;
+            }
+            
+            .schedule-item.expired .schedule-item-timer {
+                color: var(--color-text-accent, #be9b7b);
+                font-style: italic;
+                font-size: 0.85em;
+                margin-top: 2px;
             }
             
             .expired-time {
