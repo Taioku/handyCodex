@@ -467,7 +467,7 @@ const displaySortieInfo = (sortieData) => {
         <p>Boss: ${sortieData.boss}</p>
         <ul>
         ${sortieData.variants.map(variant => `
-            <li>${variant.missionType} - ${variant.modifier}</li>
+            <li>${missionTypeFormat(variant.missionType)} - ${variant.modifier}</li>
             `).join('')}
         </ul>
         <p>Remaining: <span class="timer"></span></p>
@@ -505,7 +505,7 @@ const displayFissures = (fissures) => {
                     <h3>${tier}</h3>
                     ${fissures.map(fissure => `
                         <div class="fissure">
-                            <p>${fissure.missionType} - ${fissure.node} ${fissure.isSharkwing || fissure.archwingRequired ? `<img src="https://wiki.warframe.com/images/thumb/Amesha.png/32px-Amesha.png?bb937" alt="Amesha" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">` : ''}</p>
+                            <p>${missionTypeFormat(fissure.missionType)} - ${fissure.node} ${fissure.isSharkwing || fissure.archwingRequired ? `<img src="https://wiki.warframe.com/images/thumb/Amesha.png/32px-Amesha.png?bb937" alt="Amesha" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">` : ''}</p>
                             <p>Enemy: ${fissure.enemy || 'Unknown'}</p>
                             <p>Time remaining: <span class="timer" data-expiry="${fissure.expiry}"></span></p>
                         </div>
@@ -525,13 +525,46 @@ const displayFissures = (fissures) => {
     return createCard('Void Fissures', content);
 };
 
+// Generalized mission type formatting function that adds appropriate images
+const missionTypeFormat = (missionType) => {
+    if (!missionType) return 'Unknown';
+    
+    const type = missionType.toLowerCase();
+    
+    // Map mission types to their corresponding Warframe wiki images
+    const missionImages = {
+        'survival': '<img src="https://wiki.warframe.com/images/Oxygenpack.png" alt="Survival" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'defense': '<img src="https://wiki.warframe.com/images/thumb/DefenseOnFoot.png/32px-DefenseOnFoot.png" alt="Defense" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'exterminate': '<img src="https://wiki.warframe.com/images/thumb/DmgSlashSmall64.png/32px-DmgSlashSmall64.png" alt="Exterminate" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'capture': '<img src="https://wiki.warframe.com/images/thumb/Capture.png/32px-Capture.png" alt="Capture" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'endlesscapture': '<img src="https://wiki.warframe.com/images/thumb/Capture.png/32px-Endless-Capture.png" alt="Endless Capture" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'rescue': '<img src="https://wiki.warframe.com/images/thumb/Rescue.png/32px-Rescue.png" alt="Rescue" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'sabotage': '<img src="https://wiki.warframe.com/images/thumb/Sabotage.png/32px-Sabotage.png" alt="Sabotage" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'spy': '<img src="https://wiki.warframe.com/images/thumb/Spy.png/32px-Spy.png" alt="Spy" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'mobiledefense': '<img src="https://wiki.warframe.com/images/thumb/MobileDefense.png/32px-MobileDefense.png" alt="Mobile Defense" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'excavation': '<img src="https://wiki.warframe.com/images/thumb/Excavation.png/32px-Excavation.png" alt="Excavation" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'interception': '<img src="https://wiki.warframe.com/images/thumb/Interception.png/32px-Interception.png" alt="Interception" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'assassination': '<img src="https://wiki.warframe.com/images/thumb/Assassination.png/32px-Assassination.png" alt="Assassination" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'disruption': '<img src="https://wiki.warframe.com/images/thumb/Disruption.png/32px-Disruption.png" alt="Disruption" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'defection': '<img src="https://wiki.warframe.com/images/thumb/Defection.png/32px-Defection.png" alt="Defection" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'hijack': '<img src="https://wiki.warframe.com/images/thumb/Hijack.png/32px-Hijack.png" alt="Hijack" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'assault': '<img src="https://wiki.warframe.com/images/thumb/Assault.png/32px-Assault.png" alt="Assault" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'freeroam': '<img src="https://wiki.warframe.com/images/thumb/FreeRoam.png/32px-FreeRoam.png" alt="Free Roam" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'pursuit': '<img src="https://wiki.warframe.com/images/thumb/Pursuit.png/32px-Pursuit.png" alt="Pursuit" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'rush': '<img src="https://wiki.warframe.com/images/thumb/Rush.png/32px-Rush.png" alt="Rush" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">'
+    };
+    
+    const image = missionImages[type] || '';
+    return `${missionType}${image}`;
+};
+
 const displayArchonHunt = (archonData) => {
     const content = document.createElement('div');
     content.innerHTML = `
         <p>Boss: ${archonData.boss}</p>
         <ul>
         ${archonData.missions.map(mission => `
-            <li>${mission.node} - ${mission.type}</li>
+            <li>${mission.node} - ${missionTypeFormat(mission.type)}</li>
             `).join('')}
         </ul>
         <p>Remaining: <span class="timer"></span></p>
@@ -583,25 +616,6 @@ const displayAlerts = (alerts) => {
             return getImagePath(rewardType);
         };
         
-        // Get mission type icon
-        const getMissionIcon = (missionType) => {
-            const type = missionType.toLowerCase();
-            switch(type) {
-                case 'exterminate': return '💀';
-                case 'capture': return '🎯';
-                case 'rescue': return '🚑';
-                case 'sabotage': return '💣';
-                case 'spy': return '🕵️';
-                case 'survival': return '⏱️';
-                case 'defense': return '🛡️';
-                case 'mobile defense': return '🚚';
-                case 'excavation': return '⛏️';
-                case 'interception': return '📡';
-                case 'assassination': return '🗡️';
-                default: return '⚔️';
-            }
-        };
-        
         // Get faction color
         const getFactionColor = (faction) => {
             switch(faction?.toLowerCase()) {
@@ -617,10 +631,10 @@ const displayAlerts = (alerts) => {
         alertCard.innerHTML = `
             <div class="alert-header">
                 <div class="alert-title">
-                    <span class="mission-icon">${getMissionIcon(alert.mission.type)}</span>
+                    <span class="mission-icon">${missionTypeFormat(alert.mission.type)}</span>
                     <div class="alert-title-text">
                         <h3>${alert.mission.node} ${alert.mission.isSharkwing || alert.mission.archwingRequired ? `<img src="https://wiki.warframe.com/images/thumb/Amesha.png/32px-Amesha.png?bb937" alt="Amesha" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">` : ''}</h3>
-                        <span class="alert-subtitle">${alert.mission.type}</span>
+                        <span class="alert-subtitle">${missionTypeFormat(alert.mission.type)}</span>
                     </div>
                 </div>
                 <div class="alert-timer">
@@ -643,7 +657,7 @@ const displayAlerts = (alerts) => {
                         ` : ''}
                         <div class="info-row">
                             <span class="info-label">Mission:</span>
-                            <span class="info-value">${alert.mission.type}</span>
+                            <span class="info-value">${missionTypeFormat(alert.mission.type)}</span>
                         </div>
                     </div>
                 </div>
@@ -1033,7 +1047,7 @@ const displaySentientOutposts = (outpost) => {
     content.innerHTML = `
         <h3>Mission Node: ${outpost.mission?.node || 'None'}</h3>
         ${outpost.mission ? `
-            <p>Type: ${outpost.mission.type}</p>
+            <p>Type: ${missionTypeFormat(outpost.mission.type)}</p>
             <p>Faction: ${outpost.mission.faction}</p>
         ` : `
             <p>No active outpost</p>
@@ -1501,27 +1515,6 @@ const displayArbitration = (arbitrationData) => {
     
     const content = document.createElement('div');
     
-    // Get mission type icon
-    const getMissionIcon = (missionType) => {
-        const type = missionType.toLowerCase();
-        switch(type) {
-            case 'exterminate': return '💀';
-            case 'capture': return '🎯';
-            case 'rescue': return '🚑';
-            case 'sabotage': return '💣';
-            case 'spy': return '🕵️';
-            case 'survival': return '⏱️';
-            case 'defense': return '🛡️';
-            case 'mobile defense': return '🚚';
-            case 'excavation': return '⛏️';
-            case 'interception': return '📡';
-            case 'assassination': return '🗡️';
-            case 'disruption': return '⚡';
-            case 'defection': return '🏃';
-            default: return '⚔️';
-        }
-    };
-    
     // Get faction color
     const getFactionColor = (faction) => {
         switch(faction?.toLowerCase()) {
@@ -1550,10 +1543,10 @@ const displayArbitration = (arbitrationData) => {
     content.innerHTML = `
         <div class="arbitration-mission">
             <div class="mission-header">
-                <span class="mission-icon">${getMissionIcon(arbitrationData.type)}</span>
+                <span class="mission-icon">${missionTypeFormat(arbitrationData.type)}</span>
                 <div class="mission-info">
                     <h3>${arbitrationData.node}</h3>
-                    <p class="mission-type">${arbitrationData.type}</p>
+                    <p class="mission-type">${missionTypeFormat(arbitrationData.type)}</p>
                 </div>
                 <div class="mission-status ${arbitrationData.active ? 'active' : 'inactive'}">
                     ${arbitrationData.active ? '🟢 Active' : '🔴 Inactive'}
@@ -1654,15 +1647,22 @@ const displayDeepArchimedea = (archimedeaData) => {
         ${archimedeaData.missions && Array.isArray(archimedeaData.missions) && archimedeaData.missions.length > 0 ? `
             <div class="archimedea-missions">
                 <h3>Missions (${archimedeaData.missions.length})</h3>
-                ${archimedeaData.missions.map((mission, index) => `
+                ${archimedeaData.missions.map((mission, index) => {
+                    const formattedMissionType = missionTypeFormat(mission.mission) || 'Unknown Mission';
+                    const missionTypeText = formattedMissionType.replace(/<[^>]*>/g, ''); // Remove HTML tags for button text
+                    return `
                     <div class="mission-container">
                         <div class="mission-toggle">
-                            <button class="mission-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}' : '▼ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}'">
-                                ▶ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}
+                            <button class="mission-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Mission ${index + 1}: ${missionTypeText}' : '▼ Mission ${index + 1}: ${missionTypeText}'">
+                                ▶ Mission ${index + 1}: ${missionTypeText}
                             </button>
                         </div>
                         <div class="mission-content hidden">
                             <div class="mission-item">
+                                <div class="mission-type-info">
+                                    <strong>Mission Type:</strong> ${formattedMissionType}
+                                </div>
+                                
                                 ${mission.deviation && Object.keys(mission.deviation).length > 0 ? `
                                     <div class="mission-deviation">
                                         <strong>Deviation:</strong>
@@ -1693,7 +1693,8 @@ const displayDeepArchimedea = (archimedeaData) => {
                             </div>
                         </div>
                     </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
         ` : ''}
         
@@ -2109,15 +2110,22 @@ const displayTemporalArchimedea = (archimedeaData) => {
         ${archimedeaData.missions && Array.isArray(archimedeaData.missions) && archimedeaData.missions.length > 0 ? `
             <div class="archimedea-missions">
                 <h3>Missions (${archimedeaData.missions.length})</h3>
-                ${archimedeaData.missions.map((mission, index) => `
+                ${archimedeaData.missions.map((mission, index) => {
+                    const formattedMissionType = missionTypeFormat(mission.mission) || 'Unknown Mission';
+                    const missionTypeText = formattedMissionType.replace(/<[^>]*>/g, ''); // Remove HTML tags for button text
+                    return `
                     <div class="mission-container">
                         <div class="mission-toggle">
-                            <button class="mission-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}' : '▼ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}'">
-                                ▶ Mission ${index + 1}: ${mission.mission || 'Unknown Mission'}
+                            <button class="mission-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Mission ${index + 1}: ${missionTypeText}' : '▼ Mission ${index + 1}: ${missionTypeText}'">
+                                ▶ Mission ${index + 1}: ${missionTypeText}
                             </button>
                         </div>
                         <div class="mission-content hidden">
                             <div class="mission-item">
+                                <div class="mission-type-info">
+                                    <strong>Mission Type:</strong> ${formattedMissionType}
+                                </div>
+                                
                                 ${mission.deviation && Object.keys(mission.deviation).length > 0 ? `
                                     <div class="mission-deviation">
                                         <strong>Deviation:</strong>
@@ -2148,7 +2156,8 @@ const displayTemporalArchimedea = (archimedeaData) => {
                             </div>
                         </div>
                     </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
         ` : ''}
         
