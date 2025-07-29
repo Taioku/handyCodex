@@ -1440,13 +1440,15 @@ const displayCalendar = async () => {
         
         const content = document.createElement('div');
         content.className = 'calendar-content';
-        content.style.position = 'relative'; // For tooltip positioning
         content.innerHTML = createCalendarHTML();
         
-        // Create tooltip element
-        const tooltip = document.createElement('div');
-        tooltip.className = 'calendar-tooltip';
-        content.appendChild(tooltip);
+        // Create tooltip element and append to body for maximum z-index effectiveness
+        let tooltip = document.body.querySelector('.calendar-tooltip');
+        if (!tooltip) {
+            tooltip = document.createElement('div');
+            tooltip.className = 'calendar-tooltip';
+            document.body.appendChild(tooltip);
+        }
         
         const setupTooltips = () => {
             const eventDays = content.querySelectorAll('.calendar-day.has-events');
@@ -1459,21 +1461,20 @@ const displayCalendar = async () => {
                         tooltip.innerHTML = tooltipContent;
                         tooltip.classList.add('visible');
                         
-                        // Position tooltip
+                        // Position tooltip relative to viewport
                         const rect = e.target.getBoundingClientRect();
-                        const containerRect = content.getBoundingClientRect();
                         
-                        const tooltipRect = tooltip.getBoundingClientRect();
-                        let left = rect.left - containerRect.left + (rect.width / 2) - (tooltipRect.width / 2);
-                        let top = rect.top - containerRect.top - tooltipRect.height - 8;
+                        // Position above the day cell with some margin
+                        let left = rect.left + (rect.width / 2) - 125; // Center tooltip (assuming 250px width)
+                        let top = rect.top - 10; // Position above the cell
                         
-                        // Adjust if tooltip goes outside container
-                        if (left < 0) left = 8;
-                        if (left + tooltipRect.width > containerRect.width) {
-                            left = containerRect.width - tooltipRect.width - 8;
+                        // Adjust if tooltip goes outside viewport
+                        if (left < 10) left = 10;
+                        if (left + 250 > window.innerWidth) {
+                            left = window.innerWidth - 260;
                         }
-                        if (top < 0) {
-                            top = rect.bottom - containerRect.top + 8;
+                        if (top < 10) {
+                            top = rect.bottom + 10; // Position below if no space above
                         }
                         
                         tooltip.style.left = `${left}px`;
@@ -1491,45 +1492,42 @@ const displayCalendar = async () => {
         const updateCalendar = () => {
             content.innerHTML = createCalendarHTML();
             
-            // Re-create tooltip
-            const newTooltip = document.createElement('div');
-            newTooltip.className = 'calendar-tooltip';
-            content.appendChild(newTooltip);
+            // Get the existing body tooltip (don't create a new one)
+            const bodyTooltip = document.body.querySelector('.calendar-tooltip');
             
-            // Re-setup tooltips with new tooltip element
+            // Re-setup tooltips with existing tooltip element
             const eventDays = content.querySelectorAll('.calendar-day.has-events');
             
             eventDays.forEach(day => {
                 day.addEventListener('mouseenter', (e) => {
                     const tooltipContent = e.target.getAttribute('data-tooltip');
                     if (tooltipContent) {
-                        newTooltip.innerHTML = tooltipContent;
-                        newTooltip.classList.add('visible');
+                        bodyTooltip.innerHTML = tooltipContent;
+                        bodyTooltip.classList.add('visible');
                         
-                        // Position tooltip
+                        // Position tooltip relative to viewport
                         const rect = e.target.getBoundingClientRect();
-                        const containerRect = content.getBoundingClientRect();
                         
-                        const tooltipRect = newTooltip.getBoundingClientRect();
-                        let left = rect.left - containerRect.left + (rect.width / 2) - (tooltipRect.width / 2);
-                        let top = rect.top - containerRect.top - tooltipRect.height - 8;
+                        // Position above the day cell with some margin
+                        let left = rect.left + (rect.width / 2) - 125; // Center tooltip (assuming 250px width)
+                        let top = rect.top - 10; // Position above the cell
                         
-                        // Adjust if tooltip goes outside container
-                        if (left < 0) left = 8;
-                        if (left + tooltipRect.width > containerRect.width) {
-                            left = containerRect.width - tooltipRect.width - 8;
+                        // Adjust if tooltip goes outside viewport
+                        if (left < 10) left = 10;
+                        if (left + 250 > window.innerWidth) {
+                            left = window.innerWidth - 260;
                         }
-                        if (top < 0) {
-                            top = rect.bottom - containerRect.top + 8;
+                        if (top < 10) {
+                            top = rect.bottom + 10; // Position below if no space above
                         }
                         
-                        newTooltip.style.left = `${left}px`;
-                        newTooltip.style.top = `${top}px`;
+                        bodyTooltip.style.left = `${left}px`;
+                        bodyTooltip.style.top = `${top}px`;
                     }
                 });
                 
                 day.addEventListener('mouseleave', () => {
-                    newTooltip.classList.remove('visible');
+                    bodyTooltip.classList.remove('visible');
                 });
             });
             

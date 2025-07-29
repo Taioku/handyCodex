@@ -1760,8 +1760,8 @@ select:focus {
 
 /* Tooltip Styles */
 .calendar-tooltip {
-    position: absolute;
-    z-index: 1000;
+    position: fixed;
+    z-index: 9999;
     background: var(--color-panel);
     border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
