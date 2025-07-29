@@ -6,6 +6,7 @@ class MasonryLayout {
         this.gap = options.gap || 24; // Default gap in pixels
         this.columnElements = [];
         this.isInitialized = false;
+        this.lastKnownWidth = 0;
         
         // Bind methods to preserve 'this' context
         this.refresh = this.refresh.bind(this);
@@ -68,7 +69,9 @@ class MasonryLayout {
             // Move all cards back to main container before removing wrapper
             const cards = existing.querySelectorAll('.card:not(.world-cycles-container .card)');
             cards.forEach(card => {
-                this.container.appendChild(card);
+                if (card.parentNode === existing || card.closest('.masonry-column')) {
+                    this.container.appendChild(card);
+                }
             });
             existing.remove();
         }
@@ -78,24 +81,40 @@ class MasonryLayout {
     }
     
     refresh() {
-        if (!this.isInitialized || !this.masonryWrapper) return;
+        if (!this.isInitialized || !this.masonryWrapper) {
+            console.warn('Masonry not initialized or wrapper missing');
+            return;
+        }
         
-        // Get all cards that should be in masonry (not world cycles)
-        const allCards = Array.from(this.container.children).filter(child => 
-            child.classList.contains('card') && 
-            !child.closest('.world-cycles-container')
-        );
-        
-        // Clear columns
-        this.columnElements.forEach(column => {
-            column.innerHTML = '';
-        });
-        
-        // Distribute cards across columns
-        allCards.forEach((card, index) => {
-            const columnIndex = this.getShortestColumn();
-            this.columnElements[columnIndex].appendChild(card);
-        });
+        try {
+            // Get all cards that should be in masonry (not world cycles)
+            const allCards = Array.from(this.container.children).filter(child => 
+                child.classList.contains('card') && 
+                !child.closest('.world-cycles-container')
+            );
+            
+            // Instead of clearing columns with innerHTML, move cards back to main container
+            this.columnElements.forEach(column => {
+                if (column && column.parentNode) {
+                    // Move all cards from this column back to main container
+                    while (column.firstChild) {
+                        this.container.appendChild(column.firstChild);
+                    }
+                }
+            });
+            
+            // Distribute cards across columns
+            allCards.forEach((card, index) => {
+                if (card && card.parentNode === this.container) {
+                    const columnIndex = this.getShortestColumn();
+                    if (this.columnElements[columnIndex]) {
+                        this.columnElements[columnIndex].appendChild(card);
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error in masonry refresh:', error);
+        }
     }
     
     getShortestColumn() {
@@ -131,12 +150,32 @@ class MasonryLayout {
         // Debounce resize events
         clearTimeout(this.resizeTimeout);
         this.resizeTimeout = setTimeout(() => {
-            this.updateColumns();
-            this.refresh();
-        }, 250);
+            try {
+                // Only update columns if the container width actually changed significantly
+                if (!this.container || !this.container.offsetWidth) {
+                    return;
+                }
+                
+                const containerWidth = this.container.offsetWidth;
+                if (this.lastKnownWidth && Math.abs(containerWidth - this.lastKnownWidth) < 50) {
+                    // Width change is too small, skip update
+                    return;
+                }
+                
+                this.lastKnownWidth = containerWidth;
+                this.updateColumns();
+            } catch (error) {
+                console.error('Error in masonry handleResize:', error);
+            }
+        }, 800); // Even longer timeout for stability
     }
     
     updateColumns() {
+        if (!this.container || !this.container.offsetWidth) {
+            console.warn('Container not available for column update');
+            return;
+        }
+        
         const containerWidth = this.container.offsetWidth;
         let newColumns = 5; // Default
         

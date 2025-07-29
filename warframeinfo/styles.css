@@ -158,6 +158,37 @@ body::before {
     width: calc(100% - 280px);
 }
 
+/* Warframe Data Container - Fallback for when masonry fails */
+#warframeData {
+    display: block;
+    width: 100%;
+    min-height: 100px;
+}
+
+/* Ensure cards are always visible */
+#warframeData > .card {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    margin-bottom: var(--spacing-lg) !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+/* Fallback layout when masonry is disabled or fails */
+.masonry-fallback {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: var(--spacing-lg) !important;
+    width: 100% !important;
+}
+
+.masonry-fallback .card {
+    width: 100% !important;
+    max-width: none !important;
+}
+
 /* Menu Toggle Button */
 .menu-toggle {
     position: fixed;
@@ -1862,4 +1893,66 @@ select:focus {
     padding-top: var(--spacing-xs);
     border-top: 1px solid var(--color-accent2);
     opacity: 0.8;
+}
+
+/* Nightwave Challenge Dropdown Styles */
+.nightwave-section {
+    margin-bottom: var(--spacing-md);
+}
+
+.nightwave-toggle {
+    margin-bottom: var(--spacing-sm);
+}
+
+.nightwave-toggle-btn {
+    background: var(--color-bg2);
+    color: var(--color-accent);
+    border: 1px solid var(--color-accent2);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition-fast);
+    width: 100%;
+    text-align: left;
+}
+
+.nightwave-toggle-btn:hover {
+    background: rgba(190, 155, 123, 0.2);
+    color: var(--color-text);
+    border-color: var(--color-accent);
+}
+
+.nightwave-challenges {
+    transition: var(--transition-normal);
+    overflow: hidden;
+}
+
+.nightwave-challenges.hidden {
+    display: none;
+}
+
+.nightwave-challenges ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nightwave-challenges .challenge-title {
+    color: var(--color-text);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.nightwave-challenges .challenge-desc {
+    color: var(--color-text);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.nightwave-challenges .challenge-timer {
+    color: var(--color-text);
+    margin: 0;
+}
+
+.nightwave-challenges .timer {
+    color: var(--color-text);
 }

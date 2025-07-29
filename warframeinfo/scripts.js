@@ -748,18 +748,55 @@ const displayInvasions = (invasions) => {
 const displayNightwave = (nightwaveData) => {
     if (!nightwaveData.active) return null;
     
+    // Separate challenges by type
+    const dailyChallenges = nightwaveData.activeChallenges.filter(challenge => challenge.isDaily);
+    const weeklyChallenges = nightwaveData.activeChallenges.filter(challenge => !challenge.isDaily);
+    
     const content = document.createElement('div');
     content.innerHTML = `
         <p>Season: ${nightwaveData.season} - Phase ${nightwaveData.phase}</p>
-        <ul>
-            ${nightwaveData.activeChallenges.map(challenge => `
-                <li>
-                    <p>${challenge.title} (${challenge.reputation})</p>
-                    <p>${challenge.desc}</p>
-                    <p>Expires in: <span class="timer" data-expiry="${challenge.expiry}"></span></p>
-                </li>
-            `).join('')}
-        </ul>
+        
+        ${dailyChallenges.length > 0 ? `
+            <div class="nightwave-section">
+                <div class="nightwave-toggle">
+                    <button class="nightwave-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Daily Challenges (${dailyChallenges.length})' : '▼ Daily Challenges (${dailyChallenges.length})'">
+                        ▶ Daily Challenges (${dailyChallenges.length})
+                    </button>
+                </div>
+                <div class="nightwave-challenges hidden">
+                    <ul>
+                        ${dailyChallenges.map(challenge => `
+                            <li>
+                                <p class="challenge-title">${challenge.title} - ${challenge.reputation} Standing</p>
+                                <p class="challenge-desc">${challenge.desc}</p>
+                                <p class="challenge-timer">Expires in: <span class="timer" data-expiry="${challenge.expiry}"></span></p>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            </div>
+        ` : ''}
+        
+        ${weeklyChallenges.length > 0 ? `
+            <div class="nightwave-section">
+                <div class="nightwave-toggle">
+                    <button class="nightwave-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Weekly Challenges (${weeklyChallenges.length})' : '▼ Weekly Challenges (${weeklyChallenges.length})'">
+                        ▶ Weekly Challenges (${weeklyChallenges.length})
+                    </button>
+                </div>
+                <div class="nightwave-challenges hidden">
+                    <ul>
+                        ${weeklyChallenges.map(challenge => `
+                            <li>
+                                <p class="challenge-title">${challenge.title} - ${challenge.reputation} Standing</p>
+                                <p class="challenge-desc">${challenge.desc}</p>
+                                <p class="challenge-timer">Expires in: <span class="timer" data-expiry="${challenge.expiry}"></span></p>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            </div>
+        ` : ''}
     `;
     
     const timers = content.querySelectorAll('.timer');
@@ -2026,6 +2063,28 @@ const displayVaultTrader = (vaultTraderData) => {
     
     return createCard('Vault Trader', content);
 };
+
+// Simple layout reload function
+const reloadLayout = () => {
+    try {
+        // Check if masonry layout exists and refresh it
+        if (window.masonryLayout && typeof window.masonryLayout.refresh === 'function') {
+            console.log('Reloading masonry layout...');
+            window.masonryLayout.refresh();
+        } else {
+            console.log('No masonry layout found, triggering window resize event...');
+            // Trigger a resize event to recalculate layouts
+            window.dispatchEvent(new Event('resize'));
+        }
+    } catch (error) {
+        console.error('Error reloading layout:', error);
+        // Fallback: trigger resize event
+        window.dispatchEvent(new Event('resize'));
+    }
+};
+
+// Make reloadLayout globally accessible
+window.reloadLayout = reloadLayout;
 
 const displayArbitration = (arbitrationData) => {
     if (!arbitrationData) return null;
@@ -3361,15 +3420,36 @@ const displayWarframeData = async (platform) => {
 
         // Initialize masonry layout after content is loaded
         setTimeout(() => {
-            if (window.masonryInstance) {
-                window.masonryInstance.destroy();
+            try {
+                // Check if masonry should be enabled (not in dev mode or has issues)
+                const shouldUseMasonry = !window.location.search.includes('no-masonry') && 
+                                       window.MasonryLayout && 
+                                       container.children.length > 0;
+                
+                if (!shouldUseMasonry) {
+                    console.log('Masonry disabled or not available, using fallback layout');
+                    container.style.display = 'block';
+                    return;
+                }
+                
+                if (window.masonryInstance) {
+                    window.masonryInstance.destroy();
+                }
+                
+                window.masonryInstance = new MasonryLayout(container, {
+                    columns: 5,
+                    gap: 24
+                });
+                window.masonryInstance.refresh();
+                
+                console.log('Masonry layout initialized successfully');
+            } catch (error) {
+                console.error('Error initializing masonry layout:', error);
+                // If masonry fails, ensure the container is visible with fallback layout
+                container.style.display = 'block';
+                container.classList.add('masonry-fallback');
             }
-            window.masonryInstance = new MasonryLayout(container, {
-                columns: 5,
-                gap: 24
-            });
-            window.masonryInstance.refresh();
-        }, 100); // Small delay to ensure DOM is fully rendered
+        }, 150); // Slightly longer delay to ensure DOM is fully rendered
 
     } catch (error) {
         console.error('Error in displayWarframeData:', error);
@@ -3395,12 +3475,56 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add window resize handler for masonry
     let resizeTimeout;
+    let isResizing = false;
+    
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
+        isResizing = true;
+        
+        // Hide masonry during resize to prevent flashing
+        const container = document.getElementById('warframeData');
+        if (container) {
+            container.style.transition = 'opacity 0.1s ease';
+            container.style.opacity = '0.7';
+        }
+        
         resizeTimeout = setTimeout(() => {
-            if (window.masonryInstance) {
-                window.masonryInstance.handleResize();
+            try {
+                if (window.masonryInstance && window.masonryInstance.container) {
+                    // Instead of calling handleResize, just refresh the layout
+                    window.masonryInstance.refresh();
+                } else {
+                    // If masonry instance is broken, try to reinitialize
+                    const container = document.getElementById('warframeData');
+                    if (container && container.children.length > 0 && window.MasonryLayout) {
+                        if (window.masonryInstance) {
+                            try {
+                                window.masonryInstance.destroy();
+                            } catch (e) {
+                                console.warn('Error destroying masonry:', e);
+                            }
+                        }
+                        window.masonryInstance = new MasonryLayout(container, {
+                            columns: 5,
+                            gap: 24
+                        });
+                        window.masonryInstance.refresh();
+                    }
+                }
+            } catch (error) {
+                console.error('Error in masonry resize handler:', error);
+                // If all else fails, just show the content without masonry
+                const container = document.getElementById('warframeData');
+                if (container) {
+                    container.style.display = 'block';
+                }
+            } finally {
+                // Restore visibility
+                if (container) {
+                    container.style.opacity = '1';
+                }
+                isResizing = false;
             }
-        }, 250);
+        }, 750); // Longer timeout for stability
     });
 });
