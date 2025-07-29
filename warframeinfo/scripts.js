@@ -533,25 +533,51 @@ const missionTypeFormat = (missionType) => {
     
     // Map mission types to their corresponding Warframe wiki images
     const missionImages = {
-        'survival': '<img src="https://wiki.warframe.com/images/Oxygenpack.png" alt="Survival" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'defense': '<img src="https://wiki.warframe.com/images/thumb/DefenseOnFoot.png/32px-DefenseOnFoot.png" alt="Defense" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'exterminate': '<img src="https://wiki.warframe.com/images/thumb/DmgSlashSmall64.png/32px-DmgSlashSmall64.png" alt="Exterminate" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'capture': '<img src="https://wiki.warframe.com/images/thumb/Capture.png/32px-Capture.png" alt="Capture" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'endlesscapture': '<img src="https://wiki.warframe.com/images/thumb/Capture.png/32px-Endless-Capture.png" alt="Endless Capture" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'rescue': '<img src="https://wiki.warframe.com/images/thumb/Rescue.png/32px-Rescue.png" alt="Rescue" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'sabotage': '<img src="https://wiki.warframe.com/images/thumb/Sabotage.png/32px-Sabotage.png" alt="Sabotage" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'spy': '<img src="https://wiki.warframe.com/images/thumb/Spy.png/32px-Spy.png" alt="Spy" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'mobiledefense': '<img src="https://wiki.warframe.com/images/thumb/MobileDefense.png/32px-MobileDefense.png" alt="Mobile Defense" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'excavation': '<img src="https://wiki.warframe.com/images/thumb/Excavation.png/32px-Excavation.png" alt="Excavation" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'interception': '<img src="https://wiki.warframe.com/images/thumb/Interception.png/32px-Interception.png" alt="Interception" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'assassination': '<img src="https://wiki.warframe.com/images/thumb/Assassination.png/32px-Assassination.png" alt="Assassination" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'disruption': '<img src="https://wiki.warframe.com/images/thumb/Disruption.png/32px-Disruption.png" alt="Disruption" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'defection': '<img src="https://wiki.warframe.com/images/thumb/Defection.png/32px-Defection.png" alt="Defection" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'hijack': '<img src="https://wiki.warframe.com/images/thumb/Hijack.png/32px-Hijack.png" alt="Hijack" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'assault': '<img src="https://wiki.warframe.com/images/thumb/Assault.png/32px-Assault.png" alt="Assault" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'freeroam': '<img src="https://wiki.warframe.com/images/thumb/FreeRoam.png/32px-FreeRoam.png" alt="Free Roam" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'pursuit': '<img src="https://wiki.warframe.com/images/thumb/Pursuit.png/32px-Pursuit.png" alt="Pursuit" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'rush': '<img src="https://wiki.warframe.com/images/thumb/Rush.png/32px-Rush.png" alt="Rush" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">'
+        'alchemy' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'arena' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'ascension' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'assassination' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'assault' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'capture' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'defection' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'defense' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'mirror defense' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'disruption' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'excavation' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'exterminate' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'faceoff' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'free roam' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'bounty' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'heist' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'isolation vault' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'hijack' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'infested salvage' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'interception' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'junction' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'legacyte harvest' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'mobile defense' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'netracells' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'orphix' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'pursuit' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'rescue' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'rush' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'sabotage' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'hive sabotage' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'orokin sabotage' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'reactor sabotage' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'sealab sabotage' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'sanctuary onslaught' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'skirmish' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'shrine defense' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'spy' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'survival' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'kuva survival' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'conjunction survival' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'hell-scrub' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'void armageddon' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'void cascade' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'void flood' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'volatile' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">'
     };
     
     const image = missionImages[type] || '';
@@ -1070,6 +1096,404 @@ const displaySteelPath = (steelPathData) => {
     updateTimer(timer, steelPathData.expiry);
     
     return createCard('Steel Path', content);
+};
+
+const displayCalendar = async () => {
+    const months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    const seasons = ['Winter', 'Winter', 'Winter', 'Spring', 'Spring', 'Spring', 
+                    'Summer', 'Summer', 'Summer', 'Autumn', 'Autumn', 'Autumn'];
+    
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    let currentMonth = 0; // Start at January (0-indexed)
+    const year = 1999;
+    let calendarData = null;
+    
+    // Fetch calendar data from API
+    const fetchCalendarData = async () => {
+        try {
+            // Use the correct calendar endpoint
+            const response = await fetch('https://api.warframestat.us/pc/calendar', {
+                headers: {
+                    'Accept-Language': 'en'
+                },
+                cache: 'no-cache'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Calendar API Response:', data);
+            
+            // Return the calendar data directly
+            if (data && (data.days || Array.isArray(data))) {
+                return data;
+            }
+            
+            // If no valid data, return mock data for demonstration
+            console.log('No valid calendar data found, using mock data');
+            return {
+                days: [
+                    {
+                        day: 5,
+                        events: [
+                            {
+                                type: "To Do",
+                                challenge: {
+                                    title: "Calendar Kill Techrot Enemies With Abilities Easy",
+                                    description: "[PH] Calendar Kill Techrot Enemies With Abilities Easy Desc"
+                                }
+                            }
+                        ],
+                        date: "1999-01-05T00:00:00.000Z"
+                    },
+                    {
+                        day: 8,
+                        events: [
+                            {
+                                type: "Big Prize!",
+                                reward: "Archon Crystal Orange"
+                            },
+                            {
+                                type: "Big Prize!",
+                                reward: "3 Day Mod Drop Chance Booster"
+                            }
+                        ],
+                        date: "1999-01-08T00:00:00.000Z"
+                    },
+                    {
+                        day: 15,
+                        events: [
+                            {
+                                type: "Override",
+                                upgrade: {
+                                    title: "Power Gains",
+                                    description: "Increase Ability Strength +25%.\n+25% Ability Strength"
+                                }
+                            }
+                        ],
+                        date: "1999-01-15T00:00:00.000Z"
+                    }
+                ]
+            };
+        } catch (error) {
+            console.error('Error fetching calendar data:', error);
+            // Return mock data as fallback
+            return {
+                days: [
+                    {
+                        day: 5,
+                        events: [
+                            {
+                                type: "To Do",
+                                challenge: {
+                                    title: "Calendar Kill Techrot Enemies With Abilities Easy",
+                                    description: "[PH] Calendar Kill Techrot Enemies With Abilities Easy Desc"
+                                }
+                            }
+                        ],
+                        date: "1999-01-05T00:00:00.000Z"
+                    },
+                    {
+                        day: 8,
+                        events: [
+                            {
+                                type: "Big Prize!",
+                                reward: "Archon Crystal Orange"
+                            },
+                            {
+                                type: "Big Prize!",
+                                reward: "3 Day Mod Drop Chance Booster"
+                            }
+                        ],
+                        date: "1999-01-08T00:00:00.000Z"
+                    },
+                    {
+                        day: 15,
+                        events: [
+                            {
+                                type: "Override",
+                                upgrade: {
+                                    title: "Power Gains",
+                                    description: "Increase Ability Strength +25%.\n+25% Ability Strength"
+                                }
+                            }
+                        ],
+                        date: "1999-01-15T00:00:00.000Z"
+                    }
+                ]
+            };
+        }
+    };
+    
+    // Initialize calendar data
+    try {
+        calendarData = await fetchCalendarData();
+    } catch (error) {
+        console.error('Failed to load calendar data:', error);
+        calendarData = { days: [] };
+    }
+    
+    const getDaysInMonth = (month, year) => {
+        return new Date(year, month + 1, 0).getDate();
+    };
+    
+    const getFirstDayOfMonth = (month, year) => {
+        return new Date(year, month, 1).getDay();
+    };
+    
+    const getEventsForDay = (day, month) => {
+        if (!calendarData || !calendarData.days) return [];
+        
+        return calendarData.days.filter(dayData => {
+            const eventDate = new Date(dayData.date);
+            return eventDate.getDate() === day && eventDate.getMonth() === month;
+        });
+    };
+    
+    const createTooltipContent = (events) => {
+        if (!events || events.length === 0) return '';
+        
+        const eventData = events[0]; // Get the first matching day data
+        if (!eventData.events || eventData.events.length === 0) return '';
+        
+        const eventDate = new Date(eventData.date);
+        const dateStr = eventDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        let tooltipHTML = `<div class="calendar-tooltip-date">${dateStr}</div>`;
+        
+        eventData.events.forEach(event => {
+            tooltipHTML += '<div class="calendar-tooltip-event">';
+            
+            // Event type
+            const typeClass = event.type.toLowerCase().replace(/[^a-z]/g, '-');
+            tooltipHTML += `<div class="calendar-tooltip-event-type ${typeClass}">${event.type}</div>`;
+            
+            // Event content based on type
+            if (event.challenge) {
+                tooltipHTML += `<div class="calendar-tooltip-title">${event.challenge.title}</div>`;
+                if (event.challenge.description) {
+                    tooltipHTML += `<div class="calendar-tooltip-description">${event.challenge.description}</div>`;
+                }
+            } else if (event.reward) {
+                tooltipHTML += `<div class="calendar-tooltip-reward">🎁 ${event.reward}</div>`;
+            } else if (event.upgrade) {
+                tooltipHTML += `<div class="calendar-tooltip-title">${event.upgrade.title}</div>`;
+                if (event.upgrade.description) {
+                    tooltipHTML += `<div class="calendar-tooltip-description">${event.upgrade.description}</div>`;
+                }
+            }
+            
+            tooltipHTML += '</div>';
+        });
+        
+        return tooltipHTML;
+    };
+    
+    const createCalendarHTML = () => {
+        const daysInMonth = getDaysInMonth(currentMonth, year);
+        const firstDay = getFirstDayOfMonth(currentMonth, year);
+        const season = seasons[currentMonth];
+        
+        // Create day headers
+        const dayHeaders = dayNames.map(day => 
+            `<div class="calendar-day-header">${day}</div>`
+        ).join('');
+        
+        // Create calendar days
+        let calendarDays = '';
+        
+        // Previous month's trailing days
+        const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        const prevYear = currentMonth === 0 ? year - 1 : year;
+        const daysInPrevMonth = getDaysInMonth(prevMonth, prevYear);
+        
+        for (let i = firstDay - 1; i >= 0; i--) {
+            const day = daysInPrevMonth - i;
+            calendarDays += `<div class="calendar-day other-month">${day}</div>`;
+        }
+        
+        // Current month days
+        const today = 15; // Fixed "today" as the 15th for demo
+        for (let day = 1; day <= daysInMonth; day++) {
+            const isToday = day === today;
+            const events = getEventsForDay(day, currentMonth);
+            const hasEvents = events.length > 0;
+            
+            let dayClasses = 'calendar-day';
+            if (isToday) dayClasses += ' today';
+            if (hasEvents) dayClasses += ' has-events';
+            
+            const tooltipContent = hasEvents ? createTooltipContent(events) : '';
+            const tooltipAttr = tooltipContent ? `data-tooltip='${tooltipContent.replace(/'/g, "&#39;")}'` : '';
+            
+            calendarDays += `<div class="${dayClasses}" data-day="${day}" ${tooltipAttr}>${day}</div>`;
+        }
+        
+        // Next month's leading days
+        const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+        const remainingCells = totalCells - (firstDay + daysInMonth);
+        
+        for (let day = 1; day <= remainingCells; day++) {
+            calendarDays += `<div class="calendar-day other-month">${day}</div>`;
+        }
+        
+        return `
+            <div class="calendar-header">
+                <div class="calendar-year-season">${year} - ${season}</div>
+                <div class="calendar-nav">
+                    <button class="calendar-prev">‹</button>
+                    <button class="calendar-next">›</button>
+                </div>
+            </div>
+            <div class="calendar-month">${months[currentMonth]}</div>
+            <div class="calendar-grid">
+                ${dayHeaders}
+                ${calendarDays}
+            </div>
+            <div class="calendar-info">Navigate: ‹ › arrows | Hover for events</div>
+        `;
+    };
+    
+    const content = document.createElement('div');
+    content.className = 'calendar-content';
+    content.style.position = 'relative'; // For tooltip positioning
+    content.innerHTML = createCalendarHTML();
+    
+    // Create tooltip element
+    const tooltip = document.createElement('div');
+    tooltip.className = 'calendar-tooltip';
+    content.appendChild(tooltip);
+    
+    const setupTooltips = () => {
+        const eventDays = content.querySelectorAll('.calendar-day.has-events');
+        
+        eventDays.forEach(day => {
+            day.addEventListener('mouseenter', (e) => {
+                const tooltipContent = e.target.getAttribute('data-tooltip');
+                if (tooltipContent) {
+                    tooltip.innerHTML = tooltipContent;
+                    tooltip.classList.add('visible');
+                    
+                    // Position tooltip
+                    const rect = e.target.getBoundingClientRect();
+                    const containerRect = content.getBoundingClientRect();
+                    
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    let left = rect.left - containerRect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                    let top = rect.top - containerRect.top - tooltipRect.height - 8;
+                    
+                    // Adjust if tooltip goes outside container
+                    if (left < 0) left = 8;
+                    if (left + tooltipRect.width > containerRect.width) {
+                        left = containerRect.width - tooltipRect.width - 8;
+                    }
+                    if (top < 0) {
+                        top = rect.bottom - containerRect.top + 8;
+                    }
+                    
+                    tooltip.style.left = `${left}px`;
+                    tooltip.style.top = `${top}px`;
+                }
+            });
+            
+            day.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('visible');
+            });
+        });
+    };
+    
+    // Add navigation event listeners
+    const prevButton = content.querySelector('.calendar-prev');
+    const nextButton = content.querySelector('.calendar-next');
+    
+    const updateCalendar = () => {
+        content.innerHTML = createCalendarHTML();
+        
+        // Re-create tooltip
+        const newTooltip = document.createElement('div');
+        newTooltip.className = 'calendar-tooltip';
+        content.appendChild(newTooltip);
+        
+        // Re-setup tooltips with new tooltip element
+        const eventDays = content.querySelectorAll('.calendar-day.has-events');
+        
+        eventDays.forEach(day => {
+            day.addEventListener('mouseenter', (e) => {
+                const tooltipContent = e.target.getAttribute('data-tooltip');
+                if (tooltipContent) {
+                    newTooltip.innerHTML = tooltipContent;
+                    newTooltip.classList.add('visible');
+                    
+                    // Position tooltip
+                    const rect = e.target.getBoundingClientRect();
+                    const containerRect = content.getBoundingClientRect();
+                    
+                    const tooltipRect = newTooltip.getBoundingClientRect();
+                    let left = rect.left - containerRect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                    let top = rect.top - containerRect.top - tooltipRect.height - 8;
+                    
+                    // Adjust if tooltip goes outside container
+                    if (left < 0) left = 8;
+                    if (left + tooltipRect.width > containerRect.width) {
+                        left = containerRect.width - tooltipRect.width - 8;
+                    }
+                    if (top < 0) {
+                        top = rect.bottom - containerRect.top + 8;
+                    }
+                    
+                    newTooltip.style.left = `${left}px`;
+                    newTooltip.style.top = `${top}px`;
+                }
+            });
+            
+            day.addEventListener('mouseleave', () => {
+                newTooltip.classList.remove('visible');
+            });
+        });
+        
+        // Re-attach event listeners after DOM update
+        const newPrevButton = content.querySelector('.calendar-prev');
+        const newNextButton = content.querySelector('.calendar-next');
+        
+        newPrevButton.addEventListener('click', () => {
+            currentMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            updateCalendar();
+        });
+        
+        newNextButton.addEventListener('click', () => {
+            currentMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+            updateCalendar();
+        });
+    };
+    
+    // Setup initial tooltips
+    setupTooltips();
+    
+    prevButton.addEventListener('click', () => {
+        currentMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        updateCalendar();
+    });
+    
+    nextButton.addEventListener('click', () => {
+        currentMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+        updateCalendar();
+    });
+    
+    const card = createCard('Calendar', content);
+    card.classList.add('calendar-card');
+    return card;
 };
 
 const displayVaultTrader = (vaultTraderData) => {
@@ -2655,6 +3079,10 @@ const displayWarframeData = async (platform) => {
         
         // Only add container if it has the daily reset timer (it will always have this)
         container.appendChild(worldCyclesContainer);
+        
+        // Add the 1999 calendar
+        const calendarCard = await displayCalendar();
+        if (calendarCard) container.appendChild(calendarCard);
         
         if (data.sortie) {
             const sortieCard = displaySortieInfo(data.sortie);
