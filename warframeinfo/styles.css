@@ -1835,6 +1835,26 @@ select:focus {
     line-height: 1.4;
 }
 
+.calendar-tooltip-timing {
+    font-size: 0.7rem;
+    color: var(--color-text-accent);
+    font-style: italic;
+    margin-top: var(--spacing-xs);
+    opacity: 0.8;
+}
+
+.calendar-tooltip-event-type.alert {
+    color: #ff6b35;
+}
+
+.calendar-tooltip-event-type.invasion {
+    color: #e91e63;
+}
+
+.calendar-tooltip-event-type.task {
+    color: var(--warning-color);
+}
+
 .calendar-info {
     font-size: 0.75rem;
     color: var(--color-text-accent);

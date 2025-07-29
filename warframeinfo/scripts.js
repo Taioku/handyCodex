@@ -1099,401 +1099,483 @@ const displaySteelPath = (steelPathData) => {
 };
 
 const displayCalendar = async () => {
-    const months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    
-    const seasons = ['Winter', 'Winter', 'Winter', 'Spring', 'Spring', 'Spring', 
-                    'Summer', 'Summer', 'Summer', 'Autumn', 'Autumn', 'Autumn'];
-    
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    
-    let currentMonth = 0; // Start at January (0-indexed)
-    const year = 1999;
-    let calendarData = null;
-    
-    // Fetch calendar data from API
-    const fetchCalendarData = async () => {
-        try {
-            // Use the correct calendar endpoint
-            const response = await fetch('https://api.warframestat.us/pc/calendar', {
-                headers: {
-                    'Accept-Language': 'en'
-                },
-                cache: 'no-cache'
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log('Calendar API Response:', data);
-            
-            // Return the calendar data directly
-            if (data && (data.days || Array.isArray(data))) {
-                return data;
-            }
-            
-            // If no valid data, return mock data for demonstration
-            console.log('No valid calendar data found, using mock data');
-            return {
-                days: [
-                    {
-                        day: 5,
-                        events: [
-                            {
-                                type: "To Do",
-                                challenge: {
-                                    title: "Calendar Kill Techrot Enemies With Abilities Easy",
-                                    description: "[PH] Calendar Kill Techrot Enemies With Abilities Easy Desc"
-                                }
-                            }
-                        ],
-                        date: "1999-01-05T00:00:00.000Z"
-                    },
-                    {
-                        day: 8,
-                        events: [
-                            {
-                                type: "Big Prize!",
-                                reward: "Archon Crystal Orange"
-                            },
-                            {
-                                type: "Big Prize!",
-                                reward: "3 Day Mod Drop Chance Booster"
-                            }
-                        ],
-                        date: "1999-01-08T00:00:00.000Z"
-                    },
-                    {
-                        day: 15,
-                        events: [
-                            {
-                                type: "Override",
-                                upgrade: {
-                                    title: "Power Gains",
-                                    description: "Increase Ability Strength +25%.\n+25% Ability Strength"
-                                }
-                            }
-                        ],
-                        date: "1999-01-15T00:00:00.000Z"
-                    }
-                ]
-            };
-        } catch (error) {
-            console.error('Error fetching calendar data:', error);
-            // Return mock data as fallback
-            return {
-                days: [
-                    {
-                        day: 5,
-                        events: [
-                            {
-                                type: "To Do",
-                                challenge: {
-                                    title: "Calendar Kill Techrot Enemies With Abilities Easy",
-                                    description: "[PH] Calendar Kill Techrot Enemies With Abilities Easy Desc"
-                                }
-                            }
-                        ],
-                        date: "1999-01-05T00:00:00.000Z"
-                    },
-                    {
-                        day: 8,
-                        events: [
-                            {
-                                type: "Big Prize!",
-                                reward: "Archon Crystal Orange"
-                            },
-                            {
-                                type: "Big Prize!",
-                                reward: "3 Day Mod Drop Chance Booster"
-                            }
-                        ],
-                        date: "1999-01-08T00:00:00.000Z"
-                    },
-                    {
-                        day: 15,
-                        events: [
-                            {
-                                type: "Override",
-                                upgrade: {
-                                    title: "Power Gains",
-                                    description: "Increase Ability Strength +25%.\n+25% Ability Strength"
-                                }
-                            }
-                        ],
-                        date: "1999-01-15T00:00:00.000Z"
-                    }
-                ]
-            };
-        }
-    };
-    
-    // Initialize calendar data
     try {
-        calendarData = await fetchCalendarData();
-    } catch (error) {
-        console.error('Failed to load calendar data:', error);
-        calendarData = { days: [] };
-    }
-    
-    const getDaysInMonth = (month, year) => {
-        return new Date(year, month + 1, 0).getDate();
-    };
-    
-    const getFirstDayOfMonth = (month, year) => {
-        return new Date(year, month, 1).getDay();
-    };
-    
-    const getEventsForDay = (day, month) => {
-        if (!calendarData || !calendarData.days) return [];
+        const months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
         
-        return calendarData.days.filter(dayData => {
-            const eventDate = new Date(dayData.date);
-            return eventDate.getDate() === day && eventDate.getMonth() === month;
-        });
-    };
-    
-    const createTooltipContent = (events) => {
-        if (!events || events.length === 0) return '';
+        const seasons = ['Winter', 'Winter', 'Winter', 'Spring', 'Spring', 'Spring', 
+                        'Summer', 'Summer', 'Summer', 'Autumn', 'Autumn', 'Autumn'];
         
-        const eventData = events[0]; // Get the first matching day data
-        if (!eventData.events || eventData.events.length === 0) return '';
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         
-        const eventDate = new Date(eventData.date);
-        const dateStr = eventDate.toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-        });
+        let currentMonth = 0; // Will be set to first month with events
+        const year = 1999;
+        let calendarData = null;
         
-        let tooltipHTML = `<div class="calendar-tooltip-date">${dateStr}</div>`;
-        
-        eventData.events.forEach(event => {
-            tooltipHTML += '<div class="calendar-tooltip-event">';
-            
-            // Event type
-            const typeClass = event.type.toLowerCase().replace(/[^a-z]/g, '-');
-            tooltipHTML += `<div class="calendar-tooltip-event-type ${typeClass}">${event.type}</div>`;
-            
-            // Event content based on type
-            if (event.challenge) {
-                tooltipHTML += `<div class="calendar-tooltip-title">${event.challenge.title}</div>`;
-                if (event.challenge.description) {
-                    tooltipHTML += `<div class="calendar-tooltip-description">${event.challenge.description}</div>`;
-                }
-            } else if (event.reward) {
-                tooltipHTML += `<div class="calendar-tooltip-reward">🎁 ${event.reward}</div>`;
-            } else if (event.upgrade) {
-                tooltipHTML += `<div class="calendar-tooltip-title">${event.upgrade.title}</div>`;
-                if (event.upgrade.description) {
-                    tooltipHTML += `<div class="calendar-tooltip-description">${event.upgrade.description}</div>`;
-                }
+        // Function to find the first month with events
+        const findFirstMonthWithEvents = (data) => {
+            if (!data || !data.days || !Array.isArray(data.days)) {
+                return 0; // Default to January if no data
             }
             
-            tooltipHTML += '</div>';
-        });
-        
-        return tooltipHTML;
-    };
-    
-    const createCalendarHTML = () => {
-        const daysInMonth = getDaysInMonth(currentMonth, year);
-        const firstDay = getFirstDayOfMonth(currentMonth, year);
-        const season = seasons[currentMonth];
-        
-        // Create day headers
-        const dayHeaders = dayNames.map(day => 
-            `<div class="calendar-day-header">${day}</div>`
-        ).join('');
-        
-        // Create calendar days
-        let calendarDays = '';
-        
-        // Previous month's trailing days
-        const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-        const prevYear = currentMonth === 0 ? year - 1 : year;
-        const daysInPrevMonth = getDaysInMonth(prevMonth, prevYear);
-        
-        for (let i = firstDay - 1; i >= 0; i--) {
-            const day = daysInPrevMonth - i;
-            calendarDays += `<div class="calendar-day other-month">${day}</div>`;
-        }
-        
-        // Current month days
-        const today = 15; // Fixed "today" as the 15th for demo
-        for (let day = 1; day <= daysInMonth; day++) {
-            const isToday = day === today;
-            const events = getEventsForDay(day, currentMonth);
-            const hasEvents = events.length > 0;
+            const monthsWithEvents = new Set();
             
-            let dayClasses = 'calendar-day';
-            if (isToday) dayClasses += ' today';
-            if (hasEvents) dayClasses += ' has-events';
-            
-            const tooltipContent = hasEvents ? createTooltipContent(events) : '';
-            const tooltipAttr = tooltipContent ? `data-tooltip='${tooltipContent.replace(/'/g, "&#39;")}'` : '';
-            
-            calendarDays += `<div class="${dayClasses}" data-day="${day}" ${tooltipAttr}>${day}</div>`;
-        }
-        
-        // Next month's leading days
-        const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-        const remainingCells = totalCells - (firstDay + daysInMonth);
-        
-        for (let day = 1; day <= remainingCells; day++) {
-            calendarDays += `<div class="calendar-day other-month">${day}</div>`;
-        }
-        
-        return `
-            <div class="calendar-header">
-                <div class="calendar-year-season">${year} - ${season}</div>
-                <div class="calendar-nav">
-                    <button class="calendar-prev">‹</button>
-                    <button class="calendar-next">›</button>
-                </div>
-            </div>
-            <div class="calendar-month">${months[currentMonth]}</div>
-            <div class="calendar-grid">
-                ${dayHeaders}
-                ${calendarDays}
-            </div>
-            <div class="calendar-info">Navigate: ‹ › arrows | Hover for events</div>
-        `;
-    };
-    
-    const content = document.createElement('div');
-    content.className = 'calendar-content';
-    content.style.position = 'relative'; // For tooltip positioning
-    content.innerHTML = createCalendarHTML();
-    
-    // Create tooltip element
-    const tooltip = document.createElement('div');
-    tooltip.className = 'calendar-tooltip';
-    content.appendChild(tooltip);
-    
-    const setupTooltips = () => {
-        const eventDays = content.querySelectorAll('.calendar-day.has-events');
-        
-        eventDays.forEach(day => {
-            day.addEventListener('mouseenter', (e) => {
-                const tooltipContent = e.target.getAttribute('data-tooltip');
-                if (tooltipContent) {
-                    tooltip.innerHTML = tooltipContent;
-                    tooltip.classList.add('visible');
-                    
-                    // Position tooltip
-                    const rect = e.target.getBoundingClientRect();
-                    const containerRect = content.getBoundingClientRect();
-                    
-                    const tooltipRect = tooltip.getBoundingClientRect();
-                    let left = rect.left - containerRect.left + (rect.width / 2) - (tooltipRect.width / 2);
-                    let top = rect.top - containerRect.top - tooltipRect.height - 8;
-                    
-                    // Adjust if tooltip goes outside container
-                    if (left < 0) left = 8;
-                    if (left + tooltipRect.width > containerRect.width) {
-                        left = containerRect.width - tooltipRect.width - 8;
-                    }
-                    if (top < 0) {
-                        top = rect.bottom - containerRect.top + 8;
-                    }
-                    
-                    tooltip.style.left = `${left}px`;
-                    tooltip.style.top = `${top}px`;
+            data.days.forEach(dayData => {
+                if (dayData.events && dayData.events.length > 0) {
+                    const eventDate = new Date(dayData.date);
+                    const eventMonth = eventDate.getUTCMonth();
+                    monthsWithEvents.add(eventMonth);
                 }
             });
             
-            day.addEventListener('mouseleave', () => {
-                tooltip.classList.remove('visible');
+            // Convert to sorted array and return the first month
+            const sortedMonths = Array.from(monthsWithEvents).sort((a, b) => a - b);
+            return sortedMonths.length > 0 ? sortedMonths[0] : 0;
+        };
+        
+        // Function to fetch API data with fallback to mock data
+        const fetchCalendarData = async () => {
+            try {
+                const response = await fetch('https://api.warframestat.us/pc/calendar', {
+                    headers: {
+                        'Accept-Language': 'en'
+                    },
+                    cache: 'no-cache'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // The API returns an array with a single object containing the days
+                if (Array.isArray(data) && data.length > 0) {
+                    const calendarObj = data[0];
+                    if (calendarObj && calendarObj.days && Array.isArray(calendarObj.days)) {
+                        return { days: calendarObj.days };
+                    }
+                }
+                
+                // Check if we have valid calendar data in other formats
+                if (data && data.days && Array.isArray(data.days) && data.days.length > 0) {
+                    return data;
+                }
+                
+                // If no valid data, return mock data
+                console.log('No valid calendar data found, using mock data');
+                return getMockCalendarData();
+            } catch (error) {
+                console.error('Error fetching calendar data:', error);
+                return getMockCalendarData();
+            }
+        };
+        
+        // Mock data function for fallback
+        const getMockCalendarData = () => {
+            return {
+                days: [
+                    {
+                        day: 5,
+                        events: [
+                            {
+                                type: "To Do",
+                                challenge: {
+                                    title: "Calendar Kill Techrot Enemies With Abilities Easy",
+                                    description: "[PH] Calendar Kill Techrot Enemies With Abilities Easy Desc"
+                                }
+                            }
+                        ],
+                        date: "1999-01-05T00:00:00.000Z"
+                    },
+                    {
+                        day: 8,
+                        events: [
+                            {
+                                type: "Big Prize!",
+                                reward: "Archon Crystal Orange"
+                            },
+                            {
+                                type: "Big Prize!",
+                                reward: "3 Day Mod Drop Chance Booster"
+                            }
+                        ],
+                        date: "1999-01-08T00:00:00.000Z"
+                    },
+                    {
+                        day: 15,
+                        events: [
+                            {
+                                type: "Override",
+                                upgrade: {
+                                    title: "Power Gains",
+                                    description: "Increase Ability Strength +25%.\n+25% Ability Strength"
+                                }
+                            }
+                        ],
+                        date: "1999-01-15T00:00:00.000Z"
+                    }
+                ]
+            };
+        };
+        
+        // Initialize calendar data from API
+        calendarData = await fetchCalendarData();
+        
+        // Set the starting month to the first month with events
+        currentMonth = findFirstMonthWithEvents(calendarData);
+        
+        const getDaysInMonth = (month, year) => {
+            return new Date(year, month + 1, 0).getDate();
+        };
+        
+        const getFirstDayOfMonth = (month, year) => {
+            return new Date(year, month, 1).getDay();
+        };
+        
+        const getEventsForDay = (day, month) => {
+            if (!calendarData || !calendarData.days) {
+                return [];
+            }
+            
+            const events = calendarData.days.filter(dayData => {
+                // Parse the date from the API
+                const eventDate = new Date(dayData.date);
+                
+                // Extract day and month from the parsed date
+                const eventDay = eventDate.getUTCDate();
+                const eventMonth = eventDate.getUTCMonth();
+                
+                // Match against the requested day and month
+                const matches = eventDay === day && eventMonth === month;
+                
+                // Debug logging for first few days
+                if ((day <= 10 && month === 0) || (day === 5 && month === 0)) {
+                    console.log(`Checking day ${day} month ${month}:`, {
+                        dayData,
+                        eventDateISO: eventDate.toISOString(),
+                        eventDateUTC: eventDate.toUTCString(),
+                        requestedDay: day,
+                        requestedMonth: month,
+                        eventDay,
+                        eventMonth,
+                        matches,
+                        hasEvents: dayData.events && dayData.events.length > 0
+                    });
+                }
+                
+                return matches;
             });
-        });
-    };
-    
-    // Add navigation event listeners
-    const prevButton = content.querySelector('.calendar-prev');
-    const nextButton = content.querySelector('.calendar-next');
-    
-    const updateCalendar = () => {
+            
+            return events;
+        };
+        
+        const createTooltipContent = (events) => {
+            if (!events || events.length === 0) return '';
+            
+            const eventData = events[0]; // Get the first matching day data
+            if (!eventData.events || eventData.events.length === 0) return '';
+            
+            const eventDate = new Date(eventData.date);
+            const dateStr = eventDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let tooltipHTML = `<div class="calendar-tooltip-date">${dateStr}</div>`;
+            
+            eventData.events.forEach(event => {
+                tooltipHTML += '<div class="calendar-tooltip-event">';
+                
+                // Event type - normalize to match CSS classes and handle real API data
+                let typeClass = '';
+                const eventType = event.type || event.eventType || 'Unknown';
+                
+                if (eventType.toLowerCase().includes('to do') || eventType.toLowerCase().includes('task')) {
+                    typeClass = 'todo';
+                } else if (eventType.toLowerCase().includes('big prize') || eventType.toLowerCase().includes('reward')) {
+                    typeClass = 'big-prize';
+                } else if (eventType.toLowerCase().includes('override') || eventType.toLowerCase().includes('modifier')) {
+                    typeClass = 'override';
+                } else if (eventType.toLowerCase().includes('alert')) {
+                    typeClass = 'alert';
+                } else if (eventType.toLowerCase().includes('invasion')) {
+                    typeClass = 'invasion';
+                } else {
+                    typeClass = eventType.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                }
+                
+                tooltipHTML += `<div class="calendar-tooltip-event-type ${typeClass}">${eventType}</div>`;
+                
+                // Event content based on type and available data
+                if (event.challenge) {
+                    tooltipHTML += `<div class="calendar-tooltip-title">${event.challenge.title || event.challenge.name || 'Challenge'}</div>`;
+                    if (event.challenge.description) {
+                        tooltipHTML += `<div class="calendar-tooltip-description">${event.challenge.description}</div>`;
+                    }
+                } else if (event.reward) {
+                    if (typeof event.reward === 'string') {
+                        tooltipHTML += `<div class="calendar-tooltip-reward">🎁 ${event.reward}</div>`;
+                    } else if (event.reward.item || event.reward.name) {
+                        tooltipHTML += `<div class="calendar-tooltip-reward">🎁 ${event.reward.item || event.reward.name}</div>`;
+                        if (event.reward.quantity) {
+                            tooltipHTML += `<div class="calendar-tooltip-description">Quantity: ${event.reward.quantity}</div>`;
+                        }
+                    }
+                } else if (event.upgrade) {
+                    tooltipHTML += `<div class="calendar-tooltip-title">${event.upgrade.title || event.upgrade.name || 'Upgrade'}</div>`;
+                    if (event.upgrade.description) {
+                        tooltipHTML += `<div class="calendar-tooltip-description">${event.upgrade.description}</div>`;
+                    }
+                } else if (event.mission) {
+                    tooltipHTML += `<div class="calendar-tooltip-title">${event.mission.node || event.mission.location || 'Mission'}</div>`;
+                    if (event.mission.type) {
+                        tooltipHTML += `<div class="calendar-tooltip-description">Type: ${event.mission.type}</div>`;
+                    }
+                    if (event.mission.faction) {
+                        tooltipHTML += `<div class="calendar-tooltip-description">Faction: ${event.mission.faction}</div>`;
+                    }
+                } else if (event.description) {
+                    tooltipHTML += `<div class="calendar-tooltip-description">${event.description}</div>`;
+                } else if (event.title || event.name) {
+                    tooltipHTML += `<div class="calendar-tooltip-title">${event.title || event.name}</div>`;
+                }
+                
+                // Add timing information if available
+                if (event.startTime || event.endTime) {
+                    tooltipHTML += '<div class="calendar-tooltip-timing">';
+                    if (event.startTime) {
+                        const startTime = new Date(event.startTime).toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        });
+                        tooltipHTML += `Start: ${startTime}`;
+                    }
+                    if (event.endTime) {
+                        const endTime = new Date(event.endTime).toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        });
+                        if (event.startTime) tooltipHTML += ' | ';
+                        tooltipHTML += `End: ${endTime}`;
+                    }
+                    tooltipHTML += '</div>';
+                }
+                
+                tooltipHTML += '</div>';
+            });
+            
+            return tooltipHTML;
+        };
+        
+        const createCalendarHTML = () => {
+            const daysInMonth = getDaysInMonth(currentMonth, year);
+            const firstDay = getFirstDayOfMonth(currentMonth, year);
+            const season = seasons[currentMonth];
+            
+            // Create day headers
+            const dayHeaders = dayNames.map(day => 
+                `<div class="calendar-day-header">${day}</div>`
+            ).join('');
+            
+            // Create calendar days
+            let calendarDays = '';
+            
+            // Previous month's trailing days
+            const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const prevYear = currentMonth === 0 ? year - 1 : year;
+            const daysInPrevMonth = getDaysInMonth(prevMonth, prevYear);
+            
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                calendarDays += `<div class="calendar-day other-month">${day}</div>`;
+            }
+            
+            // Current month days
+            const today = 15; // Fixed "today" as the 15th for demo
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const isToday = day === today;
+                const events = getEventsForDay(day, currentMonth);
+                const hasEvents = events.length > 0;
+                
+                let dayClasses = 'calendar-day';
+                if (isToday) dayClasses += ' today';
+                if (hasEvents) dayClasses += ' has-events';
+                
+                const tooltipContent = hasEvents ? createTooltipContent(events) : '';
+                const tooltipAttr = tooltipContent ? `data-tooltip='${tooltipContent.replace(/'/g, "&#39;")}'` : '';
+                
+                calendarDays += `<div class="${dayClasses}" data-day="${day}" ${tooltipAttr}>${day}</div>`;
+            }
+            
+            // Next month's leading days
+            const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+            const remainingCells = totalCells - (firstDay + daysInMonth);
+            
+            for (let day = 1; day <= remainingCells; day++) {
+                calendarDays += `<div class="calendar-day other-month">${day}</div>`;
+            }
+            
+            return `
+                <div class="calendar-header">
+                    <div class="calendar-year-season">${year} - ${season}</div>
+                    <div class="calendar-nav">
+                        <button class="calendar-prev">‹</button>
+                        <button class="calendar-next">›</button>
+                    </div>
+                </div>
+                <div class="calendar-month">${months[currentMonth]}</div>
+                <div class="calendar-grid">
+                    ${dayHeaders}
+                    ${calendarDays}
+                </div>
+                <div class="calendar-info">Navigate: ‹ › arrows | Hover for events</div>
+            `;
+        };
+        
+        const content = document.createElement('div');
+        content.className = 'calendar-content';
+        content.style.position = 'relative'; // For tooltip positioning
         content.innerHTML = createCalendarHTML();
         
-        // Re-create tooltip
-        const newTooltip = document.createElement('div');
-        newTooltip.className = 'calendar-tooltip';
-        content.appendChild(newTooltip);
+        // Create tooltip element
+        const tooltip = document.createElement('div');
+        tooltip.className = 'calendar-tooltip';
+        content.appendChild(tooltip);
         
-        // Re-setup tooltips with new tooltip element
-        const eventDays = content.querySelectorAll('.calendar-day.has-events');
+        const setupTooltips = () => {
+            const eventDays = content.querySelectorAll('.calendar-day.has-events');
+            
+            eventDays.forEach((day) => {
+                day.addEventListener('mouseenter', (e) => {
+                    const tooltipContent = e.target.getAttribute('data-tooltip');
+                    
+                    if (tooltipContent) {
+                        tooltip.innerHTML = tooltipContent;
+                        tooltip.classList.add('visible');
+                        
+                        // Position tooltip
+                        const rect = e.target.getBoundingClientRect();
+                        const containerRect = content.getBoundingClientRect();
+                        
+                        const tooltipRect = tooltip.getBoundingClientRect();
+                        let left = rect.left - containerRect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                        let top = rect.top - containerRect.top - tooltipRect.height - 8;
+                        
+                        // Adjust if tooltip goes outside container
+                        if (left < 0) left = 8;
+                        if (left + tooltipRect.width > containerRect.width) {
+                            left = containerRect.width - tooltipRect.width - 8;
+                        }
+                        if (top < 0) {
+                            top = rect.bottom - containerRect.top + 8;
+                        }
+                        
+                        tooltip.style.left = `${left}px`;
+                        tooltip.style.top = `${top}px`;
+                    }
+                });
+                
+                day.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('visible');
+                });
+            });
+        };
         
-        eventDays.forEach(day => {
-            day.addEventListener('mouseenter', (e) => {
-                const tooltipContent = e.target.getAttribute('data-tooltip');
-                if (tooltipContent) {
-                    newTooltip.innerHTML = tooltipContent;
-                    newTooltip.classList.add('visible');
-                    
-                    // Position tooltip
-                    const rect = e.target.getBoundingClientRect();
-                    const containerRect = content.getBoundingClientRect();
-                    
-                    const tooltipRect = newTooltip.getBoundingClientRect();
-                    let left = rect.left - containerRect.left + (rect.width / 2) - (tooltipRect.width / 2);
-                    let top = rect.top - containerRect.top - tooltipRect.height - 8;
-                    
-                    // Adjust if tooltip goes outside container
-                    if (left < 0) left = 8;
-                    if (left + tooltipRect.width > containerRect.width) {
-                        left = containerRect.width - tooltipRect.width - 8;
+        // Navigation functionality
+        const updateCalendar = () => {
+            content.innerHTML = createCalendarHTML();
+            
+            // Re-create tooltip
+            const newTooltip = document.createElement('div');
+            newTooltip.className = 'calendar-tooltip';
+            content.appendChild(newTooltip);
+            
+            // Re-setup tooltips with new tooltip element
+            const eventDays = content.querySelectorAll('.calendar-day.has-events');
+            
+            eventDays.forEach(day => {
+                day.addEventListener('mouseenter', (e) => {
+                    const tooltipContent = e.target.getAttribute('data-tooltip');
+                    if (tooltipContent) {
+                        newTooltip.innerHTML = tooltipContent;
+                        newTooltip.classList.add('visible');
+                        
+                        // Position tooltip
+                        const rect = e.target.getBoundingClientRect();
+                        const containerRect = content.getBoundingClientRect();
+                        
+                        const tooltipRect = newTooltip.getBoundingClientRect();
+                        let left = rect.left - containerRect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                        let top = rect.top - containerRect.top - tooltipRect.height - 8;
+                        
+                        // Adjust if tooltip goes outside container
+                        if (left < 0) left = 8;
+                        if (left + tooltipRect.width > containerRect.width) {
+                            left = containerRect.width - tooltipRect.width - 8;
+                        }
+                        if (top < 0) {
+                            top = rect.bottom - containerRect.top + 8;
+                        }
+                        
+                        newTooltip.style.left = `${left}px`;
+                        newTooltip.style.top = `${top}px`;
                     }
-                    if (top < 0) {
-                        top = rect.bottom - containerRect.top + 8;
-                    }
-                    
-                    newTooltip.style.left = `${left}px`;
-                    newTooltip.style.top = `${top}px`;
-                }
+                });
+                
+                day.addEventListener('mouseleave', () => {
+                    newTooltip.classList.remove('visible');
+                });
             });
             
-            day.addEventListener('mouseleave', () => {
-                newTooltip.classList.remove('visible');
+            // Re-attach navigation event listeners after DOM update
+            const newPrevButton = content.querySelector('.calendar-prev');
+            const newNextButton = content.querySelector('.calendar-next');
+            
+            newPrevButton.addEventListener('click', () => {
+                currentMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+                updateCalendar();
             });
-        });
+            
+            newNextButton.addEventListener('click', () => {
+                currentMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+                updateCalendar();
+            });
+        };
         
-        // Re-attach event listeners after DOM update
-        const newPrevButton = content.querySelector('.calendar-prev');
-        const newNextButton = content.querySelector('.calendar-next');
+        // Setup initial tooltips
+        setupTooltips();
         
-        newPrevButton.addEventListener('click', () => {
+        // Initial navigation setup
+        const prevButton = content.querySelector('.calendar-prev');
+        const nextButton = content.querySelector('.calendar-next');
+        
+        prevButton.addEventListener('click', () => {
             currentMonth = currentMonth === 0 ? 11 : currentMonth - 1;
             updateCalendar();
         });
         
-        newNextButton.addEventListener('click', () => {
+        nextButton.addEventListener('click', () => {
             currentMonth = currentMonth === 11 ? 0 : currentMonth + 1;
             updateCalendar();
         });
-    };
-    
-    // Setup initial tooltips
-    setupTooltips();
-    
-    prevButton.addEventListener('click', () => {
-        currentMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-        updateCalendar();
-    });
-    
-    nextButton.addEventListener('click', () => {
-        currentMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-        updateCalendar();
-    });
-    
-    const card = createCard('Calendar', content);
-    card.classList.add('calendar-card');
-    return card;
+        
+        const card = createCard('Calendar', content);
+        card.classList.add('calendar-card');
+        return card;
+        
+    } catch (error) {
+        console.error('Error in displayCalendar function:', error);
+        // Return a simple error card
+        const errorContent = document.createElement('div');
+        errorContent.innerHTML = '<p>Unable to load calendar. Please refresh the page.</p>';
+        return createCard('Calendar', errorContent);
+    }
 };
 
 const displayVaultTrader = (vaultTraderData) => {
@@ -1526,11 +1608,6 @@ const displayVaultTrader = (vaultTraderData) => {
             </div>
             
             <div class="mission-details">
-                <div class="info-row">
-                    <span class="info-label">Status:</span>
-                    <span class="info-value">${vaultTraderData.active ? 'Available' : 'Not Available'}</span>
-                </div>
-                
                 ${vaultTraderData.active && vaultTraderData.inventory && vaultTraderData.inventory.length > 0 ? `
                     <div class="vault-inventory-toggle">
                         <button class="inventory-toggle-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('▼') ? '▶ Show Items (${vaultTraderData.inventory.length})' : '▼ Hide Items (${vaultTraderData.inventory.length})'">
@@ -3080,10 +3157,6 @@ const displayWarframeData = async (platform) => {
         // Only add container if it has the daily reset timer (it will always have this)
         container.appendChild(worldCyclesContainer);
         
-        // Add the 1999 calendar
-        const calendarCard = await displayCalendar();
-        if (calendarCard) container.appendChild(calendarCard);
-        
         if (data.sortie) {
             const sortieCard = displaySortieInfo(data.sortie);
             if (sortieCard) container.appendChild(sortieCard);
@@ -3094,16 +3167,6 @@ const displayWarframeData = async (platform) => {
             if (archonCard) container.appendChild(archonCard);
         }
 
-        if (data.vaultTrader) {
-            const vaultTraderCard = displayVaultTrader(data.vaultTrader);
-            if (vaultTraderCard) container.appendChild(vaultTraderCard);
-        }
-
-        if (data.news) {
-            const news = displayNews(data.news);
-            if (news) container.appendChild(news);
-        }
-
         if (data.deepArchimedea) {
             const archimedeaCard = displayDeepArchimedea(data.deepArchimedea);
             if (archimedeaCard) container.appendChild(archimedeaCard);
@@ -3112,6 +3175,27 @@ const displayWarframeData = async (platform) => {
         if (data.temporalArchimedea) {
             const temporalArchimedeaCard = displayTemporalArchimedea(data.temporalArchimedea);
             if (temporalArchimedeaCard) container.appendChild(temporalArchimedeaCard);
+        }
+
+        // Add the 1999 calendar with error handling
+        try {
+            const calendarCard = await displayCalendar();
+            if (calendarCard) container.appendChild(calendarCard);
+        } catch (error) {
+            console.error('Error loading calendar:', error);
+            // Create a simple error card instead
+            const errorCard = createCard('Calendar', 'Unable to load calendar. Please refresh the page.');
+            container.appendChild(errorCard);
+        }
+
+        if (data.vaultTrader) {
+            const vaultTraderCard = displayVaultTrader(data.vaultTrader);
+            if (vaultTraderCard) container.appendChild(vaultTraderCard);
+        }
+
+        if (data.news) {
+            const news = displayNews(data.news);
+            if (news) container.appendChild(news);
         }
 
         if (data.steelPath) {
