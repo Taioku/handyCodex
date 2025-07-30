@@ -349,7 +349,6 @@ const createDailyResetTimer = () => {
     
     dailyReset.innerHTML = `
         <div class="daily-reset-content">
-            <div class="daily-reset-icon">🌀</div>
             <div class="daily-reset-text">
                 <div class="daily-reset-label">Daily Reset</div>
                 <div class="daily-reset-time" id="dailyResetTime">00:00:00</div>
@@ -3197,9 +3196,15 @@ const displayWarframeData = async (platform) => {
             sections[key].className = `section ${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
         });
         
-        // World Cycles - Create special container
+        // World Cycles - Create as a normal card
         const worldCyclesContainer = document.createElement('div');
-        worldCyclesContainer.className = 'world-cycles-container';
+        worldCyclesContainer.className = 'world-cycles-container card';
+        worldCyclesContainer.setAttribute('data-category', 'time');
+        
+        // Add card title
+        const cardTitle = document.createElement('h2');
+        cardTitle.textContent = 'World Cycles';
+        worldCyclesContainer.appendChild(cardTitle);
         
         // Add daily reset timer at the top
         const dailyResetTimer = createDailyResetTimer();
@@ -3228,13 +3233,21 @@ const displayWarframeData = async (platform) => {
         if (cyclesGrid.children.length > 0) {
             worldCyclesContainer.appendChild(cyclesGrid);
         }
-        
-        // Only add container if it has the daily reset timer (it will always have this)
-        container.appendChild(worldCyclesContainer);
+
+        // Store the world cycles card to add with other cards later
+        let worldCyclesCard = null;
+        if (worldCyclesContainer.children.length > 1) { // More than just the title
+            worldCyclesCard = worldCyclesContainer;
+        }
         
         if (data.sortie) {
             const sortieCard = displaySortieInfo(data.sortie);
             if (sortieCard) container.appendChild(sortieCard);
+        }
+
+        // Add world cycles card after sortie but before other cards
+        if (worldCyclesCard) {
+            container.appendChild(worldCyclesCard);
         }
 
         if (data.archonHunt) {

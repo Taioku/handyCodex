@@ -51,13 +51,8 @@ class MasonryLayout {
             masonryWrapper.appendChild(column);
         }
         
-        // Insert masonry wrapper after world cycles
-        const worldCycles = this.container.querySelector('.world-cycles-container');
-        if (worldCycles && worldCycles.nextSibling) {
-            this.container.insertBefore(masonryWrapper, worldCycles.nextSibling);
-        } else {
-            this.container.appendChild(masonryWrapper);
-        }
+        // Insert masonry wrapper at the end of container
+        this.container.appendChild(masonryWrapper);
         
         this.masonryWrapper = masonryWrapper;
     }
@@ -67,7 +62,7 @@ class MasonryLayout {
         const existing = this.container.querySelector('.masonry-wrapper');
         if (existing) {
             // Move all cards back to main container before removing wrapper
-            const cards = existing.querySelectorAll('.card:not(.world-cycles-container .card)');
+            const cards = existing.querySelectorAll('.card');
             cards.forEach(card => {
                 if (card.parentNode === existing || card.closest('.masonry-column')) {
                     this.container.appendChild(card);
@@ -87,10 +82,9 @@ class MasonryLayout {
         }
         
         try {
-            // Get all cards that should be in masonry (not world cycles)
+            // Get all cards that should be in masonry (including world cycles)
             const allCards = Array.from(this.container.children).filter(child => 
-                child.classList.contains('card') && 
-                !child.closest('.world-cycles-container')
+                child.classList.contains('card')
             );
             
             // Instead of clearing columns with innerHTML, move cards back to main container
@@ -204,9 +198,6 @@ class MasonryLayout {
     // Add a new card to the masonry layout
     addCard(card) {
         if (!this.isInitialized || !this.masonryWrapper) return;
-        
-        // Skip if it's a world cycles card
-        if (card.closest('.world-cycles-container')) return;
         
         const columnIndex = this.getShortestColumn();
         this.columnElements[columnIndex].appendChild(card);
