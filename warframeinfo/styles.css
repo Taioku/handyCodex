@@ -154,10 +154,7 @@ body::before {
     transition: all var(--transition-normal);
 }
 
-.main-content.sidebar-open {
-    margin-left: 280px; /* Push content when sidebar is open */
-    width: calc(100% - 280px);
-}
+/* Sidebar overlays content - no additional styles needed */
 
 /* Warframe Data Container - Fallback for when masonry fails */
 #warframeData {
@@ -215,6 +212,8 @@ body::before {
 .menu-toggle.active {
     background: var(--color-bg);
     border-color: var(--color-accent);
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* Sidebar overlay for closing when clicking outside */
@@ -561,18 +560,6 @@ select:focus {
     align-self: start;
 }
 
-.card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--color-accent), var(--color-accent2));
-    opacity: 0;
-    transition: opacity var(--transition-normal);
-}
-
 /* Add category-specific styling for different card types */
 .card[data-category="time"] h2::before {
     background: linear-gradient(135deg, var(--color-accent), var(--color-accent2));
@@ -590,15 +577,10 @@ select:focus {
     background: linear-gradient(135deg, var(--error-color), var(--color-accent));
 }
 
-.card:nth-child(1) { animation-delay: 0.1s; }
-.card:nth-child(2) { animation-delay: 0.2s; }
-.card:nth-child(3) { animation-delay: 0.3s; }
-.card:nth-child(4) { animation-delay: 0.4s; }
-.card:nth-child(5) { animation-delay: 0.5s; }
-.card:nth-child(6) { animation-delay: 0.6s; }
-.card:nth-child(7) { animation-delay: 0.7s; }
-.card:nth-child(8) { animation-delay: 0.8s; }
-.card:nth-child(n+9) { animation-delay: 0.9s; }
+.card:nth-child(n+9),
+.world-cycles-container:nth-child(n+9),
+.void-trader-item:nth-child(n+9),
+.calendar-card:nth-child(n+9) { animation-delay: 0.9s; }
 
 @keyframes cardFadeIn {
     from {
@@ -616,8 +598,12 @@ select:focus {
     display: none; /* Hide standalone section titles */
 }
 
-/* Card titles with section styling */
-.card h2 {
+/* Card titles with section styling - Apply to all card types */
+.card h2,
+.world-cycles-container h2,
+.void-trader-item h2,
+.void-trader-item h3,
+.calendar-card h2 {
     color: var(--color-text);
     font-size: 1.125rem;
     font-weight: 600;
@@ -632,7 +618,11 @@ select:focus {
     position: relative;
 }
 
-.card h2::before {
+.card h2::before,
+.world-cycles-container h2::before,
+.void-trader-item h2::before,
+.void-trader-item h3::before,
+.calendar-card h2::before {
     content: '';
     width: 4px;
     height: 16px;
@@ -641,7 +631,11 @@ select:focus {
     flex-shrink: 0;
 }
 
-.card h2::after {
+.card h2::after,
+.world-cycles-container h2::after,
+.void-trader-item h2::after,
+.void-trader-item h3::after,
+.calendar-card h2::after {
     content: '';
     position: absolute;
     bottom: -1px;
@@ -662,10 +656,7 @@ select:focus {
         padding: var(--spacing-2xl);
     }
     
-    .main-content.sidebar-open {
-        margin-left: 320px;
-        width: calc(100% - 320px);
-    }
+    /* Sidebar overlays content at all breakpoints */
     
     .masonry-wrapper {
         gap: var(--spacing-xl);
@@ -675,7 +666,10 @@ select:focus {
         gap: var(--spacing-xl);
     }
     
-    .card {
+    .card,
+    .world-cycles-container,
+    .void-trader-item,
+    .calendar-card {
         padding: var(--spacing-xl);
     }
     
@@ -718,10 +712,7 @@ select:focus {
         left: -240px;
     }
     
-    .main-content.sidebar-open {
-        margin-left: 240px;
-        width: calc(100% - 240px);
-    }
+    /* Sidebar overlays content on tablet */
     
     .main-content {
         padding: var(--spacing-lg);
@@ -770,10 +761,7 @@ select:focus {
         padding-top: calc(var(--spacing-md) + 60px); /* Account for menu button */
     }
     
-    .main-content.sidebar-open {
-        margin-left: 0; /* Don't push content on mobile */
-        width: 100%;
-    }
+    /* Sidebar overlays content on mobile - no additional styles needed */
     
     .masonry-wrapper {
         flex-direction: column; /* Stack columns vertically on mobile */
@@ -828,10 +816,7 @@ select:focus {
         padding-top: calc(var(--spacing-sm) + 50px);
     }
     
-    .main-content.sidebar-open {
-        margin-left: 0;
-        width: 100%;
-    }
+    /* Sidebar overlays content on small mobile - no additional styles needed */
     
     .sidebar-close {
         top: var(--spacing-md);
@@ -931,9 +916,9 @@ select:focus {
 
 
 
-/* World Cycles - Normal Card Layout */
+/* World Cycles - Use standard card layout */
 .world-cycles-container {
-    /* Use standard card styling - remove special positioning */
+    /* Copy standard card styling */
     background: var(--color-panel);
     border: 1px solid var(--color-accent2);
     border-radius: var(--radius-lg);
@@ -945,17 +930,12 @@ select:focus {
     backdrop-filter: blur(10px);
     animation: cardFadeIn 0.5s ease-out forwards;
     opacity: 0;
-    /* Allow cards to size naturally to their content */
     display: flex;
     flex-direction: column;
     justify-self: stretch;
     align-self: start;
     gap: var(--spacing-md);
-    /* Remove special margin, let masonry handle positioning */
-    margin-bottom: 0;
-    /* Make it a normal width card */
-    max-width: none;
-    width: 100%;
+    animation-delay: 0.1s;
 }
 
 /* Daily Reset Timer */
@@ -1014,17 +994,13 @@ select:focus {
     align-items: center;
     text-align: left;
     padding: var(--spacing-sm);
-    background: var(--color-bg2);
+    background: var(--color-panel);
     border: 1px solid var(--color-accent2);
     border-radius: var(--radius-md);
     transition: all var(--transition-normal);
     position: relative;
     overflow: hidden;
     gap: var(--spacing-md);
-}
-
-.world-cycle::before {
-    display: none; /* Remove the top bar */
 }
 
 .cycle-icon {
@@ -1360,7 +1336,7 @@ select:focus {
 
 /* Content Items */
     .invasion, .alert, .fissure {
-        background: var(--color-bg);
+        background: var(--color-panel);
         border: 1px solid var(--color-accent2);
         border-radius: var(--radius-md);
         padding: var(--spacing-md);
@@ -1370,16 +1346,307 @@ select:focus {
         overflow: hidden;
     }
 
-    .invasion::before, .alert::before, .fissure::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: var(--color-accent);
-        transition: width var(--transition-fast);
+/* New Invasion Design */
+.invasions-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.invasion-item {
+    background: var(--color-panel);
+    border: 1px solid var(--color-accent2);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.invasion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.invasion-location h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 1.125rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.invasion-progress-text {
+    color: var(--color-text-accent);
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: var(--font-family-mono);
+}
+
+.invasion-factions {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.faction-side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.faction-side.defender {
+    align-items: flex-end;
+    text-align: right;
+}
+
+.faction-side.defender .faction-info {
+    flex-direction: row-reverse;
+}
+
+.faction-side.defender .faction-details {
+    text-align: right;
+}
+
+.faction-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.faction-icon {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid currentColor;
+    transition: all var(--transition-normal);
+}
+
+.faction-details {
+    flex: 1;
+}
+
+.faction-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+}
+
+.faction-label {
+    font-size: 0.75rem;
+    color: var(--color-text-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.faction-reward {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.reward-text {
+    font-size: 0.875rem;
+    color: var(--color-text);
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.invasion-vs {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-accent2);
+    flex-shrink: 0;
+}
+
+.invasion-progress-bar {
+    position: relative;
+    margin-bottom: var(--spacing-md);
+}
+
+.progress-track {
+    width: 100%;
+    height: 8px;
+    background: var(--color-bg2);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width var(--transition-normal);
+    position: relative;
+}
+
+.attacker-progress {
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.defender-progress {
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin-left: auto;
+}
+
+.progress-marker {
+    position: absolute;
+    top: -2px;
+    width: 12px;
+    height: 12px;
+    background: var(--color-text-light);
+    border: 2px solid var(--color-accent);
+    border-radius: 50%;
+    transform: translateX(-6px);
+    transition: left var(--transition-normal);
+    z-index: 2;
+}
+
+.progress-percentages {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-sm);
+    font-family: var(--font-family-mono);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.attacker-percentage,
+.defender-percentage {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all var(--transition-normal);
+}
+
+.invasion-node-name {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-accent);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.invasion-timer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--color-text-accent);
+    font-size: 0.875rem;
+}
+
+.timer-label {
+    font-weight: 500;
+}
+
+.invasion-timer .timer {
+    font-family: var(--font-family-mono);
+    font-weight: 600;
+    color: var(--color-text);
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Design for Invasions */
+@media (max-width: 768px) {
+    .invasion-factions {
+        flex-direction: column;
+        gap: var(--spacing-sm);
     }
+    
+    .invasion-vs {
+        align-self: center;
+        order: 1;
+    }
+    
+    .faction-side.attacker {
+        order: 0;
+    }
+    
+    .faction-side.defender {
+        order: 2;
+        align-items: flex-start;
+        text-align: left;
+    }
+    
+    .faction-side.defender .faction-info {
+        flex-direction: row;
+    }
+    
+    .faction-side.defender .faction-details {
+        text-align: left;
+    }
+    
+    .faction-info {
+        gap: var(--spacing-xs);
+    }
+    
+    .faction-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1.25rem;
+    }
+    
+    .invasion-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-xs);
+    }
+}
+
+@media (max-width: 480px) {
+    .invasion-item {
+        padding: var(--spacing-md);
+    }
+    
+    .faction-reward {
+        padding: var(--spacing-xs);
+    }
+    
+    .faction-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+    }
+    
+    .faction-name {
+        font-size: 0.875rem;
+    }
+    
+    .reward-text {
+        font-size: 0.8rem;
+    }
+}
 
     /* Fissure Groups */
     .fissure-group {
@@ -1556,7 +1823,8 @@ select:focus {
 }
 
 .void-trader-item {
-    background: rgba(255, 255, 255, 0.02);
+    /* Use standard card styling */
+    background: var(--color-panel);
     border: 1px solid var(--color-accent2);
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
@@ -1672,7 +1940,6 @@ select:focus {
     }
 }
 
-/* Calendar Card Styles */
 .calendar-card {
     min-width: 280px;
     max-width: 320px;

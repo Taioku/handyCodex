@@ -543,7 +543,7 @@ const missionTypeFormat = (missionType) => {
         'mirror defense' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
         'disruption' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
         'excavation' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
-        'exterminate' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
+        'extermination' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
         'faceoff' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
         'free roam' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
         'bounty' : '<img src="" alt="" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">',
@@ -726,20 +726,139 @@ const displayInvasions = (invasions) => {
     if (!activeInvasions.length) return null;
     
     const content = document.createElement('div');
-    content.innerHTML = `
-        ${activeInvasions.map(invasion => `
-            <div class="invasion">
-                <p>${invasion.node || 'Unknown Location'} ${invasion.isSharkwing || invasion.archwingRequired ? `<img src="https://wiki.warframe.com/images/thumb/Amesha.png/32px-Amesha.png?bb937" alt="Amesha" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;">` : ''}</p>
-                <p>${invasion.attackingFaction || 'Unknown'} vs ${invasion.defendingFaction || 'Unknown'}</p>
-                <p>Rewards:</p>
-                <ul>
-                    <li>Attacking: ${invasion.attackerReward?.asString || invasion.attackerReward?.itemString || 'None'}</li>
-                    <li>Defending: ${invasion.defenderReward?.asString || invasion.defenderReward?.itemString || 'None'}</li>
-                </ul>
-                <p>Progress: ${Math.round(invasion.completion || 0)}%</p>
+    content.className = 'invasions-container';
+    
+    activeInvasions.forEach((invasion, index) => {
+        const invasionDiv = document.createElement('div');
+        invasionDiv.className = 'invasion-item';
+        
+        // Get faction colors
+        const getFactionColor = (faction) => {
+            switch(faction?.toLowerCase()) {
+                case 'grineer': return '#ff6b35';
+                case 'corpus': return '#4fc3f7';
+                case 'infested': return '#8bc34a';
+                case 'corrupted': return '#ffc107';
+                case 'orokin': return '#ffeb3b';
+                default: return '#9e9e9e';
+            }
+        };
+        
+        // Get faction icon
+        const getFactionIcon = (faction) => {
+            switch(faction?.toLowerCase()) {
+                case 'tenno': return '<img src="https://wiki.warframe.com/images/thumb/TennoIcon.png/32px-TennoIcon.png" alt="Tenno" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'grineer': return '<img src="https://wiki.warframe.com/images/thumb/IconGrineerOn.png/32px-IconGrineerOn.png" alt="Grineer" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'corpus': return '<img src="https://wiki.warframe.com/images/thumb/IconCorpusOn.png/32px-IconCorpusOn.png" alt="Corpus" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'infested': return '<img src="https://wiki.warframe.com/images/Infestation_w.svg" alt="Infested" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'orokin': return '<img src="https://wiki.warframe.com/images/thumb/IconOrokinOn.png/32px-IconOrokinOn.png" alt="Orokin" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'sentient': return '<img src="https://wiki.warframe.com/images/thumb/SentientFactionIcon.png/32px-SentientFactionIcon.png" alt="Sentient" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'stalker': return '<img src="https://wiki.warframe.com/images/thumb/StalkerSigil.png/32px-StalkerSigil.png" alt="Stalker" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'wild': return '<img src="https://wiki.warframe.com/images/thumb/IconWild.png/32px-IconWild.png" alt="Wild" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'narmer': return '<img src="https://wiki.warframe.com/images/thumb/IconNarmer.png/32px-IconNarmer.png" alt="Narmer" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'murmur': return '<img src="https://wiki.warframe.com/images/thumb/MurmurIcon.png/32px-MurmurIcon.png" alt="Murmur" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'scaldra': return '<img src="https://wiki.warframe.com/images/thumb/ScaldraIcon.png/32px-ScaldraIcon.png" alt="Scaldra" style="width: 24px; height: 24px; vertical-align: middle;">';
+                case 'techrot': return '<img src="https://wiki.warframe.com/images/thumb/TechrotIcon.png/32px-TechrotIcon.png" alt="Techrot" style="width: 24px; height: 24px; vertical-align: middle;">';
+                default: return '<img src="https://wiki.warframe.com/images/thumb/LotusWhite.png/20px-LotusWhite.png" alt="Unknown" style="width: 24px; height: 24px; vertical-align: middle;" onerror="this.style.display=\'none\'">';
+            }
+        };
+        
+        // Calculate progress - invasion.completion can be a number or array
+        let completionPercent = 0;
+        if (Array.isArray(invasion.completion)) {
+            // If it's an array, use the first value (attacker progress)
+            completionPercent = Math.max(0, Math.min(100, invasion.completion[0] || 0));
+        } else if (typeof invasion.completion === 'number') {
+            completionPercent = Math.max(0, Math.min(100, invasion.completion));
+        }
+        
+        // Get reward info
+        const getRewardInfo = (reward) => {
+            if (!reward) return 'None';
+            return reward.asString || reward.itemString || 'Unknown Reward';
+        };
+        
+        const attackerReward = getRewardInfo(invasion.attackerReward || invasion.attacker?.reward);
+        const defenderReward = getRewardInfo(invasion.defenderReward || invasion.defender?.reward);
+        
+        const attackingFaction = invasion.attackingFaction || invasion.attacker?.faction || 'Unknown';
+        const defendingFaction = invasion.defendingFaction || invasion.defender?.faction || 'Unknown';
+        
+        invasionDiv.innerHTML = `            
+            <div class="invasion-factions">
+                <div class="faction-side attacker">
+                    <div class="faction-info">
+                        <div class="faction-icon">
+                            ${getFactionIcon(attackingFaction)}
+                        </div>
+                        <div class="faction-details">
+                            <div class="faction-name" style="color: ${getFactionColor(attackingFaction)}">
+                                ${attackingFaction}
+                            </div>
+                            <div class="faction-label">Attacker</div>
+                        </div>
+                    </div>
+                    ${attackerReward !== 'None' ? `
+                        <div class="faction-reward">
+                            <div class="reward-text">${attackerReward}</div>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                
+                <div class="faction-side defender">
+                    <div class="faction-info">
+                        <div class="faction-icon">
+                            ${getFactionIcon(defendingFaction)}
+                        </div>
+                        <div class="faction-details">
+                            <div class="faction-name" style="color: ${getFactionColor(defendingFaction)}">
+                                ${defendingFaction}
+                            </div>
+                            <div class="faction-label">Defender</div>
+                        </div>
+                    </div>
+                    ${defenderReward !== 'None' ? `
+                        <div class="faction-reward">
+                            <div class="reward-text">${defenderReward}</div>
+                        </div>
+                    ` : ''}
+                </div>
             </div>
-        `).join('')}
-    `;
+            
+            <div class="invasion-progress-bar">
+                <div class="progress-track">
+                    <div class="progress-fill attacker-progress" style="width: ${completionPercent}%; background: linear-gradient(90deg, ${getFactionColor(attackingFaction)}, color-mix(in srgb, ${getFactionColor(attackingFaction)} 70%, white))"></div>
+                    <div class="progress-fill defender-progress" style="width: ${100 - completionPercent}%; background: linear-gradient(90deg, color-mix(in srgb, ${getFactionColor(defendingFaction)} 70%, white), ${getFactionColor(defendingFaction)})"></div>
+                </div>
+                <div class="progress-marker" style="left: ${completionPercent}%"></div>
+                <div class="progress-percentages">
+                    <div class="attacker-percentage" style="color: ${getFactionColor(attackingFaction)}">${Math.round(completionPercent)}%</div>
+                    <div class="invasion-node-name">
+                        ${invasion.node || 'Unknown Location'}
+                    </div>
+                    <div class="defender-percentage" style="color: ${getFactionColor(defendingFaction)}">${Math.round(100 - completionPercent)}%</div>
+                </div>
+            </div>
+            
+            ${invasion.expiry ? `
+                <div class="invasion-timer">
+                    <span class="timer-label">Ends in:</span>
+                    <span class="timer" data-expiry="${invasion.expiry}"></span>
+                </div>
+            ` : ''}
+        `;
+        
+        content.appendChild(invasionDiv);
+    });
+    
+    // Set up timers
+    const timers = content.querySelectorAll('.timer');
+    timers.forEach(timer => {
+        const expiry = timer.dataset.expiry;
+        setInterval(() => updateTimer(timer, expiry), 1000);
+        updateTimer(timer, expiry);
+    });
     
     return createCard('Active Invasions', content);
 };
