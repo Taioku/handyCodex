@@ -171,31 +171,20 @@ class MasonryLayout {
     }
     
     updateColumns() {
-        if (!this.container || !this.container.offsetWidth) {
-            console.warn('Container not available for column update');
-            return;
-        }
-        
-        const containerWidth = this.container.offsetWidth;
-        let newColumns = 5; // Default
-        
-        // Responsive column calculation
-        if (containerWidth < 600) {
-            newColumns = 1;
-        } else if (containerWidth < 900) {
-            newColumns = 2;
-        } else if (containerWidth < 1200) {
-            newColumns = 3;
-        } else if (containerWidth < 1600) {
-            newColumns = 4;
-        } else {
-            newColumns = 5;
-        }
-        
+        // Use window.innerWidth for column calculation to ensure full viewport width is used
+        const containerWidth = window.innerWidth;
+        const minColumnWidth = 260; // px, adjust as needed
+        const maxColumns = 5; // adjust as needed
+        // Calculate columns dynamically
+        let newColumns = Math.max(1, Math.min(maxColumns, Math.floor(containerWidth / minColumnWidth)));
+        // Only rebuild if columns changed
         if (newColumns !== this.columns) {
             this.columns = newColumns;
             this.clearMasonry();
             this.createColumns();
+            this.refresh();
+        } else {
+            // If width changed but columns didn't, just refresh layout
             this.refresh();
         }
     }
