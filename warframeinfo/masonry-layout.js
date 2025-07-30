@@ -7,26 +7,33 @@ class MasonryLayout {
         this.columnElements = [];
         this.isInitialized = false;
         this.lastKnownWidth = 0;
-        
+
         // Bind methods to preserve 'this' context
         this.refresh = this.refresh.bind(this);
         this.handleResize = this.handleResize.bind(this);
-        
+
+        // DO NOT trigger layout on scroll!
+        // Only trigger on resize or card add/remove
+        // If you have scroll listeners elsewhere, remove them
+
         this.init();
     }
     
     init() {
         if (this.isInitialized) return;
-        
+
         // Clear any existing masonry structure
         this.clearMasonry();
-        
+
         // Create column containers
         this.createColumns();
-        
+
         // Set up resize handler
         window.addEventListener('resize', this.handleResize);
-        
+
+        // DO NOT set up scroll handler!
+        // Layout is robust: only triggers on resize or card changes
+
         this.isInitialized = true;
     }
     
