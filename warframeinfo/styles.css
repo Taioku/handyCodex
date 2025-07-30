@@ -1,5 +1,6 @@
 :root {
     /* Theme System - Default to Narmer Dark */
+    --color-bg-faint: color-mix(in srgb, var(--color-text-light) 3%, transparent);
     --color-bg: #1a1412;
     --color-bg2: #3c2f2f;
     --color-panel: #2a211e;
@@ -957,41 +958,18 @@ select:focus {
     width: 100%;
 }
 
-.world-cycles-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--color-accent), var(--color-accent2));
-    opacity: 1;
-    transition: opacity var(--transition-normal);
-}
-
 /* Daily Reset Timer */
 .daily-reset-timer {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--color-bg);
+    background: var(--color-bg-faint);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-sm);
     position: relative;
     overflow: hidden;
     border: 1px solid var(--color-accent2);
-}
-
-.daily-reset-timer::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-text-light) 20%, transparent), transparent);
-    /* Removed shimmer animation */
 }
 
 .daily-reset-content {
@@ -1003,13 +981,6 @@ select:focus {
     z-index: 1;
     position: relative;
 }
-
-.daily-reset-icon {
-    font-size: 1.5rem;
-    /* Removed spinning animation */
-}
-
-/* Removed @keyframes rotate animation */
 
 .daily-reset-text {
     display: flex;
@@ -1043,7 +1014,7 @@ select:focus {
     align-items: center;
     text-align: left;
     padding: var(--spacing-sm);
-    background: var(--color-bg);
+    background: var(--color-bg2);
     border: 1px solid var(--color-accent2);
     border-radius: var(--radius-md);
     transition: all var(--transition-normal);
@@ -1453,7 +1424,7 @@ select:focus {
     li {
         margin: var(--spacing-sm) 0;
         padding: var(--spacing-sm) var(--spacing-md);
-        background: color-mix(in srgb, var(--color-text-light) 3%, transparent);
+        background: var(--color-bg-faint);
         border-radius: var(--radius-sm);
         position: relative;
         padding-left: var(--spacing-lg);
@@ -1795,13 +1766,6 @@ select:focus {
 .calendar-day.other-month {
     color: var(--color-text-accent);
     opacity: 0.4;
-}
-
-.calendar-day.today {
-    background: var(--color-accent);
-    color: var(--color-text-light);
-    font-weight: 600;
-    box-shadow: 0 0 8px rgba(190, 155, 123, 0.4);
 }
 
 .calendar-day.has-events {

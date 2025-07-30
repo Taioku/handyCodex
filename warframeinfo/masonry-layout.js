@@ -168,7 +168,7 @@ class MasonryLayout {
         // Use window.innerWidth for column calculation to ensure full viewport width is used
         const containerWidth = window.innerWidth;
         const minColumnWidth = 260; // px, adjust as needed
-        const maxColumns = 5; // adjust as needed
+        const maxColumns = 6; // adjust as needed
         // Calculate columns dynamically
         let newColumns = Math.max(1, Math.min(maxColumns, Math.floor(containerWidth / minColumnWidth)));
         // Only rebuild if columns changed

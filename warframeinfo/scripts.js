@@ -1431,16 +1431,11 @@ const displayCalendar = async () => {
                 calendarDays += `<div class="calendar-day other-month">${day}</div>`;
             }
             
-            // Current month days
-            const today = 15; // Fixed "today" as the 15th for demo
-            
             for (let day = 1; day <= daysInMonth; day++) {
-                const isToday = day === today;
                 const events = getEventsForDay(day, currentMonth);
                 const hasEvents = events.length > 0;
                 
                 let dayClasses = 'calendar-day';
-                if (isToday) dayClasses += ' today';
                 if (hasEvents) dayClasses += ' has-events';
                 
                 const tooltipContent = hasEvents ? createTooltipContent(events) : '';
@@ -3239,15 +3234,15 @@ const displayWarframeData = async (platform) => {
         if (worldCyclesContainer.children.length > 1) { // More than just the title
             worldCyclesCard = worldCyclesContainer;
         }
-        
+
+        // Show world cycles card first
+        if (worldCyclesCard) {
+            container.appendChild(worldCyclesCard);
+        }
+
         if (data.sortie) {
             const sortieCard = displaySortieInfo(data.sortie);
             if (sortieCard) container.appendChild(sortieCard);
-        }
-
-        // Add world cycles card after sortie but before other cards
-        if (worldCyclesCard) {
-            container.appendChild(worldCyclesCard);
         }
 
         if (data.archonHunt) {
