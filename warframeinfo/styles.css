@@ -17,13 +17,13 @@
     --warning-color: #f59e0b;
     --error-color: #ef4444;
     
-    /* Spacing System */
-    --spacing-xs: 0.25rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
-    --spacing-2xl: 3rem;
+    /* Spacing System - Compact */
+    --spacing-xs: 0.2rem;
+    --spacing-sm: 0.4rem;
+    --spacing-md: 0.75rem;
+    --spacing-lg: 1rem;
+    --spacing-xl: 1.5rem;
+    --spacing-2xl: 2rem;
     
     /* Border Radius System */
     --radius-sm: 0.375rem;
@@ -40,6 +40,8 @@
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --card-min-width: 320px;
+    --card-max-width: 600px; /* Keep for reference but not used for max-width */
     
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -112,7 +114,7 @@ body::before {
     transition: all var(--transition-normal);
     display: flex;
     flex-direction: column;
-    padding: var(--spacing-xl) var(--spacing-md) var(--spacing-xl) var(--spacing-xl); /* Less right padding */
+    padding: var(--spacing-lg) var(--spacing-sm) var(--spacing-lg) var(--spacing-lg); /* Less right padding */
     box-shadow: var(--shadow-xl);
 }
 
@@ -123,9 +125,9 @@ body::before {
 .header-content {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
     height: 100%;
-    min-height: calc(100vh - 4rem); /* Account for padding */
+    min-height: calc(100vh - 2rem); /* Account for padding */
 }
 
 .sidebar-title {
@@ -148,19 +150,22 @@ body::before {
 /* Main Content Area */
 .main-content {
     margin-left: 0; /* No margin when sidebar is hidden */
-    padding: var(--spacing-xl);
+    padding: var(--spacing-lg);
     width: 100%;
     min-height: 100vh;
     transition: all var(--transition-normal);
+    box-sizing: border-box;
+    overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 /* Sidebar overlays content - no additional styles needed */
 
-/* Warframe Data Container - Fallback for when masonry fails */
+/* Warframe Data Container */
 #warframeData {
     display: block;
     width: 100%;
     min-height: 100px;
+    position: relative;
 }
 
 /* Ensure cards are always visible */
@@ -170,19 +175,6 @@ body::before {
     opacity: 1 !important;
     position: relative !important;
     margin-bottom: var(--spacing-lg) !important;
-    width: 100% !important;
-    max-width: none !important;
-}
-
-/* Fallback layout when masonry is disabled or fails */
-.masonry-fallback {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
-    gap: var(--spacing-lg) !important;
-    width: 100% !important;
-}
-
-.masonry-fallback .card {
     width: 100% !important;
     max-width: none !important;
 }
@@ -499,34 +491,34 @@ select:focus {
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
 
-/* Grid Layout - Modified for Masonry */
+/* Grid Layout - Standard CSS Grid */
 .grid {
-    display: block; /* Change from grid to block for masonry */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
+    gap: var(--spacing-lg);
     width: 100%;
     animation: fadeInUp 0.6s ease-out;
+    /* Remove max-width to use full screen width */
+    margin: 0;
 }
 
-/* Masonry Layout Styles */
-.masonry-wrapper {
-    display: flex !important;
-    gap: var(--spacing-lg);
-    align-items: flex-start;
-    width: 100%;
-    margin-top: var(--spacing-lg);
+/* Ensure better card width distribution on different screen sizes */
+@media (min-width: 1400px) {
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    }
 }
 
-.masonry-column {
-    flex: 1;
-    display: flex !important;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-    min-width: 0; /* Prevent flex items from overflowing */
+@media (min-width: 1920px) {
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    }
 }
 
-/* Ensure cards in masonry columns behave properly */
-.masonry-column .card {
-    width: 100%;
-    margin-bottom: 0; /* Remove any margin, gap handles spacing */
+@media (min-width: 2560px) {
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    }
 }
 
 @keyframes fadeInUp {
@@ -545,7 +537,7 @@ select:focus {
     background: var(--color-panel);
     border: 1px solid var(--color-accent2);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     box-shadow: var(--shadow-md);
     transition: all var(--transition-normal);
     position: relative;
@@ -558,6 +550,29 @@ select:focus {
     flex-direction: column;
     justify-self: stretch;
     align-self: start;
+    /* Ensure consistent minimum width but no maximum */
+    min-width: var(--card-min-width);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Improve card content spacing */
+.card > * {
+    margin-bottom: var(--spacing-sm);
+}
+
+.card > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Better list spacing inside cards */
+.card ul {
+    margin: var(--spacing-sm) 0;
+}
+
+.card li {
+    margin: var(--spacing-xs) 0;
+    padding: var(--spacing-xs) var(--spacing-sm);
 }
 
 /* Add category-specific styling for different card types */
@@ -605,14 +620,14 @@ select:focus {
 .void-trader-item h3,
 .calendar-card h2 {
     color: var(--color-text);
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin-bottom: var(--spacing-md);
-    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
     border-bottom: 1px solid var(--color-accent2);
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-xs);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     position: relative;
@@ -653,28 +668,27 @@ select:focus {
 /* Large Screens (1400px+) */
 @media (min-width: 1400px) {
     .main-content {
-        padding: var(--spacing-2xl);
+        padding: var(--spacing-xl);
+        max-width: none; /* Allow full width usage */
     }
     
     /* Sidebar overlays content at all breakpoints */
     
-    .masonry-wrapper {
-        gap: var(--spacing-xl);
-    }
-    
-    .masonry-column {
-        gap: var(--spacing-xl);
+    .grid {
+        gap: var(--spacing-lg);
+        /* Remove max-width to use full screen width */
+        margin: 0;
     }
     
     .card,
     .world-cycles-container,
     .void-trader-item,
     .calendar-card {
-        padding: var(--spacing-xl);
+        padding: var(--spacing-lg);
     }
     
     .card h2 {
-        font-size: 1.25rem;
+        font-size: 1.125rem;
     }
     
     .header {
@@ -686,15 +700,34 @@ select:focus {
     .header.open {
         left: 0;
     }
+    
+    /* Better world cycles layout on large screens - use full width */
+    
+    .world-cycle {
+        gap: var(--spacing-md);
+        padding: var(--spacing-md);
+        min-height: 52px;
+    }
+    
+    .cycle-name {
+        min-width: 90px;
+        font-size: 0.9rem;
+    }
+    
+    .cycle-state {
+        min-width: 70px;
+        font-size: 0.9rem;
+    }
+    
+    .cycle-timer {
+        font-size: 0.8rem;
+        padding: var(--spacing-xs) var(--spacing-md);
+    }
 }
 
 /* Desktop (1024px - 1399px) */
 @media (min-width: 1024px) and (max-width: 1399px) {
-    .masonry-wrapper {
-        gap: var(--spacing-lg);
-    }
-    
-    .masonry-column {
+    .grid {
         gap: var(--spacing-lg);
     }
     
@@ -718,11 +751,7 @@ select:focus {
         padding: var(--spacing-lg);
     }
     
-    .masonry-wrapper {
-        gap: var(--spacing-md);
-    }
-    
-    .masonry-column {
+    .grid {
         gap: var(--spacing-md);
     }
     
@@ -757,23 +786,19 @@ select:focus {
     }
     
     .main-content {
-        padding: var(--spacing-md);
-        padding-top: calc(var(--spacing-md) + 60px); /* Account for menu button */
+        padding: var(--spacing-sm);
+        padding-top: calc(var(--spacing-sm) + 55px); /* Account for menu button */
     }
     
     /* Sidebar overlays content on mobile - no additional styles needed */
     
-    .masonry-wrapper {
-        flex-direction: column; /* Stack columns vertically on mobile */
-        gap: var(--spacing-sm);
-    }
-    
-    .masonry-column {
-        gap: var(--spacing-sm);
+    .grid {
+        grid-template-columns: 1fr; /* Single column on mobile */
+        gap: var(--spacing-xs);
     }
     
     .card {
-        padding: var(--spacing-md);
+        padding: var(--spacing-sm);
     }
     
     .card h2 {
@@ -812,8 +837,8 @@ select:focus {
     }
     
     .main-content {
-        padding: var(--spacing-sm);
-        padding-top: calc(var(--spacing-sm) + 50px);
+        padding: var(--spacing-xs);
+        padding-top: calc(var(--spacing-xs) + 45px);
     }
     
     /* Sidebar overlays content on small mobile - no additional styles needed */
@@ -823,23 +848,20 @@ select:focus {
         right: var(--spacing-md);
     }
     
-    .masonry-wrapper {
-        flex-direction: column; /* Single column on small mobile */
+    .grid {
+        grid-template-columns: 1fr; /* Single column on small mobile */
         gap: var(--spacing-xs);
-    }
-    
-    .masonry-column {
-        gap: var(--spacing-xs);
+        margin-top: var(--spacing-xs);
     }
     
     .card {
-        padding: var(--spacing-sm);
+        padding: var(--spacing-xs);
         border-radius: var(--radius-md);
     }
     
     .card h2 {
-        font-size: 0.95rem;
-        margin-bottom: var(--spacing-sm);
+        font-size: 0.9rem;
+        margin-bottom: var(--spacing-xs);
     }
     
     .sidebar-title {
@@ -887,12 +909,68 @@ select:focus {
         max-width: none; /* Remove max-width constraint */
     }
     
-    .masonry-wrapper {
-        gap: var(--spacing-xl);
+    .main-content {
+        /* Use full width */
+        padding: var(--spacing-2xl) var(--spacing-xl);
     }
     
-    .masonry-column {
+    .grid {
         gap: var(--spacing-xl);
+        /* Use full width */
+    }
+    
+    /* Improved world cycles for ultra-wide - use full width */
+    
+    .world-cycle {
+        gap: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-sm);
+    }
+}
+
+/* 1920p Specific Adjustments */
+@media (min-width: 1920px) {
+    .main-content {
+        /* Use full width */
+        padding: var(--spacing-2xl) var(--spacing-2xl);
+    }
+    
+    .grid {
+        /* Use full width */
+        gap: var(--spacing-2xl);
+    }
+    
+    /* Enhanced spacing for very large screens */
+    .card,
+    .world-cycles-container,
+    .void-trader-item,
+    .calendar-card {
+        padding: var(--spacing-2xl);
+    }
+    
+    /* Better world cycles spacing on 1920p+ - use full width */
+    .world-cycles-container {
+        padding: var(--spacing-xl);
+    }
+    
+    .world-cycle {
+        padding: var(--spacing-md);
+        gap: var(--spacing-lg);
+        min-height: 56px;
+    }
+    
+    .cycle-name {
+        min-width: 100px;
+        font-size: 1rem;
+    }
+    
+    .cycle-state {
+        min-width: 80px;
+        font-size: 1rem;
+    }
+    
+    .cycle-timer {
+        font-size: 0.85rem;
+        padding: var(--spacing-sm) var(--spacing-md);
     }
 }
 
@@ -922,7 +1000,7 @@ select:focus {
     background: var(--color-panel);
     border: 1px solid var(--color-accent2);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     box-shadow: var(--shadow-md);
     transition: all var(--transition-normal);
     position: relative;
@@ -934,7 +1012,7 @@ select:focus {
     flex-direction: column;
     justify-self: stretch;
     align-self: start;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     animation-delay: 0.1s;
 }
 
@@ -1000,7 +1078,8 @@ select:focus {
     transition: all var(--transition-normal);
     position: relative;
     overflow: hidden;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
+    min-height: 48px; /* Ensure consistent height */
 }
 
 .cycle-icon {
@@ -1149,6 +1228,61 @@ select:focus {
 }
 
 /* Responsive adjustments for world cycles */
+@media (min-width: 1200px) {
+    .cycles-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-sm);
+    }
+    
+    .world-cycle {
+        padding: var(--spacing-sm) var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+    
+    .cycle-name {
+        min-width: 100px;
+        font-size: 0.9rem;
+    }
+    
+    .cycle-state {
+        min-width: 80px;
+        font-size: 0.9rem;
+    }
+    
+    .cycle-timer {
+        font-size: 0.8rem;
+        padding: var(--spacing-xs) var(--spacing-md);
+    }
+}
+
+@media (max-width: 1199px) and (min-width: 769px) {
+    .world-cycles-container {
+        padding: var(--spacing-md);
+        gap: var(--spacing-sm);
+    }
+    
+    .world-cycle {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+    
+    .cycle-name {
+        min-width: 90px;
+        font-size: 0.85rem;
+    }
+    
+    .cycle-state {
+        min-width: 70px;
+        font-size: 0.85rem;
+    }
+    
+    .cycle-timer {
+        font-size: 0.75rem;
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+}
+
 @media (max-width: 768px) {
     .world-cycles-container {
         padding: var(--spacing-md);
@@ -1357,7 +1491,7 @@ select:focus {
     background: var(--color-panel);
     border: 1px solid var(--color-accent2);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     transition: all var(--transition-normal);
     position: relative;
     overflow: hidden;
@@ -1367,7 +1501,7 @@ select:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
 }
 
 .invasion-location h3 {
@@ -1390,15 +1524,15 @@ select:focus {
 .invasion-factions {
     display: flex;
     align-items: flex-start;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
 }
 
 .faction-side {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-xs);
 }
 
 .faction-side.defender {
@@ -1578,7 +1712,38 @@ select:focus {
 }
 
 /* Responsive Design for Invasions */
-@media (max-width: 768px) {
+@media (min-width: 768px) {
+    .invasion-factions {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: var(--spacing-lg);
+    }
+    
+    .invasion-vs {
+        order: initial;
+        align-self: center;
+    }
+    
+    .faction-side.attacker {
+        order: initial;
+    }
+    
+    .faction-side.defender {
+        order: initial;
+        align-items: flex-end;
+        text-align: right;
+    }
+    
+    .faction-side.defender .faction-info {
+        flex-direction: row-reverse;
+    }
+    
+    .faction-side.defender .faction-details {
+        text-align: right;
+    }
+}
+
+@media (max-width: 767px) {
     .invasion-factions {
         flex-direction: column;
         gap: var(--spacing-sm);
@@ -1941,8 +2106,9 @@ select:focus {
 }
 
 .calendar-card {
-    min-width: 280px;
-    max-width: 320px;
+    min-width: var(--card-min-width);
+    /* Use full width available */
+    width: 100%;
 }
 
 .calendar-header {

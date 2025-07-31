@@ -2180,15 +2180,9 @@ const displayVaultTrader = (vaultTraderData) => {
 // Simple layout reload function
 const reloadLayout = () => {
     try {
-        // Check if masonry layout exists and refresh it
-        if (window.masonryLayout && typeof window.masonryLayout.refresh === 'function') {
-            console.log('Reloading masonry layout...');
-            window.masonryLayout.refresh();
-        } else {
-            console.log('No masonry layout found, triggering window resize event...');
-            // Trigger a resize event to recalculate layouts
-            window.dispatchEvent(new Event('resize'));
-        }
+        console.log('Triggering layout refresh...');
+        // Trigger a resize event to recalculate layouts
+        window.dispatchEvent(new Event('resize'));
     } catch (error) {
         console.error('Error reloading layout:', error);
         // Fallback: trigger resize event
@@ -3545,38 +3539,20 @@ const displayWarframeData = async (platform) => {
             container.innerHTML = 'No data available for this platform at the moment.';
         }
 
-        // Initialize masonry layout after content is loaded
+        // Initialize CSS Grid layout after content is loaded
         setTimeout(() => {
             try {
-                // Check if masonry should be enabled (not in dev mode or has issues)
-                const shouldUseMasonry = !window.location.search.includes('no-masonry') && 
-                                       window.MasonryLayout && 
-                                       container.children.length > 0;
+                console.log('Initializing CSS Grid layout...');
+                container.classList.add('grid');
+                container.style.display = 'grid';
                 
-                if (!shouldUseMasonry) {
-                    console.log('Masonry disabled or not available, using fallback layout');
-                    container.style.display = 'block';
-                    return;
-                }
-                
-                if (window.masonryInstance) {
-                    window.masonryInstance.destroy();
-                }
-                
-                window.masonryInstance = new MasonryLayout(container, {
-                    columns: 5,
-                    gap: 24
-                });
-                window.masonryInstance.refresh();
-                
-                console.log('Masonry layout initialized successfully');
+                console.log('CSS Grid layout initialized successfully');
             } catch (error) {
-                console.error('Error initializing masonry layout:', error);
-                // If masonry fails, ensure the container is visible with fallback layout
+                console.error('Error initializing layout:', error);
+                // Fallback: ensure the container is visible
                 container.style.display = 'block';
-                container.classList.add('masonry-fallback');
             }
-        }, 150); // Slightly longer delay to ensure DOM is fully rendered
+        }, 150); // Delay to ensure DOM is fully rendered
 
     } catch (error) {
         console.error('Error in displayWarframeData:', error);

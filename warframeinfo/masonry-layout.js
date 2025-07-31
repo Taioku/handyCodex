@@ -172,12 +172,34 @@ class MasonryLayout {
     }
     
     updateColumns() {
-        // Use window.innerWidth for column calculation to ensure full viewport width is used
-        const containerWidth = window.innerWidth;
-        const minColumnWidth = 260; // px, adjust as needed
-        const maxColumns = 6; // adjust as needed
-        // Calculate columns dynamically
-        let newColumns = Math.max(1, Math.min(maxColumns, Math.floor(containerWidth / minColumnWidth)));
+        // Use container.offsetWidth for column calculation to match actual container size
+        const containerWidth = this.container.offsetWidth;
+        
+        // More robust column width calculation based on screen size
+        let minColumnWidth;
+        let maxColumns;
+        
+        if (containerWidth >= 1920) {
+            minColumnWidth = 300; // Wider cards on very large screens
+            maxColumns = 4;
+        } else if (containerWidth >= 1400) {
+            minColumnWidth = 280;
+            maxColumns = 3;
+        } else if (containerWidth >= 1024) {
+            minColumnWidth = 260;
+            maxColumns = 2;
+        } else if (containerWidth >= 768) {
+            minColumnWidth = 240;
+            maxColumns = 1;
+        } else {
+            minColumnWidth = 200;
+            maxColumns = 1;
+        }
+        
+        // Calculate columns dynamically with better spacing consideration
+        const availableWidth = containerWidth - 64; // Account for padding
+        let newColumns = Math.max(1, Math.min(maxColumns, Math.floor(availableWidth / minColumnWidth)));
+        
         // Only rebuild if columns changed
         if (newColumns !== this.columns) {
             this.columns = newColumns;
