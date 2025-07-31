@@ -1067,9 +1067,10 @@ select:focus {
 }
 
 .world-cycle {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--spacing-xs);
+    align-items: stretch;
     text-align: left;
     padding: var(--spacing-sm);
     background: var(--color-panel);
@@ -1078,9 +1079,47 @@ select:focus {
     transition: all var(--transition-normal);
     position: relative;
     overflow: hidden;
-    gap: var(--spacing-sm);
-    min-height: 48px; /* Ensure consistent height */
+    min-height: 60px;
 }
+
+/* First row: Icon and Name */
+.world-cycle .cycle-icon,
+.world-cycle .cycle-name {
+    display: inline-block !important;
+}
+
+.world-cycle .cycle-icon {
+    margin-right: var(--spacing-sm) !important;
+}
+
+/* Second row: State and Timer container */
+.world-cycle .cycle-state {
+    display: block !important;
+    width: calc(100% - 80px) !important; /* Leave space for timer */
+    margin-right: 80px !important;
+}
+
+/* Ensure timer stays inline and doesn't wrap */
+.world-cycle .cycle-timer,
+.world-cycle .cycle-timer *,
+.world-cycle .timer,
+.world-cycle [class*="timer"],
+.world-cycle [class*="time"] {
+    display: inline !important;
+    white-space: nowrap !important;
+}
+
+/* Force timer to stay on same line as state */
+.world-cycle .cycle-state ~ .cycle-timer,
+.world-cycle .cycle-state ~ .timer,
+.world-cycle .cycle-state ~ [class*="timer"],
+.world-cycle .cycle-state ~ [class*="time"] {
+    position: absolute !important;
+    right: var(--spacing-sm) !important;
+    bottom: var(--spacing-sm);
+}
+
+/* Grid positioning ensures proper layout */
 
 .cycle-icon {
     width: 24px;
@@ -1155,8 +1194,7 @@ select:focus {
     margin-bottom: 0;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    min-width: 80px;
-    flex-shrink: 0;
+    flex: 1;
 }
 
 .cycle-state {
@@ -1164,8 +1202,6 @@ select:focus {
     font-weight: 700;
     margin-bottom: 0;
     text-transform: capitalize;
-    min-width: 60px;
-    flex-shrink: 0;
 }
 
 .cycle-timer {
@@ -1177,7 +1213,6 @@ select:focus {
     background: rgba(255, 255, 255, 0.05);
     border-radius: var(--radius-sm);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-left: auto;
     flex-shrink: 0;
 }
 
@@ -1237,16 +1272,15 @@ select:focus {
     
     .world-cycle {
         padding: var(--spacing-sm) var(--spacing-md);
-        gap: var(--spacing-md);
+        gap: var(--spacing-xs);
+        min-height: 70px;
     }
     
     .cycle-name {
-        min-width: 100px;
         font-size: 0.9rem;
     }
     
     .cycle-state {
-        min-width: 80px;
         font-size: 0.9rem;
     }
     
@@ -1264,16 +1298,15 @@ select:focus {
     
     .world-cycle {
         padding: var(--spacing-sm);
-        gap: var(--spacing-sm);
+        gap: var(--spacing-xs);
+        min-height: 65px;
     }
     
     .cycle-name {
-        min-width: 90px;
         font-size: 0.85rem;
     }
     
     .cycle-state {
-        min-width: 70px;
         font-size: 0.85rem;
     }
     
@@ -1316,7 +1349,8 @@ select:focus {
     
     .world-cycle {
         padding: var(--spacing-xs) var(--spacing-sm);
-        gap: var(--spacing-sm);
+        gap: var(--spacing-xs);
+        min-height: 55px;
     }
     
     .cycle-icon {
@@ -1327,12 +1361,10 @@ select:focus {
     
     .cycle-name {
         font-size: 0.75rem;
-        min-width: 70px;
     }
     
     .cycle-state {
         font-size: 0.75rem;
-        min-width: 50px;
     }
     
     .cycle-timer {
@@ -1371,7 +1403,8 @@ select:focus {
     
     .world-cycle {
         padding: 2px var(--spacing-xs);
-        gap: var(--spacing-xs);
+        gap: 2px;
+        min-height: 50px;
     }
     
     .cycle-icon {
@@ -1382,12 +1415,10 @@ select:focus {
     
     .cycle-name {
         font-size: 0.7rem;
-        min-width: 60px;
     }
     
     .cycle-state {
         font-size: 0.7rem;
-        min-width: 45px;
     }
     
     .cycle-timer {
