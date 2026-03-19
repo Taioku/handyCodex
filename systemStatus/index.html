@@ -440,20 +440,7 @@ body {
 .faction-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); }
 .faction-reward { font-size: 0.72rem; color: var(--color-text-accent); font-style: italic; }
 .invasion-vs { font-size: 0.72rem; font-weight: 800; color: var(--color-accent); text-align: center; letter-spacing: 0.06em; opacity: 0.7; }
-.progress-track-wrap { position: relative; }
 .progress-track { height: 5px; background: var(--color-bg); border-radius: 3px; overflow: hidden; display: flex; }
-.progress-intersection-dot {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    background: var(--color-text);
-    border: 2px solid var(--color-panel);
-    box-shadow: none;
-    pointer-events: none;
-    transition: left 0.5s ease;
-}
 .progress-fill { height: 100%; transition: width 0.5s ease; }
 .progress-percentages { display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; font-family: var(--font-mono); margin-top: 0.25rem; color: var(--color-text-muted); }
 .invasion-node-name { font-size: 0.68rem; color: var(--color-text-muted); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; padding: 0 0.3rem; }
@@ -1091,12 +1078,9 @@ const displayInvasions = (invasions) => {
                         ${defR ? `<div class="faction-reward">${defR}</div>` : ''}
                     </div>
                 </div>
-                <div class="progress-track-wrap">
-                    <div class="progress-track">
-                        <div class="progress-fill" style="width:${clampPct}%;background:linear-gradient(90deg,${factionColor(atk)},${factionColor(atk)}88)"></div>
-                        <div class="progress-fill" style="width:${100-clampPct}%;background:linear-gradient(90deg,${factionColor(def)}88,${factionColor(def)})"></div>
-                    </div>
-                    <div class="progress-intersection-dot" style="left:${clampPct}%"></div>
+                <div class="progress-track">
+                    <div class="progress-fill" style="width:${clampPct}%;background:linear-gradient(90deg,${factionColor(atk)},${factionColor(atk)}88)"></div>
+                    <div class="progress-fill" style="width:${100-clampPct}%;background:linear-gradient(90deg,${factionColor(def)}88,${factionColor(def)})"></div>
                 </div>
                 <div class="progress-percentages">
                     <span style="color:${factionColor(atk)}">${Math.round(clampPct)}%</span>
@@ -1684,7 +1668,7 @@ const displayCalendar = async () => {
 ════════════════════════════════════════════════════════ */
 const updateSidebarKinepage = (d) => {
     const el = document.getElementById('topbarKinepage');
-    if (el) el.textContent = d?.message ? `// ${d.message}` : '// Operator Dashboard';
+    if (el) el.textContent = d?.message ? `// ${d.message}` : '';
 };
 
 /* ════════════════════════════════════════════════════════
@@ -1729,26 +1713,91 @@ const displayGlobalUpgrades = (upgrades) => {
 ════════════════════════════════════════════════════════ */
 const displayFlashSales = (sales) => {
     if (!Array.isArray(sales) || !sales.length) return null;
-    // filter to active only
     const now = Date.now();
     const active = sales.filter(s => !s.expiry || new Date(s.expiry).getTime() > now);
     if (!active.length) return null;
+
+    let sortMode = 'price'; // 'price' | 'expiry'
+    let sortAsc = true;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    const h2 = document.createElement('h2');
+
+    // Sort controls
+    const sortBar = document.createElement('div');
+    sortBar.style.cssText = 'display:flex;gap:0.3rem;margin-left:auto';
+
+    const updateBtns = () => {
+        sortBar.querySelectorAll('button').forEach(b => {
+            const isActive = b.dataset.mode === sortMode;
+            b.style.background = isActive ? 'rgba(190,155,123,0.25)' : 'rgba(190,155,123,0.06)';
+            b.style.borderColor = isActive ? 'var(--color-border-strong)' : 'var(--color-border)';
+            b.style.color = isActive ? 'var(--color-accent)' : 'var(--color-text-muted)';
+            b.textContent = b.dataset.label + (isActive ? (sortAsc ? ' ↑' : ' ↓') : '');
+        });
+    };
+
+    const makeSortBtn = (label, mode) => {
+        const btn = document.createElement('button');
+        btn.dataset.mode = mode;
+        btn.dataset.label = label;
+        btn.style.cssText = `background:rgba(190,155,123,0.06);border:1px solid var(--color-border);color:var(--color-text-muted);border-radius:var(--radius-sm);font-size:0.65rem;font-family:var(--font-primary);font-weight:700;padding:0.1rem 0.45rem;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:all var(--transition)`;
+        btn.addEventListener('click', () => {
+            if (sortMode === mode) {
+                sortAsc = !sortAsc;
+            } else {
+                sortMode = mode;
+                sortAsc = true;
+            }
+            updateBtns();
+            renderList();
+        });
+        return btn;
+    };
+    sortBar.appendChild(makeSortBtn('Price', 'price'));
+    sortBar.appendChild(makeSortBtn('Expiry', 'expiry'));
+    updateBtns();
+
+    h2.textContent = 'Flash Sales';
+    h2.appendChild(sortBar);
+    card.appendChild(h2);
+
     const content = document.createElement('div');
-    active.forEach(s => {
-        const row = document.createElement('div');
-        row.className = 'sale-item';
-        row.innerHTML = `
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem">
-                <span style="font-size:0.85rem;font-weight:600;color:var(--color-text)">${s.item}</span>
-                <span style="font-size:0.78rem;color:var(--color-accent)">${ptStr(s.premiumOverride || s.premiumCredits || s.salePrice || '?')}</span>
-            </div>
-            ${s.discount ? `<div style="font-size:0.72rem;color:var(--warning-color)">${s.discount}% OFF</div>` : ''}
-            ${s.expiry ? `<div style="font-size:0.72rem;color:var(--color-text-muted);margin-top:0.15rem">Ends: <span class="timer" data-expiry="${s.expiry}"></span></div>` : ''}
-        `;
-        content.appendChild(row);
-    });
-    const card = createCard('Flash Sales', content);
-    startAllTimers(card);
+    card.appendChild(content);
+
+    const renderList = () => {
+        content.innerHTML = '';
+        const sorted = [...active].sort((a, b) => {
+            let diff;
+            if (sortMode === 'price') {
+                const pa = a.premiumOverride || a.premiumCredits || a.salePrice || 0;
+                const pb = b.premiumOverride || b.premiumCredits || b.salePrice || 0;
+                diff = pa - pb;
+            } else {
+                const ea = a.expiry ? new Date(a.expiry).getTime() : Infinity;
+                const eb = b.expiry ? new Date(b.expiry).getTime() : Infinity;
+                diff = ea - eb;
+            }
+            return sortAsc ? diff : -diff;
+        });
+        sorted.forEach(s => {
+            const row = document.createElement('div');
+            row.className = 'sale-item';
+            row.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem">
+                    <span style="font-size:0.85rem;font-weight:600;color:var(--color-text)">${s.item}</span>
+                    <span style="font-size:0.78rem;color:var(--color-accent)">${ptStr(s.premiumOverride || s.premiumCredits || s.salePrice || '?')}</span>
+                </div>
+                ${s.discount ? `<div style="font-size:0.72rem;color:var(--warning-color)">${s.discount}% OFF</div>` : ''}
+                ${s.expiry ? `<div style="font-size:0.72rem;color:var(--color-text-muted);margin-top:0.15rem">Ends: <span class="timer" data-expiry="${s.expiry}"></span></div>` : ''}
+            `;
+            content.appendChild(row);
+        });
+        startAllTimers(content);
+    };
+
+    renderList();
     return card;
 };
 
@@ -1915,7 +1964,7 @@ const displayWarframeData = async (platform) => {
 ════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
     const kp = document.getElementById('topbarKinepage');
-    if (kp) kp.textContent = '// Operator Dashboard';
+    if (kp) kp.textContent = '';
     document.getElementById('platformSelect').addEventListener('change', e => displayWarframeData(e.target.value));
     displayWarframeData('pc');
 });
