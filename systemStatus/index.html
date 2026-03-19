@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warframe Status Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+/* ─────────────────────────────────────────────────────────
+   CSS VARIABLES / THEMES
+───────────────────────────────────────────────────────── */
+:root {
+    --color-bg: #1a1412;
+    --color-bg2: #3e312a;
+    --color-panel: #2a211e;
+    --color-accent: #be9b7b;
+    --color-accent2: #be9b7b;
+    --color-text: #fff4e6;
+    --color-text-light: #fff4e6;
+    --color-text-accent: #be9b7b;
+    --color-text-muted: rgba(255, 244, 230, 0.5);
+    --color-border: rgba(190,155,123,0.3);
+    --color-border-strong: rgba(190,155,123,0.7);
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --font-primary: 'Exo 2', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
+    --radius-sm: 0.3rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --topbar-h: 46px;
+    --gap: 0.85rem;
+    --transition: 250ms cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─────────────────────────────────────────────────────────
+   RESET & BASE
+───────────────────────────────────────────────────────── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:15px; scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+body {
+    background: var(--color-bg);
+    background-image:
+        radial-gradient(ellipse at 10% 20%, rgba(190,155,123,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 80%, rgba(62,49,42,0.4) 0%, transparent 60%);
+    color: var(--color-text);
+    font-family: var(--font-primary);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────
+   TOP BAR
+───────────────────────────────────────────────────────── */
+.topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--topbar-h);
+    background: var(--color-panel);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    gap: 0.75rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+.topbar-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--color-text);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-style: italic;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.topbar-title span { color: var(--color-accent); }
+
+.topbar-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--color-border);
+    flex-shrink: 0;
+}
+
+.topbar-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.topbar-select {
+    background: var(--color-bg2);
+    color: var(--color-text);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.28rem 2rem 0.28rem 0.55rem;
+    font-size: 0.82rem;
+    font-family: var(--font-primary);
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23be9b7b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.4rem center;
+    background-repeat: no-repeat;
+    background-size: 0.9rem;
+    transition: border-color var(--transition);
+    flex-shrink: 0;
+}
+.topbar-select:focus { border-color: var(--color-accent); }
+
+/* Kinepage — right side, truncated */
+.topbar-kinepage {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   MAIN CONTENT
+───────────────────────────────────────────────────────── */
+.main-content {
+    width: 100%;
+    min-height: 100vh;
+    padding: 1rem;
+    padding-top: calc(var(--topbar-h) + 0.75rem);
+    box-sizing: border-box;
+}
+
+/* ─────────────────────────────────────────────────────────
+   MASONRY / CSS GRID
+   Cards use --col-span to control width.
+   Long list cards (fissures, invasions, void traders) span 2 cols.
+───────────────────────────────────────────────────────── */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--gap);
+    width: 100%;
+    align-items: start;
+}
+
+/* Wide cards span 2 columns when space allows */
+.card--wide {
+    grid-column: span 2;
+}
+
+/* On narrow viewports, wide cards revert to 1 col */
+@media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+    .card--wide { grid-column: span 1; }
+}
+
+@media (min-width: 1200px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+}
+@media (min-width: 1600px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   CARD BASE
+───────────────────────────────────────────────────────── */
+.card {
+    background: var(--color-panel);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 0.85rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transition: border-color var(--transition), box-shadow var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    animation: cardIn 0.4s ease-out forwards;
+    opacity: 0;
+}
+.card:hover { border-color: var(--color-border-strong); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.card h2 {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-accent);
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 0.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.card p { font-size: 0.85rem; color: var(--color-text); line-height: 1.5; }
+.card ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.card li {
+    font-size: 0.82rem;
+    padding: 0.25rem 0.4rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    background: rgba(255,255,255,0.03);
+    border-left: 2px solid var(--color-border);
+}
+
+/* ─────────────────────────────────────────────────────────
+   TIMER
+───────────────────────────────────────────────────────── */
+.timer {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    background: rgba(190,155,123,0.1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.1rem 0.4rem;
+    white-space: nowrap;
+}
+.timer.expired { color: var(--error-color); background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); }
+@keyframes pulse-critical { 0%,100%{opacity:1} 50%{opacity:0.6} }
+.cycle-timer.critical { color: var(--error-color); animation: pulse-critical 1.5s infinite; }
+.cycle-timer.warning  { color: var(--warning-color); }
+
+/* ─────────────────────────────────────────────────────────
+   WORLD CYCLES
+───────────────────────────────────────────────────────── */
+.daily-reset-timer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0.7rem;
+    background: rgba(190,155,123,0.08);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+.daily-reset-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
+#dailyResetTime { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--color-accent); }
+
+.cycles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.4rem;
+}
+.world-cycle {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 0.15rem 0.45rem;
+    align-items: center;
+    padding: 0.5rem 0.6rem;
+    background: var(--color-bg2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition);
+}
+.world-cycle:hover { border-color: var(--color-border-strong); }
+.cycle-icon {
+    grid-row: 1 / 3;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+.cycle-name { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); grid-column: 2; }
+.cycle-state { font-size: 0.85rem; font-weight: 700; color: var(--color-text); grid-column: 2; }
+.cycle-timer { grid-column: 3; grid-row: 1 / 3; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; color: var(--color-text-accent); background: rgba(255,255,255,0.05); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.15rem 0.35rem; white-space: nowrap; }
+
+/* Cycle color theming */
+.cycle-cetus .cycle-icon        { background: linear-gradient(135deg,#f59e0b,#fbbf24); color:#1f2937; }
+.cycle-cetus.state-night .cycle-icon { background: linear-gradient(135deg,#1e293b,#334155); color:#f8fafc; }
+.cycle-cetus .cycle-state        { color: #f59e0b; }
+.cycle-cetus.state-night .cycle-state { color: #38bdf8; }
+.cycle-vallis .cycle-icon        { background: linear-gradient(135deg,#06b6d4,#0891b2); color:#f8fafc; }
+.cycle-vallis.state-warm .cycle-icon { background: linear-gradient(135deg,#f59e0b,#d97706); color:#1f2937; }
+.cycle-vallis .cycle-state       { color: #38bdf8; }
+.cycle-vallis.state-warm .cycle-state { color: #f59e0b; }
+.cycle-cambion .cycle-icon       { background: linear-gradient(135deg,#dc2626,#991b1b); color:#f8fafc; }
+.cycle-cambion.state-vome .cycle-icon { background: linear-gradient(135deg,#7c3aed,#5b21b6); color:#f8fafc; }
+.cycle-cambion .cycle-state      { color: #dc2626; }
+.cycle-cambion.state-vome .cycle-state { color: #a78bfa; }
+.cycle-zariman .cycle-icon       { background: linear-gradient(135deg,#8b5cf6,#7c3aed); color:#f8fafc; }
+.cycle-zariman .cycle-state      { color: #a78bfa; }
+.cycle-earth .cycle-icon         { background: linear-gradient(135deg,#22c55e,#16a34a); color:#f8fafc; }
+.cycle-earth.state-night .cycle-icon { background: linear-gradient(135deg,#1e293b,#0f172a); color:#f8fafc; }
+.cycle-earth .cycle-state        { color: #4ade80; }
+.cycle-earth.state-night .cycle-state { color: #93c5fd; }
+.cycle-duviri .cycle-icon        { background: linear-gradient(135deg,#e879f9,#a21caf); color:#f8fafc; }
+.cycle-duviri .cycle-state       { color: #e879f9; }
+
+/* ─────────────────────────────────────────────────────────
+   FISSURES — Wide card, compact rows, collapsible tiers
+───────────────────────────────────────────────────────── */
+.fissure-tiers { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.fissure-tier-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.6rem;
+    background: rgba(190,155,123,0.1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--transition);
+}
+.fissure-tier-header:hover { background: rgba(190,155,123,0.18); }
+.fissure-tier-header h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); }
+.fissure-tier-header .tier-right { display: flex; align-items: center; gap: 0.35rem; }
+.fissure-tier-header .tier-count { font-size: 0.7rem; color: var(--color-text-muted); font-family: var(--font-mono); background: rgba(190,155,123,0.15); border: 1px solid var(--color-border); border-radius: 999px; padding: 0.05rem 0.4rem; }
+.fissure-tier-header .tier-chevron { font-size: 0.7rem; color: var(--color-text-muted); transition: transform var(--transition); }
+.fissure-tier-header.open .tier-chevron { transform: rotate(90deg); }
+
+.fissure-tier-body { display: none; flex-direction: column; gap: 0.2rem; padding: 0.2rem 0; }
+.fissure-tier-body.open { display: flex; }
+
+.fissure-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.55rem;
+    background: var(--color-bg2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+}
+.fissure-row .fissure-node { color: var(--color-text); font-weight: 600; font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fissure-row .fissure-type { font-size: 0.72rem; color: var(--color-text-muted); }
+.fissure-row .fissure-enemy { font-size: 0.68rem; color: var(--color-text-muted); white-space: nowrap; }
+
+/* Steel Path, Arbitration — compact info rows */
+.info-grid { display: flex; flex-direction: column; gap: 0.3rem; }
+.info-row { display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.83rem; }
+.info-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); white-space: nowrap; flex-shrink: 0; }
+.info-value { color: var(--color-text); font-weight: 500; }
+
+/* ─────────────────────────────────────────────────────────
+   VOID TRADERS — Wide card, collapsible inventory
+───────────────────────────────────────────────────────── */
+.void-trader-item { padding-bottom: 0.75rem; margin-bottom: 0.6rem; border-bottom: 1px solid var(--color-border); }
+.void-trader-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.trader-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.4rem; }
+.trader-header h3 { font-size: 0.9rem; font-weight: 700; color: var(--color-text); }
+.trader-status { font-size: 0.72rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px; white-space: nowrap; }
+.trader-status.active { background: rgba(16,185,129,0.15); color: var(--success-color); border: 1px solid rgba(16,185,129,0.3); }
+.trader-status.inactive { background: rgba(239,68,68,0.12); color: var(--error-color); border: 1px solid rgba(239,68,68,0.25); }
+
+.collapse-btn {
+    background: rgba(190,155,123,0.08);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-accent);
+    font-size: 0.75rem;
+    font-family: var(--font-primary);
+    font-weight: 600;
+    padding: 0.3rem 0.65rem;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.collapse-btn:hover { background: rgba(190,155,123,0.15); }
+.collapse-btn .chevron { transition: transform var(--transition); }
+.collapse-btn.open .chevron { transform: rotate(90deg); }
+.collapse-body { display: none; }
+.collapse-body.open { display: block; }
+
+.trader-inv-list { display: flex; flex-direction: column; gap: 0.15rem; margin-top: 0.35rem; }
+.trader-inv-item { display: flex; align-items: center; justify-content: space-between; padding: 0.28rem 0.5rem; background: var(--color-bg2); border-radius: var(--radius-sm); font-size: 0.78rem; border: 1px solid var(--color-border); }
+.inv-name { color: var(--color-text); font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inv-price { color: var(--color-text-accent); font-family: var(--font-mono); font-size: 0.72rem; white-space: nowrap; margin-left: 0.5rem; flex-shrink: 0; }
+
+/* ─────────────────────────────────────────────────────────
+   INVASIONS
+───────────────────────────────────────────────────────── */
+.invasion-planet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.6rem;
+    background: rgba(190,155,123,0.1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--transition);
+}
+.invasion-planet-header:hover { background: rgba(190,155,123,0.18); }
+.invasion-planet-name { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); }
+.invasion-planet-right { display: flex; align-items: center; gap: 0.35rem; }
+.invasion-planet-count { font-size: 0.7rem; color: var(--color-text-muted); font-family: var(--font-mono); background: rgba(190,155,123,0.15); border: 1px solid var(--color-border); border-radius: 999px; padding: 0.05rem 0.4rem; }
+.invasion-planet-chevron { font-size: 0.7rem; color: var(--color-text-muted); transition: transform var(--transition); }
+.invasion-planet-header.open .invasion-planet-chevron { transform: rotate(90deg); }
+
+.invasion-planet-body { display: none; flex-direction: column; gap: 0.35rem; padding: 0.25rem 0 0.1rem; }
+.invasion-planet-body.open { display: flex; }
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.65rem;
+    background: var(--color-bg2);
+    margin-bottom: 0.45rem;
+}
+.invasion-item:last-child { margin-bottom: 0; }
+.invasion-factions {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+.faction-side { display: flex; flex-direction: column; gap: 0.2rem; }
+.faction-side.defender { align-items: flex-end; text-align: right; }
+.faction-name { font-size: 0.82rem; font-weight: 700; }
+.faction-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); }
+.faction-reward { font-size: 0.72rem; color: var(--color-text-accent); font-style: italic; }
+.invasion-vs { font-size: 0.72rem; font-weight: 800; color: var(--color-accent); text-align: center; letter-spacing: 0.06em; opacity: 0.7; }
+.progress-track-wrap { position: relative; }
+.progress-track { height: 5px; background: var(--color-bg); border-radius: 3px; overflow: hidden; display: flex; }
+.progress-intersection-dot {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--color-text);
+    border: 2px solid var(--color-panel);
+    box-shadow: none;
+    pointer-events: none;
+    transition: left 0.5s ease;
+}
+.progress-fill { height: 100%; transition: width 0.5s ease; }
+.progress-percentages { display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; font-family: var(--font-mono); margin-top: 0.25rem; color: var(--color-text-muted); }
+.invasion-node-name { font-size: 0.68rem; color: var(--color-text-muted); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; padding: 0 0.3rem; }
+.invasion-timer { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.35rem; display: flex; align-items: center; gap: 0.4rem; }
+
+/* ─────────────────────────────────────────────────────────
+   SORTIE / ARCHON HUNT
+───────────────────────────────────────────────────────── */
+.mission-list { display: flex; flex-direction: column; gap: 0.25rem; }
+.mission-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.5rem; background: var(--color-bg2); border-radius: var(--radius-sm); border: 1px solid var(--color-border); font-size: 0.8rem; }
+.mission-row .mission-node { color: var(--color-text); font-weight: 600; }
+.mission-row .mission-type { color: var(--color-text-accent); font-size: 0.75rem; }
+.mission-row .mission-modifier { color: var(--warning-color); font-size: 0.72rem; margin-left: auto; text-align: right; font-style: italic; }
+
+/* Boss pill */
+.boss-pill { display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(190,155,123,0.12); border: 1px solid var(--color-border); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.75rem; color: var(--color-accent); font-weight: 600; margin-bottom: 0.4rem; }
+
+/* ─────────────────────────────────────────────────────────
+   NIGHTWAVE
+───────────────────────────────────────────────────────── */
+.nw-section { margin-top: 0.3rem; }
+.nw-challenge { padding: 0.45rem 0.55rem; background: var(--color-bg2); border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 0.2rem; }
+.nw-challenge-title { font-size: 0.82rem; font-weight: 600; color: var(--color-text); }
+.nw-challenge-rep { font-size: 0.7rem; color: var(--color-text-accent); margin-top: 0.1rem; }
+.nw-challenge-desc { font-size: 0.72rem; color: var(--color-text-muted); margin-top: 0.1rem; line-height: 1.4; }
+
+/* ─────────────────────────────────────────────────────────
+   ALERTS
+───────────────────────────────────────────────────────── */
+.alert-card { border: 1px solid rgba(239,68,68,0.25); background: rgba(239,68,68,0.05); border-radius: var(--radius-md); padding: 0.55rem; margin-bottom: 0.3rem; }
+.alert-card:last-child { margin-bottom: 0; }
+.alert-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem; }
+.alert-title h3 { font-size: 0.88rem; font-weight: 700; color: var(--color-text); }
+.alert-subtitle { font-size: 0.72rem; color: var(--color-text-muted); }
+.alert-content { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.alert-mission-info { font-size: 0.78rem; color: var(--color-text); }
+.reward-section { margin-top: 0.25rem; }
+.reward-display { display: flex; align-items: center; gap: 0.4rem; }
+.reward-name { font-size: 0.82rem; font-weight: 600; color: var(--color-text); }
+.reward-credits { font-size: 0.72rem; color: var(--color-text-muted); }
+
+/* ─────────────────────────────────────────────────────────
+   CONSTRUCTION PROGRESS
+───────────────────────────────────────────────────────── */
+.construction-item { margin-bottom: 0.5rem; }
+.construction-item:last-child { margin-bottom: 0; }
+.construction-name-percent { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem; }
+.construction-name { color: var(--color-text); font-weight: 600; }
+.construction-percentage { font-family: var(--font-mono); color: var(--color-text-accent); }
+.construction-bar { height: 5px; background: var(--color-bg2); border-radius: 3px; overflow: hidden; }
+.construction-fill { height: 100%; background: linear-gradient(90deg, var(--color-accent), rgba(190,155,123,0.5)); border-radius: 3px; transition: width 0.5s ease; }
+
+/* ─────────────────────────────────────────────────────────
+   NEWS
+───────────────────────────────────────────────────────── */
+.news-item { padding: 0.3rem 0; border-bottom: 1px solid var(--color-border); font-size: 0.8rem; }
+.news-item:last-child { border-bottom: none; }
+.news-time { color: var(--color-text-muted); font-size: 0.72rem; }
+.news-message-link { color: var(--color-accent); text-decoration: none; }
+.news-message-link:hover { text-decoration: underline; }
+.news-message { color: var(--color-text); }
+
+/* ─────────────────────────────────────────────────────────
+   STEEL PATH
+───────────────────────────────────────────────────────── */
+.steel-path-reward { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.55rem; background: var(--color-bg2); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.steel-path-reward .reward-name { font-size: 0.88rem; font-weight: 600; color: var(--color-text); }
+
+/* ─────────────────────────────────────────────────────────
+   SIMARIS
+───────────────────────────────────────────────────────── */
+.simaris-target { display: flex; align-items: center; gap: 0.5rem; }
+.simaris-target .target-name { font-size: 0.92rem; font-weight: 700; color: var(--color-text); }
+.active-badge { font-size: 0.68rem; padding: 0.1rem 0.45rem; border-radius: 999px; font-weight: 600; }
+.active-badge.yes { background: rgba(16,185,129,0.15); color: var(--success-color); border: 1px solid rgba(16,185,129,0.3); }
+.active-badge.no { background: rgba(239,68,68,0.1); color: var(--error-color); border: 1px solid rgba(239,68,68,0.2); }
+
+/* ─────────────────────────────────────────────────────────
+   CALENDAR  (unchanged logic, improved style)
+───────────────────────────────────────────────────────── */
+.calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+.calendar-month { font-size: 0.85rem; font-weight: 700; color: var(--color-text); text-transform: uppercase; letter-spacing: 0.06em; }
+.calendar-year-season { font-size: 0.68rem; color: var(--color-text-accent); }
+.calendar-nav { display: flex; gap: 0.3rem; }
+.calendar-nav button { background: var(--color-bg2); border: 1px solid var(--color-border); color: var(--color-text-accent); border-radius: var(--radius-sm); width: 24px; height: 24px; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; transition: all var(--transition); }
+.calendar-nav button:hover { background: var(--color-accent); color: var(--color-bg); border-color: var(--color-accent); }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.calendar-day-header { text-align: center; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-muted); padding: 3px 0; }
+.calendar-day { text-align: center; font-size: 0.72rem; padding: 4px 2px; border-radius: 3px; min-height: 22px; display: flex; align-items: center; justify-content: center; position: relative; color: var(--color-text); transition: background var(--transition); }
+.calendar-day.other-month { opacity: 0.3; }
+.calendar-day.today { background: rgba(190,155,123,0.2); font-weight: 700; color: var(--color-accent); border: 1px solid var(--color-border); }
+.calendar-day.has-events { cursor: pointer; }
+.calendar-day.has-events::after { content: ''; position: absolute; bottom: 2px; right: 2px; width: 4px; height: 4px; background: var(--color-accent); border-radius: 50%; }
+.calendar-day.has-events:hover { background: rgba(190,155,123,0.1); }
+.calendar-tooltip {
+    position: fixed; z-index: 9999;
+    background: var(--color-panel);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    padding: 0.65rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    min-width: 220px; max-width: 300px;
+    pointer-events: none;
+    opacity: 0; transform: translateY(-8px);
+    transition: all var(--transition);
+    font-size: 0.78rem;
+}
+.calendar-tooltip.visible { opacity: 1; transform: translateY(0); }
+.calendar-tooltip-date { font-weight: 700; color: var(--color-accent); margin-bottom: 0.4rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.3rem; }
+.calendar-tooltip-event { margin-bottom: 0.4rem; }
+.calendar-tooltip-event-type { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.15rem; }
+.calendar-tooltip-event-type.todo { color: var(--warning-color); }
+.calendar-tooltip-event-type.big-prize { color: var(--success-color); }
+.calendar-tooltip-event-type.override { color: #a78bfa; }
+.calendar-tooltip-title { font-weight: 600; color: var(--color-text); }
+.calendar-tooltip-description, .calendar-tooltip-reward { color: var(--color-text-muted); line-height: 1.4; }
+.calendar-info { font-size: 0.65rem; color: var(--color-text-muted); text-align: center; padding-top: 0.35rem; border-top: 1px solid var(--color-border); margin-top: 0.3rem; }
+
+/* ─────────────────────────────────────────────────────────
+   DEEP / TEMPORAL ARCHIMEDEA
+───────────────────────────────────────────────────────── */
+.archimedea-missions h3, .archimedea-modifiers h3 { font-size: 0.75rem; color: var(--color-text-accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.35rem; }
+.mission-container { margin-bottom: 0.3rem; }
+.mission-content { background: rgba(190,155,123,0.04); border-radius: var(--radius-sm); padding: 0.5rem; border: 1px solid var(--color-border); margin-top: 0.2rem; }
+.mission-content.hidden, .modifiers-content.hidden, .nightwave-challenges.hidden, .vault-inventory.hidden, .collapse-body { display: none; }
+.mission-item { border-left: 2px solid var(--color-accent); padding-left: 0.5rem; margin-bottom: 0.4rem; }
+.deviation-info, .risk-item { background: rgba(133,68,66,0.15); border-radius: var(--radius-sm); padding: 0.4rem; margin-bottom: 0.3rem; border: 1px solid var(--color-border); font-size: 0.78rem; }
+.deviation-name, .risk-name { font-weight: 600; color: var(--color-text); }
+.deviation-description, .risk-description { color: var(--color-text-muted); font-size: 0.72rem; line-height: 1.4; margin-top: 0.15rem; }
+.modifiers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.4rem; }
+.modifier-item { background: rgba(190,155,123,0.07); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem; }
+.modifier-item strong { font-size: 0.78rem; color: var(--color-text); display: block; margin-bottom: 0.2rem; }
+.modifier-description { font-size: 0.72rem; color: var(--color-text-muted); line-height: 1.4; }
+.archimedea-expiry { font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px solid var(--color-border); }
+
+/* ─────────────────────────────────────────────────────────
+   VAULT TRADER
+───────────────────────────────────────────────────────── */
+.vault-schedule { font-size: 0.78rem; color: var(--color-text-muted); }
+.schedule-item { display: flex; justify-content: space-between; align-items: center; padding: 0.25rem 0; border-bottom: 1px solid var(--color-border); font-size: 0.78rem; }
+.schedule-item:last-child { border-bottom: none; }
+.schedule-item-name { color: var(--color-text); flex: 1; }
+.schedule-item-time { color: var(--color-text-accent); white-space: nowrap; margin-left: 0.5rem; }
+
+/* ─────────────────────────────────────────────────────────
+   SYNDICATE MISSIONS
+───────────────────────────────────────────────────────── */
+.syndicate-mission { margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-border); }
+.syndicate-mission:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.syndicate-mission h3 { font-size: 0.82rem; font-weight: 700; color: var(--color-accent); margin-bottom: 0.2rem; }
+
+/* ─────────────────────────────────────────────────────────
+   EVENTS
+───────────────────────────────────────────────────────── */
+.event { padding: 0.4rem 0; border-bottom: 1px solid var(--color-border); }
+.event:last-child { border-bottom: none; }
+.event h3 { font-size: 0.85rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.2rem; }
+
+/* ─────────────────────────────────────────────────────────
+   SALE ITEMS
+───────────────────────────────────────────────────────── */
+.sale-item { padding: 0.4rem 0; border-bottom: 1px solid var(--color-border); }
+.sale-item:last-child { border-bottom: none; }
+.sale-item h3 { font-size: 0.85rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.2rem; }
+
+/* ─────────────────────────────────────────────────────────
+   CONCLAVE CHALLENGES
+───────────────────────────────────────────────────────── */
+.challenge { padding: 0.35rem 0; border-bottom: 1px solid var(--color-border); }
+.challenge:last-child { border-bottom: none; }
+
+/* ─────────────────────────────────────────────────────────
+   PEACE MESSAGE
+───────────────────────────────────────────────────────── */
+.peace-message { color: var(--color-text-muted); font-style: italic; font-size: 0.82rem; }
+
+/* ─────────────────────────────────────────────────────────
+   ARBITRATION
+───────────────────────────────────────────────────────── */
+.arbitration-mission .info-row { padding: 0.3rem 0; border-bottom: 1px solid var(--color-border); }
+.arbitration-mission .info-row:last-child { border-bottom: none; }
+.arbitration-offline { padding: 0.5rem; text-align: center; color: var(--color-text-muted); font-style: italic; }
+
+/* ─────────────────────────────────────────────────────────
+   LOADING / ERROR
+───────────────────────────────────────────────────────── */
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+}
+.loading-state::after {
+    content: '';
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-left: 0.6rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─────────────────────────────────────────────────────────
+   ARBITRATION MISSION ICON
+───────────────────────────────────────────────────────── */
+.mission-header-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+.mission-title { font-size: 0.9rem; font-weight: 700; color: var(--color-text); }
+.mission-subtitle { font-size: 0.75rem; color: var(--color-text-accent); }
+.mission-status { font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 999px; margin-left: auto; white-space: nowrap; }
+.mission-status.active { background: rgba(16,185,129,0.15); color: var(--success-color); border: 1px solid rgba(16,185,129,0.3); }
+.mission-status.inactive { background: rgba(239,68,68,0.1); color: var(--error-color); border: 1px solid rgba(239,68,68,0.2); }
+
+/* ─────────────────────────────────────────────────────────
+   NIGHTWAVE TOGGLE
+───────────────────────────────────────────────────────── */
+.nightwave-toggle-btn {
+    background: rgba(190,155,123,0.08);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-accent);
+    font-size: 0.75rem;
+    font-family: var(--font-primary);
+    font-weight: 600;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background var(--transition);
+    margin-bottom: 0.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.nightwave-toggle-btn:hover { background: rgba(190,155,123,0.15); }
+.nightwave-toggle-btn .chevron { transition: transform var(--transition); }
+.nightwave-toggle-btn.open .chevron { transform: rotate(90deg); }
+.nightwave-challenges { display: none; }
+.nightwave-challenges.open { display: block; }
+
+/* ─────────────────────────────────────────────────────────
+   SENTIENT OUTPOST
+───────────────────────────────────────────────────────── */
+.outpost-inactive { color: var(--color-text-muted); font-style: italic; font-size: 0.82rem; }
+
+/* sr-only */
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE ADJUSTMENTS
+───────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    html { font-size: 14px; }
+    .main-content { padding: 0.6rem; padding-top: 3.5rem; }
+    .invasion-factions { grid-template-columns: 1fr; gap: 0.3rem; }
+    .invasion-vs { text-align: left; }
+    .faction-side.defender { align-items: flex-start; text-align: left; }
+    .cycles-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (min-width: 768px) {
+    .cycles-grid { grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); }
+}
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <header class="topbar">
+        <span class="topbar-title">System <span>Status</span></span>
+        <div class="topbar-divider"></div>
+        <span class="topbar-label">Platform</span>
+        <select id="platformSelect" class="topbar-select" aria-label="Select Platform">
+            <option value="pc">PC</option>
+            <option value="ps4">PlayStation 4</option>
+            <option value="xb1">Xbox One</option>
+            <option value="swi">Nintendo Switch</option>
+        </select>
+        <span class="topbar-kinepage" id="topbarKinepage"></span>
+    </header>
+
+    <!-- Main -->
+    <main class="main-content" id="mainContent">
+        <div class="grid" id="warframeData">
+            <div class="loading-state">Loading Warframe data</div>
+        </div>
+    </main>
+
+    <div class="calendar-tooltip" id="calendarTooltip"></div>
+
+    <script>
+/* ════════════════════════════════════════════════════════
+   UTILITY FUNCTIONS
+════════════════════════════════════════════════════════ */
+const formatDuration = (ms) => {
+    if (ms < 0) return 'Expired';
+    const s = Math.floor((ms / 1000) % 60);
+    const m = Math.floor((ms / 60000) % 60);
+    const h = Math.floor((ms / 3600000) % 24);
+    const d = Math.floor(ms / 86400000);
+    const parts = [];
+    if (d) parts.push(`${d}d`);
+    if (h) parts.push(`${h}h`);
+    if (m) parts.push(`${m}m`);
+    if (s || !parts.length) parts.push(`${s}s`);
+    return parts.join(' ');
+};
+
+const formatTimeAgo = (dateString) => {
+    if (!dateString) return 'Unknown';
+    const diff = Date.now() - new Date(dateString).getTime();
+    if (diff < 0) return 'Soon';
+    const s = Math.floor(diff/1000), m = Math.floor(s/60), h = Math.floor(m/60), d = Math.floor(h/24);
+    if (d > 365) return `${Math.floor(d/365)}y ago`;
+    if (d > 30)  return `${Math.floor(d/30)}mo ago`;
+    if (d > 6)   return `${Math.floor(d/7)}w ago`;
+    if (d)       return `${d}d ago`;
+    if (h)       return `${h}h ago`;
+    if (m)       return `${m}m ago`;
+    return 'Just now';
+};
+
+const updateTimer = (el, expiry) => {
+    if (!el) return;
+    const left = new Date(expiry).getTime() - Date.now();
+    el.textContent = formatDuration(left);
+    el.classList.toggle('expired', left < 0);
+};
+
+const startTimer = (el, expiry) => {
+    updateTimer(el, expiry);
+    return setInterval(() => updateTimer(el, expiry), 1000);
+};
+
+const startAllTimers = (container) => {
+    container.querySelectorAll('.timer[data-expiry]').forEach(el => startTimer(el, el.dataset.expiry));
+};
+
+
+
+/* ════════════════════════════════════════════════════════
+   COLLAPSE TOGGLE HELPER
+════════════════════════════════════════════════════════ */
+const makeToggle = (btn, body) => {
+    btn.addEventListener('click', () => {
+        const open = body.classList.toggle('open');
+        btn.classList.toggle('open', open);
+    });
+};
+
+/* ════════════════════════════════════════════════════════
+   PLATINUM ICON
+════════════════════════════════════════════════════════ */
+// Inline platinum SVG — matches Warframe's platinum icon style
+const PT_ICON = `<img src="https://www-static.warframe.com/images/icons/material/platinum.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="pt">`;
+const SE_ICON = `<img src="https://wiki.warframe.com/images/thumb/SteelEssence.png/32px-SteelEssence.png?ee70b" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="se">`;
+const ptStr = (val) => `${PT_ICON}<span style="font-family:var(--font-mono)">${val}</span>`;
+const seStr = (val) => `${SE_ICON}<span style="font-family:var(--font-mono)">${val}</span>`;
+const missionTypeFormat = (t) => t || 'Unknown';
+
+/* ════════════════════════════════════════════════════════
+   FACTION COLOR
+════════════════════════════════════════════════════════ */
+const factionColor = (f) => ({
+    grineer:'#ff6b35', corpus:'#4fc3f7', infested:'#8bc34a',
+    corrupted:'#ffc107', orokin:'#ffeb3b', sentient:'#c084fc',
+    narmer:'#d97706', murmur:'#94a3b8', tenno:'#60a5fa'
+})[f?.toLowerCase()] || '#9e9e9e';
+
+/* ════════════════════════════════════════════════════════
+   CARD FACTORY
+════════════════════════════════════════════════════════ */
+const createCard = (title, content, wide = false) => {
+    const card = document.createElement('div');
+    card.className = 'card' + (wide ? ' card--wide' : '');
+    const h2 = document.createElement('h2');
+    h2.textContent = title;
+    card.appendChild(h2);
+    if (typeof content === 'string') {
+        const d = document.createElement('div'); d.innerHTML = content; card.appendChild(d);
+    } else if (content instanceof Node) {
+        card.appendChild(content);
+    }
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   WORLD CYCLES
+════════════════════════════════════════════════════════ */
+const createDailyResetTimer = () => {
+    const div = document.createElement('div');
+    div.className = 'daily-reset-timer';
+    div.innerHTML = `<span class="daily-reset-label">Daily Reset</span><span id="dailyResetTime" style="font-family:var(--font-mono);font-size:1rem;font-weight:700;color:var(--color-accent)">00:00:00</span>`;
+    const el = div.querySelector('#dailyResetTime');
+    const tick = () => {
+        const next = new Date(); next.setUTCDate(next.getUTCDate()+1); next.setUTCHours(0,0,0,0);
+        const ms = next - Date.now();
+        if (ms <= 0) { el.textContent = '00:00:00'; return; }
+        const h = Math.floor(ms/3600000), m = Math.floor((ms%3600000)/60000), s = Math.floor((ms%60000)/1000);
+        el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    };
+    setInterval(tick, 1000); tick();
+    return div;
+};
+
+const CYCLE_ICONS = {
+    cetus:   s => s==='night' ? '🌙' : '☀️',
+    vallis:  s => s==='warm'  ? '🔥' : '❄️',
+    cambion: s => s==='vome'  ? '🟣' : '🔴',
+    zariman: ()  => '✨',
+    earth:   s => s==='night' ? '🌑' : '🌍',
+    duviri:  ()  => '🌀',
+    default: ()  => '🌍'
+};
+
+const createWorldCycle = (name, state, expiry, type) => {
+    const el = document.createElement('div');
+    el.className = `world-cycle cycle-${type}${state ? ' state-'+state.toLowerCase() : ''}`;
+    const icon = (CYCLE_ICONS[type] || CYCLE_ICONS.default)(state?.toLowerCase());
+    el.innerHTML = `
+        <div class="cycle-icon">${icon}</div>
+        <div class="cycle-name">${name}</div>
+        <div class="cycle-state">${state || 'Unknown'}</div>
+        <div class="cycle-timer"></div>`;
+    const timer = el.querySelector('.cycle-timer');
+    const tick = () => {
+        const left = new Date(expiry) - Date.now();
+        timer.textContent = formatDuration(left);
+        timer.classList.toggle('critical', left < 5*60000);
+        timer.classList.toggle('warning', left >= 5*60000 && left < 15*60000);
+    };
+    setInterval(tick, 1000); tick();
+    return el;
+};
+
+/* ════════════════════════════════════════════════════════
+   FISSURES — Wide card, collapsible tiers
+════════════════════════════════════════════════════════ */
+const TIER_ORDER = ['Lith','Meso','Neo','Axi','Requiem','Omnia'];
+
+const displayFissures = (fissures) => {
+    if (!Array.isArray(fissures) || !fissures.length) return null;
+    const active = fissures.filter(f => !f.expired);
+    if (!active.length) return createCard('Void Fissures', '<p class="peace-message">No active fissures</p>');
+
+    // group by tier
+    const groups = {};
+    active.forEach(f => { (groups[f.tier] = groups[f.tier] || []).push(f); });
+
+    const tiers = document.createElement('div');
+    tiers.className = 'fissure-tiers';
+
+    const orderedTiers = [...TIER_ORDER.filter(t => groups[t]), ...Object.keys(groups).filter(t => !TIER_ORDER.includes(t))];
+
+    orderedTiers.forEach((tier, i) => {
+        const list = groups[tier];
+        const header = document.createElement('div');
+        header.className = 'fissure-tier-header';
+        header.innerHTML = `<h3>${tier}</h3><span class="tier-right"><span class="tier-count">${list.length}</span><span class="tier-chevron">▶</span></span>`;
+
+        const body = document.createElement('div');
+        body.className = 'fissure-tier-body';
+
+        list.sort((a,b) => new Date(a.expiry)-new Date(b.expiry)).forEach(f => {
+            const row = document.createElement('div');
+            row.className = 'fissure-row';
+            row.innerHTML = `
+                <div>
+                    <div class="fissure-node">${f.node || 'Unknown'}${f.isSharkwing||f.archwingRequired?' 🚁':''}</div>
+                    <div class="fissure-type">${missionTypeFormat(f.missionType)}</div>
+                </div>
+                <div class="fissure-enemy">${f.enemy||''}</div>
+                <span class="timer" data-expiry="${f.expiry}"></span>`;
+            body.appendChild(row);
+        });
+
+        header.addEventListener('click', () => {
+            const open = body.classList.toggle('open');
+            header.classList.toggle('open', open);
+        });
+
+        tiers.appendChild(header);
+        tiers.appendChild(body);
+    });
+
+    const card = createCard('Void Fissures', tiers, false);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   SORTIE
+════════════════════════════════════════════════════════ */
+const displaySortieInfo = (d) => {
+    const content = document.createElement('div');
+    content.innerHTML = `<div class="boss-pill">⚔️ ${d.boss}</div>`;
+    const list = document.createElement('div');
+    list.className = 'mission-list';
+    d.variants.forEach(v => {
+        const row = document.createElement('div');
+        row.className = 'mission-row';
+        row.innerHTML = `<span class="mission-type">${missionTypeFormat(v.missionType)}</span><span class="mission-modifier">${v.modifier}</span>`;
+        list.appendChild(row);
+    });
+    content.appendChild(list);
+    const foot = document.createElement('p');
+    foot.style.cssText = 'margin-top:0.4rem;font-size:0.78rem;color:var(--color-text-muted)';
+    foot.innerHTML = `Resets in: <span class="timer" data-expiry="${d.expiry}"></span>`;
+    content.appendChild(foot);
+    const card = createCard('Sortie', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   ARCHON HUNT
+════════════════════════════════════════════════════════ */
+const displayArchonHunt = (d) => {
+    const content = document.createElement('div');
+    content.innerHTML = `<div class="boss-pill">💀 ${d.boss}</div>`;
+    const list = document.createElement('div'); list.className = 'mission-list';
+    d.missions.forEach(m => {
+        const row = document.createElement('div'); row.className = 'mission-row';
+        row.innerHTML = `<span class="mission-node">${m.node}</span><span class="mission-type">${missionTypeFormat(m.type)}</span>`;
+        list.appendChild(row);
+    });
+    content.appendChild(list);
+    const foot = document.createElement('p');
+    foot.style.cssText = 'margin-top:0.4rem;font-size:0.78rem;color:var(--color-text-muted)';
+    foot.innerHTML = `Resets in: <span class="timer" data-expiry="${d.expiry}"></span>`;
+    content.appendChild(foot);
+    const card = createCard('Archon Hunt', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   ALERTS
+════════════════════════════════════════════════════════ */
+const displayAlerts = (alerts) => {
+    if (!alerts || !alerts.length) return null;
+    const wrap = document.createElement('div');
+    alerts.forEach(a => {
+        const card = document.createElement('div'); card.className = 'alert-card';
+        const fc = factionColor(a.mission?.faction);
+        card.innerHTML = `
+            <div class="alert-header">
+                <div class="alert-title">
+                    <h3>${a.mission?.node || 'Unknown'}</h3>
+                    <div class="alert-subtitle" style="color:${fc}">${a.mission?.faction||''} · ${missionTypeFormat(a.mission?.type)}</div>
+                </div>
+                <span class="timer" data-expiry="${a.expiry}"></span>
+            </div>
+            <div class="alert-content">
+                ${a.mission?.minEnemyLevel ? `<div class="alert-mission-info">Lvl ${a.mission.minEnemyLevel}–${a.mission.maxEnemyLevel||a.mission.minEnemyLevel}</div>` : ''}
+                <div class="reward-section">
+                    <div class="reward-display">
+                        <div>
+                            <div class="reward-name">🎁 ${a.mission?.reward?.asString || 'Unknown Reward'}</div>
+                            ${a.mission?.reward?.credits ? `<div class="reward-credits">${a.mission.reward.credits.toLocaleString()} cr</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        wrap.appendChild(card);
+    });
+    const c = createCard('🚨 Alerts', wrap);
+    startAllTimers(c);
+    return c;
+};
+
+/* ════════════════════════════════════════════════════════
+   INVASIONS — grouped by planet, collapsible
+════════════════════════════════════════════════════════ */
+const displayInvasions = (invasions) => {
+    const active = invasions.filter(i => !i.completed);
+    if (!active.length) return null;
+
+    // Extract planet from node string "NodeName (Planet)" or use raw node
+    const getPlanet = (inv) => {
+        const node = inv.node || '';
+        const match = node.match(/\(([^)]+)\)$/);
+        return match ? match[1] : (inv.planet || 'Unknown');
+    };
+
+    // Group by planet
+    const planetGroups = {};
+    active.forEach(inv => {
+        const planet = getPlanet(inv);
+        (planetGroups[planet] = planetGroups[planet] || []).push(inv);
+    });
+
+    const sortedPlanets = Object.keys(planetGroups).sort();
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;gap:0.4rem';
+
+    sortedPlanets.forEach(planet => {
+        const list = planetGroups[planet];
+
+        // Planet header (collapse toggle)
+        const header = document.createElement('div');
+        header.className = 'invasion-planet-header';
+        header.innerHTML = `
+            <span class="invasion-planet-name">${planet}</span>
+            <span class="invasion-planet-right">
+                <span class="invasion-planet-count">${list.length}</span>
+                <span class="invasion-planet-chevron">▶</span>
+            </span>`;
+
+        const body = document.createElement('div');
+        body.className = 'invasion-planet-body';
+
+        list.forEach(inv => {
+            const pct = Array.isArray(inv.completion) ? inv.completion[0]||0 : (inv.completion||0);
+            const clampPct = Math.max(0, Math.min(100, pct));
+            const atk = inv.attackingFaction || inv.attacker?.faction || 'Unknown';
+            const def = inv.defendingFaction || inv.defender?.faction || 'Unknown';
+            const atkR = (inv.attackerReward||inv.attacker?.reward)?.asString || '';
+            const defR = (inv.defenderReward||inv.defender?.reward)?.asString || '';
+            const div = document.createElement('div'); div.className = 'invasion-item';
+            div.innerHTML = `
+                <div class="invasion-factions">
+                    <div class="faction-side attacker">
+                        <div class="faction-name" style="color:${factionColor(atk)}">${atk}</div>
+                        <div class="faction-label">Attacker</div>
+                        ${atkR ? `<div class="faction-reward">${atkR}</div>` : ''}
+                    </div>
+                    <div class="invasion-vs">VS</div>
+                    <div class="faction-side defender">
+                        <div class="faction-name" style="color:${factionColor(def)}">${def}</div>
+                        <div class="faction-label">Defender</div>
+                        ${defR ? `<div class="faction-reward">${defR}</div>` : ''}
+                    </div>
+                </div>
+                <div class="progress-track-wrap">
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width:${clampPct}%;background:linear-gradient(90deg,${factionColor(atk)},${factionColor(atk)}88)"></div>
+                        <div class="progress-fill" style="width:${100-clampPct}%;background:linear-gradient(90deg,${factionColor(def)}88,${factionColor(def)})"></div>
+                    </div>
+                    <div class="progress-intersection-dot" style="left:${clampPct}%"></div>
+                </div>
+                <div class="progress-percentages">
+                    <span style="color:${factionColor(atk)}">${Math.round(clampPct)}%</span>
+                    <span class="invasion-node-name">${inv.node||''}</span>
+                    <span style="color:${factionColor(def)}">${Math.round(100-clampPct)}%</span>
+                </div>
+                ${inv.expiry ? `<div class="invasion-timer">Ends: <span class="timer" data-expiry="${inv.expiry}"></span></div>` : ''}`;
+            body.appendChild(div);
+        });
+
+        header.addEventListener('click', () => {
+            const open = body.classList.toggle('open');
+            header.classList.toggle('open', open);
+        });
+
+        wrap.appendChild(header);
+        wrap.appendChild(body);
+    });
+
+    const c = createCard('Active Invasions', wrap, false);
+    startAllTimers(c);
+    return c;
+};
+
+/* ════════════════════════════════════════════════════════
+   NIGHTWAVE
+════════════════════════════════════════════════════════ */
+const displayNightwave = (d) => {
+    if (!d.active) return null;
+    const daily   = d.activeChallenges.filter(c => c.isDaily);
+    const weekly  = d.activeChallenges.filter(c => !c.isDaily);
+    const content = document.createElement('div');
+    content.innerHTML = `<p style="font-size:0.78rem;color:var(--color-text-muted);margin-bottom:0.4rem">Season ${d.season} · Phase ${d.phase}</p>`;
+
+    [[daily,'Daily Challenges'],[weekly,'Weekly Challenges']].forEach(([arr,label]) => {
+        if (!arr.length) return;
+        const sec = document.createElement('div'); sec.className = 'nw-section';
+        const btn = document.createElement('button'); btn.className = 'nightwave-toggle-btn';
+        btn.innerHTML = `${label} <span style="color:var(--color-text-muted);font-size:0.7rem">(${arr.length})</span><span class="chevron">▶</span>`;
+        const body = document.createElement('div'); body.className = 'nightwave-challenges';
+        arr.forEach(ch => {
+            const item = document.createElement('div'); item.className = 'nw-challenge';
+            item.innerHTML = `<div class="nw-challenge-title">${ch.title}</div><div class="nw-challenge-rep">${ch.reputation} Standing</div>${ch.desc ? `<div class="nw-challenge-desc">${ch.desc}</div>` : ''}${ch.expiry ? `<div style="margin-top:0.15rem;font-size:0.7rem;color:var(--color-text-muted)">Expires: <span class="timer" data-expiry="${ch.expiry}"></span></div>` : ''}`;
+            body.appendChild(item);
+        });
+        btn.addEventListener('click', () => { const o = body.classList.toggle('open'); btn.classList.toggle('open',o); });
+        sec.appendChild(btn); sec.appendChild(body);
+        content.appendChild(sec);
+    });
+
+    const card = createCard('Nightwave', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   VOID TRADERS — Wide when active (has inventory)
+════════════════════════════════════════════════════════ */
+const displayAllVoidTraders = (traders) => {
+    if (!traders.length) return null;
+    const wrap = document.createElement('div');
+    const hasInv = traders.some(t => t.active && t.inventory?.length);
+    traders.forEach((trader, idx) => {
+        const correction = new Date(new Date(trader.expiry).getTime() - 2*86400000).toISOString();
+        const item = document.createElement('div'); item.className = 'void-trader-item';
+        const statusClass = trader.active ? 'active' : 'inactive';
+        const statusTxt   = trader.active ? '● Active' : '● Inactive';
+        item.innerHTML = `
+            <div class="trader-header">
+                <h3>${trader.character||trader.name}</h3>
+                <span class="trader-status ${statusClass}">${statusTxt}</span>
+            </div>
+            <div class="info-grid">
+                <div class="info-row"><span class="info-label">Location</span><span class="info-value">${trader.location||'Unknown'}</span></div>
+                <div class="info-row"><span class="info-label">${trader.active?'Leaves':'Arrives'}</span><span class="info-value"><span class="timer" data-expiry="${correction}"></span></span></div>
+            </div>`;
+
+        if (trader.active && trader.inventory?.length) {
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'collapse-btn';
+            toggleBtn.style.marginTop = '0.4rem';
+            toggleBtn.innerHTML = `Inventory (${trader.inventory.length} items) <span class="chevron">▶</span>`;
+            const invBody = document.createElement('div'); invBody.className = 'collapse-body';
+            const invList = document.createElement('div'); invList.className = 'trader-inv-list';
+            trader.inventory.forEach(it => {
+                const row = document.createElement('div'); row.className = 'trader-inv-item';
+                row.innerHTML = `<span class="inv-name">${it.item}</span><span class="inv-price">${it.ducats}🟡 + ${it.credits?.toLocaleString()||0}cr</span>`;
+                invList.appendChild(row);
+            });
+            invBody.appendChild(invList);
+            makeToggle(toggleBtn, invBody);
+            item.appendChild(toggleBtn);
+            item.appendChild(invBody);
+        }
+
+        if (idx < traders.length - 1) {
+            const sep = document.createElement('div');
+            sep.style.cssText = 'height:1px;background:var(--color-border);margin:0.5rem 0';
+            item.appendChild(sep);
+        }
+        wrap.appendChild(item);
+    });
+
+    const card = createCard('Void Traders', wrap, hasInv);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   VAULT TRADER
+════════════════════════════════════════════════════════ */
+const displayVaultTrader = (d) => {
+    if (!d) return null;
+    const content = document.createElement('div');
+    const statusClass = d.active ? 'active' : 'inactive';
+    const statusTxt   = d.active ? '● Active' : '● Inactive';
+    content.innerHTML = `
+        <div class="trader-header" style="margin-bottom:0.4rem">
+            <div>
+                <div style="font-size:0.9rem;font-weight:700;color:var(--color-text)">${d.character||'Varzia'}</div>
+                <div style="font-size:0.72rem;color:var(--color-text-muted)">${d.location||''}</div>
+            </div>
+            <span class="trader-status ${statusClass}">${statusTxt}</span>
+        </div>
+        <div class="info-grid">
+            <div class="info-row"><span class="info-label">${d.active?'Leaves':'Arrives'}</span><span class="info-value"><span class="timer" data-expiry="${d.expiry}"></span></span></div>
+        </div>`;
+
+    // ── Active inventory ──────────────────────────────
+    if (d.active && d.inventory?.length) {
+        const btn = document.createElement('button'); btn.className = 'collapse-btn'; btn.style.marginTop = '0.5rem';
+        btn.innerHTML = `Current Inventory (${d.inventory.length}) <span class="chevron">▶</span>`;
+        const body = document.createElement('div'); body.className = 'collapse-body';
+        const list = document.createElement('div'); list.className = 'trader-inv-list';
+        d.inventory.forEach(it => {
+            const row = document.createElement('div'); row.className = 'trader-inv-item';
+            const parts = [];
+            if (it.ducats != null && it.ducats !== 0) parts.push(`${it.ducats} Regal Aya`);
+            if (it.credits != null && it.credits !== 0) parts.push(`${it.credits} Aya`);
+            row.innerHTML = `<span class="inv-name">${it.item}</span><span class="inv-price">${parts.join(' + ')||'Free'}</span>`;
+            list.appendChild(row);
+        });
+        body.appendChild(list);
+        makeToggle(btn, body);
+        content.appendChild(btn); content.appendChild(body);
+    }
+
+    // ── Schedule: upcoming & expired ─────────────────
+    if (d.schedule?.length) {
+        const now = Date.now();
+        const upcoming = d.schedule.filter(s => new Date(s.expiry).getTime() > now)
+            .sort((a,b) => new Date(a.expiry)-new Date(b.expiry));
+        const expired  = d.schedule.filter(s => new Date(s.expiry).getTime() <= now)
+            .sort((a,b) => new Date(b.expiry)-new Date(a.expiry)); // most recent first
+
+        if (upcoming.length) {
+            const btn = document.createElement('button'); btn.className = 'collapse-btn'; btn.style.marginTop = '0.35rem';
+            btn.innerHTML = `Upcoming (${upcoming.length}) <span class="chevron">▶</span>`;
+            const body = document.createElement('div'); body.className = 'collapse-body';
+            const list = document.createElement('div'); list.className = 'trader-inv-list';
+            upcoming.forEach(s => {
+                const row = document.createElement('div'); row.className = 'trader-inv-item';
+                const priceParts = [];
+                if (s.ducats != null && s.ducats !== 0) priceParts.push(`${s.ducats} Regal Aya`);
+                if (s.credits != null && s.credits !== 0) priceParts.push(`${s.credits} Aya`);
+                const priceStr = priceParts.length ? `<span class="inv-price">${priceParts.join(' + ')}</span>` : '';
+                row.innerHTML = `<span class="inv-name">${s.item}</span>${priceStr}<span class="inv-price" style="color:var(--color-text-muted);font-size:0.68rem"><span class="timer" data-expiry="${s.expiry}"></span></span>`;
+                list.appendChild(row);
+            });
+            body.appendChild(list);
+            makeToggle(btn, body);
+            content.appendChild(btn); content.appendChild(body);
+        }
+
+        if (expired.length) {
+            const btn = document.createElement('button'); btn.className = 'collapse-btn'; btn.style.marginTop = '0.35rem';
+            btn.innerHTML = `<span style="color:var(--color-text-muted)">Expired (${expired.length})</span> <span class="chevron">▶</span>`;
+            const body = document.createElement('div'); body.className = 'collapse-body';
+            const list = document.createElement('div'); list.className = 'trader-inv-list';
+            expired.forEach(s => {
+                const row = document.createElement('div'); row.className = 'trader-inv-item';
+                row.style.opacity = '0.55';
+                const ago = formatDuration(now - new Date(s.expiry).getTime());
+                row.innerHTML = `<span class="inv-name" style="text-decoration:line-through;color:var(--color-text-muted)">${s.item}</span><span class="inv-price" style="color:var(--error-color);font-size:0.68rem">${ago} ago</span>`;
+                list.appendChild(row);
+            });
+            body.appendChild(list);
+            makeToggle(btn, body);
+            content.appendChild(btn); content.appendChild(body);
+        }
+    }
+
+    const card = createCard('Primed Vault Trader', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   STEEL PATH
+════════════════════════════════════════════════════════ */
+const displaySteelPath = (d) => {
+    const content = document.createElement('div');
+    content.innerHTML = `
+        <div class="steel-path-reward">
+            <div>
+                <div class="reward-name">${d.currentReward.name}</div>
+                <div style="font-size:0.72rem;color:var(--color-text-muted)">${seStr(d.currentReward.cost)} Steel Essence</div>
+            </div>
+        </div>
+        <div class="info-row" style="margin-top:0.4rem">
+            <span class="info-label">Rotates in</span>
+            <span class="info-value"><span class="timer" data-expiry="${d.expiry}"></span></span>
+        </div>`;
+    const card = createCard('Steel Path', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   ARBITRATION
+════════════════════════════════════════════════════════ */
+const displayArbitration = (d) => {
+    if (!d) return null;
+    if (d.enemy?.toLowerCase() === 'tenno') {
+        return createCard('Arbitration', '<div class="arbitration-offline">Hexis drones are offline</div>');
+    }
+    const content = document.createElement('div');
+    const statusClass = d.active ? 'active' : 'inactive';
+    content.innerHTML = `
+        <div class="mission-header-row">
+            <div>
+                <div class="mission-title">${d.node}</div>
+                <div class="mission-subtitle">${missionTypeFormat(d.type)}</div>
+            </div>
+            <span class="mission-status ${statusClass}">${d.active?'Active':'Inactive'}</span>
+        </div>
+        <div class="info-grid">
+            <div class="info-row"><span class="info-label">Enemy</span><span class="info-value" style="color:${factionColor(d.enemy)}">${d.enemy}</span></div>
+            ${d.archwing ? `<div class="info-row"><span class="info-label">Special</span><span class="info-value">Archwing</span></div>` : ''}
+            ${d.expiry ? `<div class="info-row"><span class="info-label">Rotation</span><span class="info-value"><span class="timer" data-expiry="${d.expiry}"></span></span></div>` : ''}
+        </div>`;
+    const card = createCard('Arbitration', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   SENTIENT OUTPOST
+════════════════════════════════════════════════════════ */
+const displaySentientOutposts = (d) => {
+    if (!d) return null;
+    const content = document.createElement('div');
+    if (!d.mission) {
+        content.innerHTML = '<p class="outpost-inactive">No active outpost</p>';
+    } else {
+        content.innerHTML = `
+            <div class="info-grid">
+                <div class="info-row"><span class="info-label">Node</span><span class="info-value">${d.mission.node}</span></div>
+                <div class="info-row"><span class="info-label">Type</span><span class="info-value">${missionTypeFormat(d.mission.type)}</span></div>
+                <div class="info-row"><span class="info-label">Faction</span><span class="info-value" style="color:${factionColor(d.mission.faction)}">${d.mission.faction}</span></div>
+            </div>`;
+    }
+    return createCard('Sentient Outposts', content);
+};
+
+/* ════════════════════════════════════════════════════════
+   SIMARIS
+════════════════════════════════════════════════════════ */
+const displaySimaris = (d) => {
+    if (!d) return null;
+    const content = document.createElement('div');
+    content.innerHTML = `
+        <div class="simaris-target">
+            <div class="target-name">${d.target || 'None'}</div>
+            <span class="active-badge ${d.isTargetActive?'yes':'no'}">${d.isTargetActive?'Active':'Inactive'}</span>
+        </div>`;
+    return createCard('Sanctuary / Simaris', content);
+};
+
+/* ════════════════════════════════════════════════════════
+   CONSTRUCTION PROGRESS
+════════════════════════════════════════════════════════ */
+const displayConstructionProgress = (d) => {
+    if (!d) return null;
+    const f = Math.max(0, Math.min(100, d.fomorianProgress||0));
+    const r = Math.max(0, Math.min(100, d.razorbackProgress||0));
+    const content = document.createElement('div');
+    content.innerHTML = `
+        <div class="construction-item">
+            <div class="construction-name-percent"><span class="construction-name">Fomorian</span><span class="construction-percentage">${f.toFixed(1)}%</span></div>
+            <div class="construction-bar"><div class="construction-fill" style="width:${f}%"></div></div>
+        </div>
+        <div class="construction-item">
+            <div class="construction-name-percent"><span class="construction-name">Razorback</span><span class="construction-percentage">${r.toFixed(1)}%</span></div>
+            <div class="construction-bar"><div class="construction-fill" style="width:${r}%"></div></div>
+        </div>`;
+    return createCard('Construction Progress', content);
+};
+
+/* ════════════════════════════════════════════════════════
+   NEWS
+════════════════════════════════════════════════════════ */
+const displayNews = (news) => {
+    if (!Array.isArray(news) || !news.length) return null;
+    const sorted = [...news].sort((a,b) => new Date(b.date)-new Date(a.date));
+    const content = document.createElement('div');
+    sorted.forEach(item => {
+        const div = document.createElement('div'); div.className = 'news-item';
+        div.innerHTML = `<span class="news-time">${formatTimeAgo(item.date)}</span> — ${item.link ? `<a href="${item.link}" target="_blank" rel="noopener" class="news-message-link">${item.message}</a>` : `<span class="news-message">${item.message}</span>`}`;
+        content.appendChild(div);
+    });
+    return createCard('News', content);
+};
+
+/* ════════════════════════════════════════════════════════
+   EVENTS
+════════════════════════════════════════════════════════ */
+const displayEvents = (events) => {
+    if (!Array.isArray(events) || !events.length) return null;
+    const content = document.createElement('div');
+    content.innerHTML = events.map(e => `
+        <div class="event">
+            <h3>${e.description}</h3>
+            ${e.victimNode ? `<p style="font-size:0.78rem;color:var(--color-text-muted)">${e.victimNode}</p>` : ''}
+            ${e.health ? `<p style="font-size:0.78rem">Progress: ${Math.round(e.health*100)}%</p>` : ''}
+            ${e.expiry ? `<p style="font-size:0.78rem;margin-top:0.2rem">Ends: <span class="timer" data-expiry="${e.expiry}"></span></p>` : ''}
+        </div>`).join('');
+    const card = createCard('Events', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   SYNDICATE MISSIONS
+════════════════════════════════════════════════════════ */
+const displaySyndicateMissions = (missions) => {
+    const avail = missions.filter(m => m.nodes?.length);
+    if (!avail.length) return null;
+    const content = document.createElement('div');
+    content.style.cssText = 'display:flex;flex-direction:column;gap:0.25rem';
+    avail.forEach(m => {
+        const btn = document.createElement('button');
+        btn.className = 'collapse-btn';
+        btn.innerHTML = `
+            <span style="font-weight:700;color:var(--color-text)">${m.syndicate}</span>
+            <span style="display:flex;align-items:center;gap:0.5rem">
+                <span style="font-size:0.68rem;color:var(--color-text-muted);font-family:var(--font-mono)">${m.nodes.length} mission${m.nodes.length>1?'s':''}</span>
+                <span class="chevron">▶</span>
+            </span>`;
+        const body = document.createElement('div');
+        body.className = 'collapse-body';
+        body.style.cssText = 'padding:0.2rem 0 0.1rem 0.5rem;border-left:2px solid var(--color-border)';
+        const nodeList = document.createElement('div');
+        nodeList.style.cssText = 'display:flex;flex-direction:column;gap:0.15rem;margin-top:0.2rem';
+        m.nodes.forEach(n => {
+            const row = document.createElement('div');
+            row.style.cssText = 'font-size:0.8rem;padding:0.2rem 0.4rem;color:var(--color-text);background:var(--color-bg2);border-radius:var(--radius-sm);border:1px solid var(--color-border)';
+            row.textContent = n;
+            nodeList.appendChild(row);
+        });
+        body.appendChild(nodeList);
+        if (m.expiry) {
+            const foot = document.createElement('div');
+            foot.style.cssText = 'font-size:0.72rem;color:var(--color-text-muted);margin-top:0.25rem;padding-left:0.4rem';
+            foot.innerHTML = `Ends: <span class="timer" data-expiry="${m.expiry}"></span>`;
+            body.appendChild(foot);
+        }
+        makeToggle(btn, body);
+        content.appendChild(btn);
+        content.appendChild(body);
+    });
+    const card = createCard('Syndicate Missions', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   SALES
+════════════════════════════════════════════════════════ */
+const displaySales = (sales, title) => {
+    if (!Array.isArray(sales) || !sales.length) return null;
+    const content = document.createElement('div');
+    [...sales].sort((a,b) => (b.expiry?new Date(b.expiry):0)-(a.expiry?new Date(a.expiry):0)).forEach(s => {
+        const div = document.createElement('div'); div.className = 'sale-item';
+        div.innerHTML = `<h3>${s.item}</h3><p style="font-size:0.78rem">${s.originalPrice?`<s style="opacity:0.5">${ptStr(s.originalPrice)}</s> → `:''}<strong>${ptStr(s.salePrice||s.premiumCredits)}</strong>${s.discount?` (${s.discount}% off)`:''}</p>${s.expiry?`<p style="font-size:0.72rem;color:var(--color-text-muted)">Ends: <span class="timer" data-expiry="${s.expiry}"></span></p>`:''}`;
+        content.appendChild(div);
+    });
+    const card = createCard(title, content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   CONCLAVE
+════════════════════════════════════════════════════════ */
+const displayConclaveChallenges = (challenges) => {
+    if (!Array.isArray(challenges) || !challenges.length) return null;
+    const content = document.createElement('div');
+    challenges.forEach(c => {
+        const div = document.createElement('div'); div.className = 'challenge';
+        div.innerHTML = `<strong style="font-size:0.82rem">${c.title||c.description}</strong>${c.standing?`<p style="font-size:0.72rem;color:var(--color-text-accent)">${c.standing} Standing</p>`:''}${c.expiry?`<p style="font-size:0.72rem;color:var(--color-text-muted)">Expires: <span class="timer" data-expiry="${c.expiry}"></span></p>`:''}`;
+        content.appendChild(div);
+    });
+    const card = createCard('Conclave Challenges', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   DEEP ARCHIMEDEA (shared renderer)
+════════════════════════════════════════════════════════ */
+const renderArchimedea = (d, title) => {
+    if (!d) return null;
+    const content = document.createElement('div');
+
+    if (d.missions?.length) {
+        const sec = document.createElement('div'); sec.className = 'archimedea-missions';
+        sec.innerHTML = `<h3>Missions (${d.missions.length})</h3>`;
+        d.missions.forEach((m, i) => {
+            const container = document.createElement('div'); container.className = 'mission-container';
+            const btn = document.createElement('button'); btn.className = 'collapse-btn';
+            btn.innerHTML = `Mission ${i+1}: ${missionTypeFormat(m.mission)} <span class="chevron">▶</span>`;
+            const body = document.createElement('div'); body.className = 'collapse-body';
+            let html = `<div class="mission-item">`;
+            if (m.deviation?.name) html += `<div class="deviation-info"><div class="deviation-name">${m.deviation.name}</div>${m.deviation.description?`<div class="deviation-description">${m.deviation.description}</div>`:''}</div>`;
+            if (m.riskVariables?.length) m.riskVariables.forEach(r => { html += `<div class="risk-item"><div class="risk-name">${r.name||r}</div>${r.description?`<div class="risk-description">${r.description}</div>`:''}</div>`; });
+            html += `</div>`;
+            body.innerHTML = html;
+            makeToggle(btn, body);
+            container.appendChild(btn); container.appendChild(body);
+            sec.appendChild(container);
+        });
+        content.appendChild(sec);
+    }
+
+    if (d.personalModifiers?.length) {
+        const btn = document.createElement('button'); btn.className = 'collapse-btn';
+        btn.innerHTML = `Personal Modifiers (${d.personalModifiers.length}) <span class="chevron">▶</span>`;
+        const body = document.createElement('div'); body.className = 'collapse-body';
+        const grid = document.createElement('div'); grid.className = 'modifiers-grid';
+        d.personalModifiers.forEach(mod => {
+            const item = document.createElement('div'); item.className = 'modifier-item';
+            item.innerHTML = `<strong>${mod.name||mod.key||'Modifier'}</strong>${mod.description?`<div class="modifier-description">${mod.description}</div>`:''}`;
+            grid.appendChild(item);
+        });
+        body.appendChild(grid);
+        makeToggle(btn, body);
+        content.appendChild(btn); content.appendChild(body);
+    }
+
+    if (d.expiry) {
+        const foot = document.createElement('div'); foot.className = 'archimedea-expiry';
+        foot.innerHTML = `Expires: <span class="timer" data-expiry="${d.expiry}"></span>`;
+        content.appendChild(foot);
+    }
+
+    const card = createCard(title, content);
+    startAllTimers(card);
+    return card;
+};
+const displayDeepArchimedea     = d => renderArchimedea(d, 'Deep Archimedea');
+const displayTemporalArchimedea = d => renderArchimedea(d, 'Temporal Archimedea');
+
+/* ════════════════════════════════════════════════════════
+   CALENDAR
+════════════════════════════════════════════════════════ */
+const displayCalendar = async () => {
+    const months  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const seasons = ['Winter','Winter','Winter','Spring','Spring','Spring','Summer','Summer','Summer','Autumn','Autumn','Autumn'];
+    const days    = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const year    = 1999;
+    let curMonth  = 0;
+    let calData   = null;
+
+    const fetchCal = async () => {
+        try {
+            const r = await fetch('https://api.warframestat.us/pc/calendar', { headers: {'Accept-Language':'en'}, cache:'no-cache' });
+            if (!r.ok) throw new Error();
+            const data = await r.json();
+            if (Array.isArray(data) && data[0]?.days) return { days: data[0].days };
+            if (data?.days?.length) return data;
+        } catch(e) {}
+        return { days: [
+            { day:5,  date:'1999-01-05T00:00:00.000Z', events:[{type:'To Do',challenge:{title:'Kill Techrot Enemies',description:'Kill Techrot enemies with abilities.'}}] },
+            { day:8,  date:'1999-01-08T00:00:00.000Z', events:[{type:'Big Prize!',reward:'Archon Crystal Orange'}] },
+            { day:15, date:'1999-01-15T00:00:00.000Z', events:[{type:'Override',upgrade:{title:'Power Gains',description:'+25% Ability Strength'}}] }
+        ]};
+    };
+
+    calData = await fetchCal();
+
+    // find first month with events
+    const months_with = new Set();
+    (calData.days||[]).forEach(d => { if (d.events?.length) months_with.add(new Date(d.date).getUTCMonth()); });
+    curMonth = months_with.size ? Math.min(...months_with) : 0;
+
+    const daysInMonth  = (m,y) => new Date(y,m+1,0).getDate();
+    const firstDayOfM  = (m,y) => new Date(y,m,1).getDay();
+    const getEvents    = (day, month) => (calData.days||[]).filter(d => { const dt = new Date(d.date); return dt.getUTCDate()===day && dt.getUTCMonth()===month && d.events?.length; });
+
+    const tooltip = document.getElementById('calendarTooltip');
+
+    const buildHTML = () => {
+        const dim  = daysInMonth(curMonth, year);
+        const fd   = firstDayOfM(curMonth, year);
+        const prevDim = daysInMonth(curMonth===0?11:curMonth-1, curMonth===0?year-1:year);
+
+        let html = `<div class="calendar-header">
+            <div><div class="calendar-month">${months[curMonth]}</div><div class="calendar-year-season">${year} · ${seasons[curMonth]}</div></div>
+            <div class="calendar-nav">
+                <button id="calPrev">◀</button>
+                <button id="calNext">▶</button>
+            </div>
+        </div>
+        <div class="calendar-grid">
+            ${days.map(d=>`<div class="calendar-day-header">${d}</div>`).join('')}`;
+
+        // prev month tail
+        for (let i = fd-1; i >= 0; i--) {
+            html += `<div class="calendar-day other-month">${prevDim-i}</div>`;
+        }
+        // current month
+        const now = new Date();
+        for (let d = 1; d <= dim; d++) {
+            const evs = getEvents(d, curMonth);
+            const isToday = now.getUTCDate()===d && now.getUTCMonth()===curMonth && now.getUTCFullYear()===year;
+            const cls = ['calendar-day', isToday?'today':'', evs.length?'has-events':''].filter(Boolean).join(' ');
+            html += `<div class="${cls}" data-day="${d}" data-month="${curMonth}">${d}</div>`;
+        }
+        // next month padding
+        const total = fd + dim;
+        const rem = total % 7 ? 7 - (total%7) : 0;
+        for (let d = 1; d <= rem; d++) html += `<div class="calendar-day other-month">${d}</div>`;
+
+        html += `</div><p class="calendar-info">Hover dates with ● for details</p>`;
+        return html;
+    };
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    const h2 = document.createElement('h2'); h2.textContent = '1999 Calendar'; card.appendChild(h2);
+    const body = document.createElement('div');
+    card.appendChild(body);
+
+    const render = () => {
+        body.innerHTML = buildHTML();
+
+        body.querySelector('#calPrev').addEventListener('click', () => { curMonth = curMonth===0?11:curMonth-1; render(); });
+        body.querySelector('#calNext').addEventListener('click', () => { curMonth = curMonth===11?0:curMonth+1; render(); });
+
+        body.querySelectorAll('.calendar-day.has-events').forEach(el => {
+            el.addEventListener('mouseenter', (e) => {
+                const day = +el.dataset.day, month = +el.dataset.month;
+                const evs = getEvents(day, month);
+                if (!evs.length) return;
+                const dt = new Date(evs[0].date);
+                let html = `<div class="calendar-tooltip-date">${dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>`;
+                evs[0].events.forEach(ev => {
+                    const typeStr = ev.type||'Event';
+                    const typeClass = typeStr.toLowerCase().includes('to do')?'todo':typeStr.toLowerCase().includes('big prize')?'big-prize':typeStr.toLowerCase().includes('override')?'override':'';
+                    html += `<div class="calendar-tooltip-event"><div class="calendar-tooltip-event-type ${typeClass}">${typeStr}</div>`;
+                    if (ev.challenge)  html += `<div class="calendar-tooltip-title">${ev.challenge.title}</div>${ev.challenge.description?`<div class="calendar-tooltip-description">${ev.challenge.description}</div>`:''}`;
+                    else if (ev.reward) html += `<div class="calendar-tooltip-reward">🎁 ${typeof ev.reward==='string'?ev.reward:ev.reward.item||ev.reward.name}</div>`;
+                    else if (ev.upgrade) html += `<div class="calendar-tooltip-title">${ev.upgrade.title}</div>${ev.upgrade.description?`<div class="calendar-tooltip-description">${ev.upgrade.description}</div>`:''}`;
+                    html += `</div>`;
+                });
+                tooltip.innerHTML = html;
+                tooltip.classList.add('visible');
+                const rect = el.getBoundingClientRect();
+                let tx = rect.left, ty = rect.bottom + 8;
+                if (tx + 300 > window.innerWidth) tx = window.innerWidth - 310;
+                if (ty + tooltip.offsetHeight > window.innerHeight) ty = rect.top - tooltip.offsetHeight - 8;
+                tooltip.style.left = tx + 'px';
+                tooltip.style.top  = ty + 'px';
+            });
+            el.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+        });
+    };
+    render();
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   SIDEBAR KINEPAGE
+════════════════════════════════════════════════════════ */
+const updateSidebarKinepage = (d) => {
+    const el = document.getElementById('topbarKinepage');
+    if (el) el.textContent = d?.message ? `// ${d.message}` : '// Operator Dashboard';
+};
+
+/* ════════════════════════════════════════════════════════
+   DATA FETCH
+════════════════════════════════════════════════════════ */
+const fetchWarframeData = async (platform) => {
+    const r = await fetch(`https://api.warframestat.us/${platform}`, { headers: {'Accept-Language':'en'}, cache: 'no-cache' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+};
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL UPGRADES (active boosters / event modifiers)
+════════════════════════════════════════════════════════ */
+const displayGlobalUpgrades = (upgrades) => {
+    if (!Array.isArray(upgrades) || !upgrades.length) return null;
+    const content = document.createElement('div');
+    upgrades.forEach(u => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:0.3rem 0.5rem;background:var(--color-bg2);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:0.25rem;font-size:0.82rem;gap:0.5rem';
+        const label = document.createElement('div');
+        label.style.cssText = 'color:var(--color-text);font-weight:600;flex:1';
+        label.textContent = u.upgrade || u.desc || 'Global Upgrade';
+        const op = document.createElement('div');
+        op.style.cssText = 'color:var(--color-accent);font-size:0.75rem;font-family:var(--font-mono);white-space:nowrap';
+        op.textContent = u.operation ? `${u.operationSymbol || ''}${u.operation}` : '';
+        const timer = document.createElement('span');
+        timer.className = 'timer';
+        if (u.expiry) { timer.dataset.expiry = u.expiry; }
+        row.appendChild(label);
+        if (op.textContent) row.appendChild(op);
+        if (u.expiry) row.appendChild(timer);
+        content.appendChild(row);
+    });
+    const card = createCard('Global Upgrades', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   FLASH SALES (Darvo — broader than dailyDeals)
+════════════════════════════════════════════════════════ */
+const displayFlashSales = (sales) => {
+    if (!Array.isArray(sales) || !sales.length) return null;
+    // filter to active only
+    const now = Date.now();
+    const active = sales.filter(s => !s.expiry || new Date(s.expiry).getTime() > now);
+    if (!active.length) return null;
+    const content = document.createElement('div');
+    active.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'sale-item';
+        row.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem">
+                <span style="font-size:0.85rem;font-weight:600;color:var(--color-text)">${s.item}</span>
+                <span style="font-size:0.78rem;color:var(--color-accent)">${ptStr(s.premiumOverride || s.premiumCredits || s.salePrice || '?')}</span>
+            </div>
+            ${s.discount ? `<div style="font-size:0.72rem;color:var(--warning-color)">${s.discount}% OFF</div>` : ''}
+            ${s.expiry ? `<div style="font-size:0.72rem;color:var(--color-text-muted);margin-top:0.15rem">Ends: <span class="timer" data-expiry="${s.expiry}"></span></div>` : ''}
+        `;
+        content.appendChild(row);
+    });
+    const card = createCard('Flash Sales', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   PERSISTENT ENEMIES (Acolytes)
+════════════════════════════════════════════════════════ */
+const displayPersistentEnemies = (enemies) => {
+    if (!Array.isArray(enemies) || !enemies.length) return null;
+    const content = document.createElement('div');
+    enemies.forEach(e => {
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:0.4rem 0.5rem;background:var(--color-bg2);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:0.25rem';
+        const isDiscovered = e.isDiscovered;
+        row.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem">
+                <span style="font-size:0.88rem;font-weight:700;color:var(--color-text)">${e.agentType || e.type || 'Acolyte'}</span>
+                <span style="font-size:0.7rem;font-weight:600;padding:0.1rem 0.45rem;border-radius:999px;${isDiscovered ? 'background:rgba(16,185,129,0.15);color:var(--success-color);border:1px solid rgba(16,185,129,0.3)' : 'background:rgba(239,68,68,0.1);color:var(--error-color);border:1px solid rgba(239,68,68,0.2)'}">${isDiscovered ? 'Discovered' : 'Hidden'}</span>
+            </div>
+            ${e.lastLocation ? `<div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:0.2rem">Last seen: ${e.lastLocation}</div>` : ''}
+            ${e.rank != null ? `<div style="font-size:0.72rem;color:var(--color-text-accent)">Rank ${e.rank}${e.health != null ? ` · ${(e.health).toFixed(1)}% HP` : ''}</div>` : ''}
+        `;
+        content.appendChild(row);
+    });
+    return createCard('Acolytes', content);
+};
+
+/* ════════════════════════════════════════════════════════
+   KUVA MISSIONS (Flood & Siphon)
+════════════════════════════════════════════════════════ */
+const displayKuvaMissions = (missions) => {
+    if (!Array.isArray(missions) || !missions.length) return null;
+    const floods  = missions.filter(m => m.isHard);
+    const siphons = missions.filter(m => !m.isHard);
+    const content = document.createElement('div');
+
+    const renderGroup = (arr, label) => {
+        if (!arr.length) return;
+        const hdr = document.createElement('div');
+        hdr.style.cssText = 'font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-accent);margin:0.35rem 0 0.2rem';
+        hdr.textContent = label;
+        content.appendChild(hdr);
+        arr.forEach(m => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:0.4rem;padding:0.28rem 0.5rem;background:var(--color-bg2);border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:0.2rem;font-size:0.8rem';
+            row.innerHTML = `
+                <div>
+                    <div style="font-weight:600;color:var(--color-text)">${m.node||'Unknown'}</div>
+                    <div style="font-size:0.72rem;color:var(--color-text-muted)">${missionTypeFormat(m.type)} · <span style="color:${factionColor(m.enemy)}">${m.enemy||''}</span></div>
+                </div>
+                <div style="font-size:0.72rem;color:var(--color-text-muted);white-space:nowrap">Lv ${m.minEnemyLevel||'?'}–${m.maxEnemyLevel||'?'}</div>
+                ${m.expiry ? `<span class="timer" data-expiry="${m.expiry}"></span>` : ''}
+            `;
+            content.appendChild(row);
+        });
+    };
+
+    renderGroup(floods,  'Kuva Flood');
+    renderGroup(siphons, 'Kuva Siphon');
+
+    const card = createCard('Kuva Missions', content);
+    startAllTimers(card);
+    return card;
+};
+
+/* ════════════════════════════════════════════════════════
+   EARTH CYCLE  (day / night on Earth)
+════════════════════════════════════════════════════════ */
+const createEarthCycle = (d) => {
+    if (!d) return null;
+    return createWorldCycle('Earth', d.isDay ? 'Day' : 'Night', d.expiry, 'earth');
+};
+
+/* ════════════════════════════════════════════════════════
+   MAIN DISPLAY
+════════════════════════════════════════════════════════ */
+const displayWarframeData = async (platform) => {
+    const container = document.getElementById('warframeData');
+    container.innerHTML = '<div class="loading-state">Loading Warframe data</div>';
+
+    let data;
+    try { data = await fetchWarframeData(platform); }
+    catch(e) { container.innerHTML = `<p style="color:var(--error-color);padding:1rem">Failed to load data: ${e.message}</p>`; return; }
+
+    container.innerHTML = '';
+
+    /* ── World Cycles card ─────────────────────── */
+    const cyclesCard = document.createElement('div');
+    cyclesCard.className = 'card';
+    const cyclesTitle = document.createElement('h2'); cyclesTitle.textContent = 'World Cycles'; cyclesCard.appendChild(cyclesTitle);
+    cyclesCard.appendChild(createDailyResetTimer());
+    const cyclesGrid = document.createElement('div'); cyclesGrid.className = 'cycles-grid';
+    [
+        { d: data.earthCycle,   fn: () => createWorldCycle('Earth',         data.earthCycle.isDay ? 'Day' : 'Night', data.earthCycle.expiry, 'earth') },
+        { d: data.cetusCycle,   fn: () => createWorldCycle('Cetus',         data.cetusCycle.state,    data.cetusCycle.expiry,    'cetus') },
+        { d: data.vallisCycle,  fn: () => createWorldCycle('Orb Vallis',    data.vallisCycle.state,   data.vallisCycle.expiry,   'vallis') },
+        { d: data.cambionCycle, fn: () => createWorldCycle('Cambion Drift', data.cambionCycle.active, data.cambionCycle.expiry,  'cambion') },
+        { d: data.zarimanCycle, fn: () => createWorldCycle('Zariman',       data.zarimanCycle.state,  data.zarimanCycle.expiry,  'zariman') },
+        { d: data.duviriCycle,  fn: () => createWorldCycle('Duviri',        data.duviriCycle.state,   data.duviriCycle.expiry,   'duviri') },
+    ].forEach(({ d, fn }) => { if (d) { const el = fn(); if (el) cyclesGrid.appendChild(el); }});
+    if (cyclesGrid.children.length) cyclesCard.appendChild(cyclesGrid);
+    container.appendChild(cyclesCard);
+
+    /* ── Global Upgrades (boosters) ──────────── */
+    if (data.globalUpgrades?.length) { const c = displayGlobalUpgrades(data.globalUpgrades); if (c) container.appendChild(c); }
+
+    /* ── Compact / quick-reset cards first ────── */
+    if (data.sortie)     { const c = displaySortieInfo(data.sortie);       if (c) container.appendChild(c); }
+    if (data.archonHunt) { const c = displayArchonHunt(data.archonHunt);   if (c) container.appendChild(c); }
+    if (data.steelPath)  { const c = displaySteelPath(data.steelPath);     if (c) container.appendChild(c); }
+    if (data.arbitration){ const c = displayArbitration(data.arbitration); if (c) container.appendChild(c); }
+    if (data.simaris)    { const c = displaySimaris(data.simaris);         if (c) container.appendChild(c); }
+
+    /* ── Alerts ──────────────────────────────── */
+    if (data.alerts?.length) {
+        const c = displayAlerts(data.alerts);
+        if (c) container.appendChild(c);
+    } else {
+        container.appendChild(createCard('Alerts', '<p class="peace-message">The Origin System is at peace</p>'));
+    }
+
+    /* ── Acolytes ─────────────────────────────── */
+    if (data.persistentEnemies?.length) { const c = displayPersistentEnemies(data.persistentEnemies); if (c) container.appendChild(c); }
+
+    /* ── Long/wide list cards ─────────────────── */
+    if (data.fissures)  { const c = displayFissures(data.fissures);          if (c) container.appendChild(c); }
+    if (data.invasions) { const c = displayInvasions(data.invasions);         if (c) container.appendChild(c); }
+
+    /* ── Kuva missions ─────────────────────────── */
+    if (data.kuvaFlood?.length) { const c = displayKuvaMissions(data.kuvaFlood); if (c) container.appendChild(c); }
+
+    /* ── Void traders ────────────────────────── */
+    const traders = [];
+    if (data.voidTrader) traders.push({ ...data.voidTrader, name: "Baro Ki'Teer" });
+    if (data.voidTraders?.length) data.voidTraders.forEach((t,i) => traders.push({ ...t, name: t.character || `Void Trader ${i+1}` }));
+    if (traders.length) { const c = displayAllVoidTraders(traders); if (c) container.appendChild(c); }
+    if (data.vaultTrader) { const c = displayVaultTrader(data.vaultTrader); if (c) container.appendChild(c); }
+
+    /* ── Secondary cards ─────────────────────── */
+    if (data.deepArchimedea)     { const c = displayDeepArchimedea(data.deepArchimedea);         if (c) container.appendChild(c); }
+    if (data.temporalArchimedea) { const c = displayTemporalArchimedea(data.temporalArchimedea); if (c) container.appendChild(c); }
+
+    /* ── Calendar ────────────────────────────── */
+    try { const c = await displayCalendar(); if (c) container.appendChild(c); }
+    catch(e) { container.appendChild(createCard('Calendar', 'Unable to load calendar')); }
+
+    /* ── Misc ────────────────────────────────── */
+    if (data.events)              { const c = displayEvents(data.events);                              if (c) container.appendChild(c); }
+    if (data.constructionProgress){ const c = displayConstructionProgress(data.constructionProgress);  if (c) container.appendChild(c); }
+    if (data.nightwave)           { const c = displayNightwave(data.nightwave);                        if (c) container.appendChild(c); }
+    if (data.syndicateMissions)   { const c = displaySyndicateMissions(data.syndicateMissions);        if (c) container.appendChild(c); }
+    if (data.dailyDeals)          { const c = displaySales(data.dailyDeals, 'DARVO Daily Deal');       if (c) container.appendChild(c); }
+    if (data.flashSales)          { const c = displayFlashSales(data.flashSales);                      if (c) container.appendChild(c); }
+    if (data.conclaveChallenges)  { const c = displayConclaveChallenges(data.conclaveChallenges);      if (c) container.appendChild(c); }
+    if (data.sentientOutposts)    { const c = displaySentientOutposts(data.sentientOutposts);          if (c) container.appendChild(c); }
+    if (data.news)                { const c = displayNews(data.news);                                  if (c) container.appendChild(c); }
+
+    if (!container.children.length) container.innerHTML = '<p style="padding:1rem;color:var(--color-text-muted)">No data available for this platform.</p>';
+
+    updateSidebarKinepage(data.kinepage);
+};
+
+/* ════════════════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+    const kp = document.getElementById('topbarKinepage');
+    if (kp) kp.textContent = '// Operator Dashboard';
+    document.getElementById('platformSelect').addEventListener('change', e => displayWarframeData(e.target.value));
+    displayWarframeData('pc');
+});
+    </script>
+</body>
+</html>
