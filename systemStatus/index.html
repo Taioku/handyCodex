@@ -119,7 +119,131 @@ body {
 }
 .topbar-select:focus { border-color: var(--color-accent); }
 
-/* Kinepage — right side, truncated */
+/* Hamburger button — hidden on desktop */
+.topbar-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: border-color var(--transition), background var(--transition);
+}
+.topbar-hamburger:hover { background: rgba(190,155,123,0.1); border-color: var(--color-border-strong); }
+.topbar-hamburger span {
+    display: block;
+    width: 14px;
+    height: 1.5px;
+    background: var(--color-accent);
+    border-radius: 1px;
+    transition: transform var(--transition), opacity var(--transition);
+}
+.topbar-hamburger.open span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
+.topbar-hamburger.open span:nth-child(2) { opacity: 0; }
+.topbar-hamburger.open span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
+
+/* Mobile platform dropdown panel */
+.topbar-mobile-menu {
+    display: none;
+    position: fixed;
+    top: var(--topbar-h);
+    left: 0; right: 0;
+    background: var(--color-panel);
+    border-bottom: 1px solid var(--color-border-strong);
+    padding: 0.65rem 1rem;
+    gap: 0.5rem;
+    flex-direction: column;
+    z-index: 99;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    animation: slideDown 0.18s ease-out;
+}
+.topbar-mobile-menu.open { display: flex; }
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.mobile-menu-row { display: flex; align-items: center; gap: 0.6rem; }
+.mobile-menu-divider { height: 1px; background: var(--color-border); margin: 0.15rem 0; }
+.theme-mode-toggle {
+    background: rgba(190,155,123,0.08);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-accent);
+    border-radius: var(--radius-sm);
+    font-size: 0.65rem;
+    font-family: var(--font-primary);
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: all var(--transition);
+}
+.theme-mode-toggle:hover { background: rgba(190,155,123,0.18); border-color: var(--color-border-strong); }
+.theme-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding-top: 0.1rem;
+}
+.theme-swatch {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: var(--font-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: all var(--transition);
+    background: rgba(255,255,255,0.04);
+}
+.theme-swatch:hover { border-color: var(--color-border-strong); background: rgba(255,255,255,0.08); }
+.theme-swatch.active { border-color: var(--color-border-strong); background: rgba(190,155,123,0.15); }
+.theme-swatch-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.2); }
+
+@media (max-width: 600px) {
+    .topbar-hamburger { display: flex; }
+    .topbar-hide-mobile { display: none !important; }
+}
+
+
+/* Desktop theme controls in topbar */
+.topbar-theme-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+.topbar-theme-swatches {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.topbar-swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform var(--transition), border-color var(--transition);
+    outline: none;
+    padding: 0;
+}
+.topbar-swatch:hover { transform: scale(1.2); }
+.topbar-swatch.active { border-color: var(--color-text); transform: scale(1.15); }
+
 .topbar-kinepage {
     margin-left: auto;
     font-size: 0.72rem;
@@ -699,17 +823,43 @@ body {
 <body>
     <!-- Top Bar -->
     <header class="topbar">
+        <button class="topbar-hamburger" id="topbarHamburger" aria-label="Platform menu">
+            <span></span><span></span><span></span>
+        </button>
         <span class="topbar-title">System <span>Status</span></span>
-        <div class="topbar-divider"></div>
-        <span class="topbar-label">Platform</span>
-        <select id="platformSelect" class="topbar-select" aria-label="Select Platform">
+        <div class="topbar-divider topbar-hide-mobile"></div>
+        <span class="topbar-label topbar-hide-mobile">Platform</span>
+        <select id="platformSelect" class="topbar-select topbar-hide-mobile" aria-label="Select Platform">
             <option value="pc">PC</option>
             <option value="ps4">PlayStation 4</option>
             <option value="xb1">Xbox One</option>
             <option value="swi">Nintendo Switch</option>
         </select>
+        <div class="topbar-divider topbar-hide-mobile"></div>
+        <div class="topbar-theme-controls topbar-hide-mobile">
+            <div class="topbar-theme-swatches" id="topbarThemeSwatches"></div>
+            <button class="theme-mode-toggle" id="topbarModeToggle" aria-label="Toggle light/dark">☀ Light</button>
+        </div>
         <span class="topbar-kinepage" id="topbarKinepage"></span>
     </header>
+    <!-- Mobile platform dropdown + theme picker -->
+    <div class="topbar-mobile-menu" id="topbarMobileMenu">
+        <div class="mobile-menu-row">
+            <span class="topbar-label" style="font-size:0.7rem">Platform</span>
+            <select id="platformSelectMobile" class="topbar-select" aria-label="Select Platform (mobile)" style="flex:1">
+                <option value="pc">PC</option>
+                <option value="ps4">PlayStation 4</option>
+                <option value="xb1">Xbox One</option>
+                <option value="swi">Nintendo Switch</option>
+            </select>
+        </div>
+        <div class="mobile-menu-divider"></div>
+        <div class="mobile-menu-row" style="justify-content:space-between;align-items:center">
+            <span class="topbar-label" style="font-size:0.7rem">Theme</span>
+            <button class="theme-mode-toggle" id="themeModeToggle" aria-label="Toggle light/dark">☀ Light</button>
+        </div>
+        <div class="theme-swatches" id="themeSwatches"></div>
+    </div>
 
     <!-- Main -->
     <main class="main-content" id="mainContent">
@@ -1940,7 +2090,226 @@ const displayWarframeData = async (platform) => {
 document.addEventListener('DOMContentLoaded', () => {
     const kp = document.getElementById('topbarKinepage');
     if (kp) kp.textContent = '';
-    document.getElementById('platformSelect').addEventListener('change', e => displayWarframeData(e.target.value));
+
+    /* ── Platform sync ───────────────────────────────── */
+    const desktopSelect = document.getElementById('platformSelect');
+    const mobileSelect  = document.getElementById('platformSelectMobile');
+    const hamburger     = document.getElementById('topbarHamburger');
+    const mobileMenu    = document.getElementById('topbarMobileMenu');
+
+    const onPlatformChange = (val) => {
+        desktopSelect.value = val;
+        mobileSelect.value  = val;
+        displayWarframeData(val);
+    };
+
+    desktopSelect.addEventListener('change', e => onPlatformChange(e.target.value));
+    mobileSelect.addEventListener('change',  e => {
+        onPlatformChange(e.target.value);
+        mobileMenu.classList.remove('open');
+        hamburger.classList.remove('open');
+    });
+
+    hamburger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = mobileMenu.classList.toggle('open');
+        hamburger.classList.toggle('open', isOpen);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!mobileMenu.contains(e.target) && !hamburger.contains(e.target)) {
+            mobileMenu.classList.remove('open');
+            hamburger.classList.remove('open');
+        }
+    });
+
+    /* ── Theme system ────────────────────────────────── */
+    const THEMES = {
+        narmer: {
+            dark: {
+                '--color-bg':           '#1a1412',
+                '--color-bg2':          '#3e312a',
+                '--color-panel':        '#2a211e',
+                '--color-accent':       '#be9b7b',
+                '--color-text':         '#fff4e6',
+                '--color-text-accent':  '#be9b7b',
+            }
+        },
+        tenno: {
+            light: {
+                '--color-bg':           '#e3eaf2',
+                '--color-bg2':          '#b8c6db',
+                '--color-panel':        '#f7fafc',
+                '--color-accent':       '#5e81ac',
+                '--color-text':         '#2e3440',
+                '--color-text-accent':  '#5e81ac',
+            },
+            dark: {
+                '--color-bg':           '#2e3440',
+                '--color-bg2':          '#434c5e',
+                '--color-panel':        '#3b4252',
+                '--color-accent':       '#81a1c1',
+                '--color-text':         '#eceff4',
+                '--color-text-accent':  '#81a1c1',
+            }
+        },
+        orokin: {
+            light: {
+                '--color-bg':           '#f8f6e3',
+                '--color-bg2':          '#e9e4c9',
+                '--color-panel':        '#fffbe6',
+                '--color-accent':       '#e7c873',
+                '--color-text':         '#6b5e36',
+                '--color-text-accent':  '#bfa14a',
+            },
+            dark: {
+                '--color-bg':           '#2d261b',
+                '--color-bg2':          '#6b5e36',
+                '--color-panel':        '#3a3322',
+                '--color-accent':       '#e7c873',
+                '--color-text':         '#fffbe6',
+                '--color-text-accent':  '#e7c873',
+            }
+        },
+        grineer: {
+            light: {
+                '--color-bg':           '#f3e9d2',
+                '--color-bg2':          '#bfa46a',
+                '--color-panel':        '#fff8e1',
+                '--color-accent':       '#b03a1c',
+                '--color-text':         '#3d2c1e',
+                '--color-text-accent':  '#b03a1c',
+            },
+            dark: {
+                '--color-bg':           '#2a1d12',
+                '--color-bg2':          '#5c3a1b',
+                '--color-panel':        '#3d2c1e',
+                '--color-accent':       '#b03a1c',
+                '--color-text':         '#fffbe6',
+                '--color-text-accent':  '#ffe082',
+            }
+        },
+        corpus: {
+            light: {
+                '--color-bg':           '#eaf6fb',
+                '--color-bg2':          '#b3cde0',
+                '--color-panel':        '#f7fafc',
+                '--color-accent':       '#00b4d8',
+                '--color-text':         '#1b263b',
+                '--color-text-accent':  '#00b4d8',
+            },
+            dark: {
+                '--color-bg':           '#1b263b',
+                '--color-bg2':          '#0077b6',
+                '--color-panel':        '#24344d',
+                '--color-accent':       '#00b4d8',
+                '--color-text':         '#f1f6fb',
+                '--color-text-accent':  '#90e0ef',
+            }
+        }
+    };
+
+    // Dot preview color per theme (accent swatch color)
+    const THEME_DOT = {
+        narmer:  '#be9b7b',
+        tenno:   '#81a1c1',
+        orokin:  '#e7c873',
+        grineer: '#b03a1c',
+        corpus:  '#00b4d8',
+    };
+
+    let currentTheme = localStorage.getItem('wf-theme') || 'narmer';
+    let currentMode  = localStorage.getItem('wf-mode')  || 'dark';
+
+    // Narmer only has dark — guard against light mode on narmer
+    const availableModes = (theme) => Object.keys(THEMES[theme]);
+
+    const applyTheme = (theme, mode) => {
+        if (!THEMES[theme][mode]) mode = availableModes(theme)[0];
+        currentTheme = theme;
+        currentMode  = mode;
+        localStorage.setItem('wf-theme', theme);
+        localStorage.setItem('wf-mode',  mode);
+
+        const vars = THEMES[theme][mode];
+        const root = document.documentElement;
+        Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+
+        const hexToRgba = (hex, a) => {
+            const r = parseInt(hex.slice(1,3),16);
+            const g = parseInt(hex.slice(3,5),16);
+            const b = parseInt(hex.slice(5,7),16);
+            return `rgba(${r},${g},${b},${a})`;
+        };
+        root.style.setProperty('--color-border',        hexToRgba(vars['--color-accent'], 0.3));
+        root.style.setProperty('--color-border-strong', hexToRgba(vars['--color-accent'], 0.7));
+        root.style.setProperty('--color-text-muted',    hexToRgba(vars['--color-text'],   0.5));
+
+        const hasBoth = availableModes(theme).length > 1;
+        const modeLbl = mode === 'dark' ? '☀ Light' : '🌙 Dark';
+
+        // Update both mode toggle buttons
+        ['themeModeToggle', 'topbarModeToggle'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.textContent = modeLbl;
+            btn.style.opacity = hasBoth ? '1' : '0.35';
+            btn.style.pointerEvents = hasBoth ? 'auto' : 'none';
+        });
+
+        // Update all swatch active states (mobile + desktop)
+        document.querySelectorAll('.theme-swatch, .topbar-swatch').forEach(s => {
+            s.classList.toggle('active', s.dataset.theme === theme);
+        });
+    };
+
+    const buildSwatches = () => {
+        // Mobile swatches
+        const mobileContainer = document.getElementById('themeSwatches');
+        if (mobileContainer) {
+            mobileContainer.innerHTML = '';
+            Object.keys(THEMES).forEach(theme => {
+                const btn = document.createElement('button');
+                btn.className = 'theme-swatch' + (theme === currentTheme ? ' active' : '');
+                btn.dataset.theme = theme;
+                const dot = document.createElement('span');
+                dot.className = 'theme-swatch-dot';
+                dot.style.background = THEME_DOT[theme];
+                btn.appendChild(dot);
+                btn.appendChild(document.createTextNode(theme.charAt(0).toUpperCase() + theme.slice(1)));
+                btn.addEventListener('click', () => applyTheme(theme, currentMode));
+                mobileContainer.appendChild(btn);
+            });
+        }
+
+        // Desktop topbar swatches
+        const desktopContainer = document.getElementById('topbarThemeSwatches');
+        if (desktopContainer) {
+            desktopContainer.innerHTML = '';
+            Object.keys(THEMES).forEach(theme => {
+                const btn = document.createElement('button');
+                btn.className = 'topbar-swatch' + (theme === currentTheme ? ' active' : '');
+                btn.dataset.theme = theme;
+                btn.style.background = THEME_DOT[theme];
+                btn.title = theme.charAt(0).toUpperCase() + theme.slice(1);
+                btn.setAttribute('aria-label', theme);
+                btn.addEventListener('click', () => applyTheme(theme, currentMode));
+                desktopContainer.appendChild(btn);
+            });
+        }
+    };
+
+    ['themeModeToggle', 'topbarModeToggle'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', () => {
+            const modes = availableModes(currentTheme);
+            if (modes.length < 2) return;
+            applyTheme(currentTheme, currentMode === 'dark' ? 'light' : 'dark');
+        });
+    });
+
+    buildSwatches();
+    applyTheme(currentTheme, currentMode);
+
     displayWarframeData('pc');
 });
     </script>
