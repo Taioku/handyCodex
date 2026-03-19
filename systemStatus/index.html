@@ -267,34 +267,61 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────
-   MASONRY / CSS GRID
-   Cards use --col-span to control width.
-   Long list cards (fissures, invasions, void traders) span 2 cols.
+   LAYOUT — 4-column desktop, single-column mobile
 ───────────────────────────────────────────────────────── */
+
+/* Mobile-first: single column */
 .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: var(--gap);
     width: 100%;
-    align-items: start;
 }
 
-/* Wide cards span 2 columns when space allows */
-.card--wide {
-    grid-column: span 2;
+/* Wide cards: no special treatment on mobile */
+.card--wide { width: 100%; }
+
+/* ── Desktop 4-column layout ───────────────────────────── */
+@media (min-width: 900px) {
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-template-rows: auto;
+        gap: var(--gap);
+        align-items: start;
+    }
+
+    /* World Cycles spans all 4 columns as a hero row */
+    .card--hero {
+        grid-column: 1 / -1;
+    }
+
+    /* Void Traders when active spans cols 2 */
+    .card--wide {
+        grid-column: span 2;
+    }
+
+    /* Column label strip above each column */
+    .col-urgent::before,
+    .col-world::before,
+    .col-market::before,
+    .col-info::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.58rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--color-text-muted);
+        padding: 0 0.1rem 0.3rem;
+        border-bottom: 1px solid var(--color-border);
+        margin-bottom: calc(var(--gap) * 0.15);
+        opacity: 0.7;
+    }
 }
 
-/* On narrow viewports, wide cards revert to 1 col */
-@media (max-width: 640px) {
-    .grid { grid-template-columns: 1fr; }
-    .card--wide { grid-column: span 1; }
-}
-
-@media (min-width: 1200px) {
-    .grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-}
-@media (min-width: 1600px) {
-    .grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+@media (min-width: 1400px) {
+    .grid { gap: 1rem; }
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -1850,7 +1877,7 @@ const displayFlashSales = (sales) => {
     const active = sales.filter(s => !s.expiry || new Date(s.expiry).getTime() > now);
     if (!active.length) return null;
 
-    let sortMode = 'price'; // 'price' | 'expiry'
+    let sortMode = 'expiry'; // 'price' | 'expiry'
     let sortAsc = true;
 
     const card = document.createElement('div');
@@ -2008,9 +2035,9 @@ const displayWarframeData = async (platform) => {
 
     container.innerHTML = '';
 
-    /* ── World Cycles card ─────────────────────── */
+    /* ── Hero row: World Cycles (full width) ────────── */
     const cyclesCard = document.createElement('div');
-    cyclesCard.className = 'card';
+    cyclesCard.className = 'card card--hero';
     const cyclesTitle = document.createElement('h2'); cyclesTitle.textContent = 'World Cycles'; cyclesCard.appendChild(cyclesTitle);
     cyclesCard.appendChild(createDailyResetTimer());
     const cyclesGrid = document.createElement('div'); cyclesGrid.className = 'cycles-grid';
@@ -2025,59 +2052,75 @@ const displayWarframeData = async (platform) => {
     if (cyclesGrid.children.length) cyclesCard.appendChild(cyclesGrid);
     container.appendChild(cyclesCard);
 
-    /* ── Global Upgrades (boosters) ──────────── */
-    if (data.globalUpgrades?.length) { const c = displayGlobalUpgrades(data.globalUpgrades); if (c) container.appendChild(c); }
+    /* ── Column wrappers ───────────────────────────── */
+    const colUrgent = document.createElement('div');  // col 1  — time-critical
+    colUrgent.className = 'col-urgent';
+    colUrgent.dataset.label = '⚡ Urgent';
+    colUrgent.style.cssText = 'display:flex;flex-direction:column;gap:var(--gap)';
 
-    /* ── Compact / quick-reset cards first ────── */
-    if (data.sortie)     { const c = displaySortieInfo(data.sortie);       if (c) container.appendChild(c); }
-    if (data.archonHunt) { const c = displayArchonHunt(data.archonHunt);   if (c) container.appendChild(c); }
-    if (data.steelPath)  { const c = displaySteelPath(data.steelPath);     if (c) container.appendChild(c); }
-    if (data.arbitration){ const c = displayArbitration(data.arbitration); if (c) container.appendChild(c); }
-    if (data.simaris)    { const c = displaySimaris(data.simaris);         if (c) container.appendChild(c); }
+    const colWorld = document.createElement('div');   // col 2 — world state
+    colWorld.className = 'col-world';
+    colWorld.dataset.label = '🌍 World';
+    colWorld.style.cssText = 'display:flex;flex-direction:column;gap:var(--gap)';
 
-    /* ── Alerts ──────────────────────────────── */
+    const colMarket = document.createElement('div');  // col 3 — markets/rotation
+    colMarket.className = 'col-market';
+    colMarket.dataset.label = '🛒 Market & Rotation';
+    colMarket.style.cssText = 'display:flex;flex-direction:column;gap:var(--gap)';
+
+    const colInfo = document.createElement('div');    // col 4 — calendar & news
+    colInfo.className = 'col-info';
+    colInfo.dataset.label = '📅 Calendar & News';
+    colInfo.style.cssText = 'display:flex;flex-direction:column;gap:var(--gap)';
+
+    const add = (col, card) => { if (card) col.appendChild(card); };
+
+    /* ══ COLUMN 1 — Urgent / time-sensitive ══════ */
     if (data.alerts?.length) {
-        const c = displayAlerts(data.alerts);
-        if (c) container.appendChild(c);
+        const c = displayAlerts(data.alerts); if (c) add(colUrgent, c);
     } else {
-        container.appendChild(createCard('Alerts', '<p class="peace-message">The Origin System is at peace</p>'));
+        add(colUrgent, createCard('Alerts', '<p class="peace-message">The Origin System is at peace</p>'));
     }
+    if (data.persistentEnemies?.length) add(colUrgent, displayPersistentEnemies(data.persistentEnemies));
+    if (data.globalUpgrades?.length)    add(colUrgent, displayGlobalUpgrades(data.globalUpgrades));
+    if (data.sortie)      add(colUrgent, displaySortieInfo(data.sortie));
+    if (data.archonHunt)  add(colUrgent, displayArchonHunt(data.archonHunt));
+    if (data.arbitration) add(colUrgent, displayArbitration(data.arbitration));
+    if (data.steelPath)   add(colUrgent, displaySteelPath(data.steelPath));
+    if (data.simaris)     add(colUrgent, displaySimaris(data.simaris));
+    if (data.sentientOutposts) add(colUrgent, displaySentientOutposts(data.sentientOutposts));
+    if (data.constructionProgress) add(colUrgent, displayConstructionProgress(data.constructionProgress));
 
-    /* ── Acolytes ─────────────────────────────── */
-    if (data.persistentEnemies?.length) { const c = displayPersistentEnemies(data.persistentEnemies); if (c) container.appendChild(c); }
+    /* ══ COLUMN 2 — World state / missions ═════ */
+    if (data.events)    add(colWorld, displayEvents(data.events));
+    if (data.fissures)  add(colWorld, displayFissures(data.fissures));
+    if (data.invasions) add(colWorld, displayInvasions(data.invasions));
+    if (data.kuvaFlood?.length) add(colWorld, displayKuvaMissions(data.kuvaFlood));
+    if (data.syndicateMissions) add(colWorld, displaySyndicateMissions(data.syndicateMissions));
+    if (data.conclaveChallenges) add(colWorld, displayConclaveChallenges(data.conclaveChallenges));
+    if (data.nightwave) add(colWorld, displayNightwave(data.nightwave));
 
-    /* ── Long/wide list cards ─────────────────── */
-    if (data.fissures)  { const c = displayFissures(data.fissures);          if (c) container.appendChild(c); }
-    if (data.invasions) { const c = displayInvasions(data.invasions);         if (c) container.appendChild(c); }
-
-    /* ── Kuva missions ─────────────────────────── */
-    if (data.kuvaFlood?.length) { const c = displayKuvaMissions(data.kuvaFlood); if (c) container.appendChild(c); }
-
-    /* ── Void traders ────────────────────────── */
+    /* ══ COLUMN 3 — Markets / long-rotation ═════ */
     const traders = [];
     if (data.voidTrader) traders.push({ ...data.voidTrader, name: "Baro Ki'Teer" });
     if (data.voidTraders?.length) data.voidTraders.forEach((t,i) => traders.push({ ...t, name: t.character || `Void Trader ${i+1}` }));
-    if (traders.length) { const c = displayAllVoidTraders(traders); if (c) container.appendChild(c); }
-    if (data.vaultTrader) { const c = displayVaultTrader(data.vaultTrader); if (c) container.appendChild(c); }
+    if (data.dailyDeals)  add(colMarket, displaySales(data.dailyDeals, 'DARVO Daily Deal'));
+    if (traders.length) add(colMarket, displayAllVoidTraders(traders));
+    if (data.vaultTrader) add(colMarket, displayVaultTrader(data.vaultTrader));
+    if (data.flashSales)  add(colMarket, displayFlashSales(data.flashSales));
+    if (data.deepArchimedea)      add(colMarket, displayDeepArchimedea(data.deepArchimedea));
+    if (data.temporalArchimedea)  add(colMarket, displayTemporalArchimedea(data.temporalArchimedea));
 
-    /* ── Secondary cards ─────────────────────── */
-    if (data.deepArchimedea)     { const c = displayDeepArchimedea(data.deepArchimedea);         if (c) container.appendChild(c); }
-    if (data.temporalArchimedea) { const c = displayTemporalArchimedea(data.temporalArchimedea); if (c) container.appendChild(c); }
+    /* ══ COLUMN 4 — Calendar & News ══════════════ */
+    try { const c = await displayCalendar(); add(colInfo, c); }
+    catch(e) { add(colInfo, createCard('Calendar', 'Unable to load calendar')); }
+    if (data.news) add(colInfo, displayNews(data.news));
 
-    /* ── Calendar ────────────────────────────── */
-    try { const c = await displayCalendar(); if (c) container.appendChild(c); }
-    catch(e) { container.appendChild(createCard('Calendar', 'Unable to load calendar')); }
-
-    /* ── Misc ────────────────────────────────── */
-    if (data.events)              { const c = displayEvents(data.events);                              if (c) container.appendChild(c); }
-    if (data.constructionProgress){ const c = displayConstructionProgress(data.constructionProgress);  if (c) container.appendChild(c); }
-    if (data.nightwave)           { const c = displayNightwave(data.nightwave);                        if (c) container.appendChild(c); }
-    if (data.syndicateMissions)   { const c = displaySyndicateMissions(data.syndicateMissions);        if (c) container.appendChild(c); }
-    if (data.dailyDeals)          { const c = displaySales(data.dailyDeals, 'DARVO Daily Deal');       if (c) container.appendChild(c); }
-    if (data.flashSales)          { const c = displayFlashSales(data.flashSales);                      if (c) container.appendChild(c); }
-    if (data.conclaveChallenges)  { const c = displayConclaveChallenges(data.conclaveChallenges);      if (c) container.appendChild(c); }
-    if (data.sentientOutposts)    { const c = displaySentientOutposts(data.sentientOutposts);          if (c) container.appendChild(c); }
-    if (data.news)                { const c = displayNews(data.news);                                  if (c) container.appendChild(c); }
+    /* ── Append columns ────────────────────────────── */
+    container.appendChild(colUrgent);
+    container.appendChild(colWorld);
+    container.appendChild(colMarket);
+    container.appendChild(colInfo);
 
     if (!container.children.length) container.innerHTML = '<p style="padding:1rem;color:var(--color-text-muted)">No data available for this platform.</p>';
 
