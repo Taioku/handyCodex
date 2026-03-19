@@ -16,9 +16,7 @@
     --color-bg2: #3e312a;
     --color-panel: #2a211e;
     --color-accent: #be9b7b;
-    --color-accent2: #be9b7b;
     --color-text: #fff4e6;
-    --color-text-light: #fff4e6;
     --color-text-accent: #be9b7b;
     --color-text-muted: rgba(255, 244, 230, 0.5);
     --color-border: rgba(190,155,123,0.3);
@@ -420,7 +418,7 @@ body {
 
 .invasion-planet-body { display: none; flex-direction: column; gap: 0.35rem; padding: 0.25rem 0 0.1rem; }
 .invasion-planet-body.open { display: flex; }
-    border: 1px solid var(--color-border);
+.invasion-item {
     border-radius: var(--radius-md);
     padding: 0.65rem;
     background: var(--color-bg2);
@@ -577,20 +575,8 @@ body {
 .archimedea-expiry { font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px solid var(--color-border); }
 
 /* ─────────────────────────────────────────────────────────
-   VAULT TRADER
-───────────────────────────────────────────────────────── */
-.vault-schedule { font-size: 0.78rem; color: var(--color-text-muted); }
-.schedule-item { display: flex; justify-content: space-between; align-items: center; padding: 0.25rem 0; border-bottom: 1px solid var(--color-border); font-size: 0.78rem; }
-.schedule-item:last-child { border-bottom: none; }
-.schedule-item-name { color: var(--color-text); flex: 1; }
-.schedule-item-time { color: var(--color-text-accent); white-space: nowrap; margin-left: 0.5rem; }
-
-/* ─────────────────────────────────────────────────────────
    SYNDICATE MISSIONS
 ───────────────────────────────────────────────────────── */
-.syndicate-mission { margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-border); }
-.syndicate-mission:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-.syndicate-mission h3 { font-size: 0.82rem; font-weight: 700; color: var(--color-accent); margin-bottom: 0.2rem; }
 
 /* ─────────────────────────────────────────────────────────
    EVENTS
@@ -782,8 +768,6 @@ const startAllTimers = (container) => {
     container.querySelectorAll('.timer[data-expiry]').forEach(el => startTimer(el, el.dataset.expiry));
 };
 
-
-
 /* ════════════════════════════════════════════════════════
    COLLAPSE TOGGLE HELPER
 ════════════════════════════════════════════════════════ */
@@ -795,9 +779,8 @@ const makeToggle = (btn, body) => {
 };
 
 /* ════════════════════════════════════════════════════════
-   PLATINUM ICON
+   ICONS
 ════════════════════════════════════════════════════════ */
-// Inline platinum SVG — matches Warframe's platinum icon style
 const PT_ICON = `<img src="https://www-static.warframe.com/images/icons/material/platinum.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="pt">`;
 const SE_ICON = `<img src="https://wiki.warframe.com/images/thumb/SteelEssence.png/32px-SteelEssence.png?ee70b" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="se">`;
 const ptStr = (val) => `${PT_ICON}<span style="font-family:var(--font-mono)">${val}</span>`;
@@ -1860,14 +1843,6 @@ const displayKuvaMissions = (missions) => {
     const card = createCard('Kuva Missions', content);
     startAllTimers(card);
     return card;
-};
-
-/* ════════════════════════════════════════════════════════
-   EARTH CYCLE  (day / night on Earth)
-════════════════════════════════════════════════════════ */
-const createEarthCycle = (d) => {
-    if (!d) return null;
-    return createWorldCycle('Earth', d.isDay ? 'Day' : 'Night', d.expiry, 'earth');
 };
 
 /* ════════════════════════════════════════════════════════
