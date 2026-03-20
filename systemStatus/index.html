@@ -1277,8 +1277,8 @@ const displayInvasions = (invasions) => {
                     </div>
                 </div>
                 <div class="progress-track">
-                    <div class="progress-fill" style="width:${clampPct}%;background:linear-gradient(90deg,${factionColor(atk)},${factionColor(atk)}88)"></div>
-                    <div class="progress-fill" style="width:${100-clampPct}%;background:linear-gradient(90deg,${factionColor(def)}88,${factionColor(def)})"></div>
+                    <div class="progress-fill" style="width:${clampPct}%;background:${factionColor(atk)}"></div>
+                    <div class="progress-fill" style="width:${100-clampPct}%;background:${factionColor(def)}"></div>
                 </div>
                 <div class="progress-percentages">
                     <span style="color:${factionColor(atk)}">${Math.round(clampPct)}%</span>
