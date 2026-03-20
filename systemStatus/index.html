@@ -1579,6 +1579,18 @@ const displayEvents = (events) => {
 const displaySyndicateMissions = (missions) => {
     const avail = missions.filter(m => m.nodes?.length);
     if (!avail.length) return null;
+
+    // Single shared expiry — use the first one found
+    const sharedExpiry = avail.find(m => m.expiry)?.expiry;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const h2 = document.createElement('h2');
+    h2.style.cssText = 'display:flex;align-items:center;justify-content:space-between';
+    h2.innerHTML = `<span>Syndicate Missions</span>${sharedExpiry ? `<span class="timer" data-expiry="${sharedExpiry}"></span>` : ''}`;
+    card.appendChild(h2);
+
     const content = document.createElement('div');
     content.style.cssText = 'display:flex;flex-direction:column;gap:0.25rem';
     avail.forEach(m => {
@@ -1602,17 +1614,11 @@ const displaySyndicateMissions = (missions) => {
             nodeList.appendChild(row);
         });
         body.appendChild(nodeList);
-        if (m.expiry) {
-            const foot = document.createElement('div');
-            foot.style.cssText = 'font-size:0.72rem;color:var(--color-text-muted);margin-top:0.25rem;padding-left:0.4rem';
-            foot.innerHTML = `Ends: <span class="timer" data-expiry="${m.expiry}"></span>`;
-            body.appendChild(foot);
-        }
         makeToggle(btn, body);
         content.appendChild(btn);
         content.appendChild(body);
     });
-    const card = createCard('Syndicate Missions', content);
+    card.appendChild(content);
     startAllTimers(card);
     return card;
 };
