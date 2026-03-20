@@ -1036,16 +1036,16 @@ const createDailyResetTimer = () => {
 };
 
 const cycleImg = (file, fallback) =>
-    `<img src="/src/${file}" width="26" height="26" style="object-fit:contain;border-radius:50%" onerror="this.style.display='none';this.nextElementSibling.style.display=''" alt="${fallback}"><span style="display:none">${fallback}</span>`;
+    `<img src="src/${file}" width="26" height="26" style="object-fit:contain;border-radius:50%" onerror="this.style.display='none';this.nextElementSibling.style.display=''" alt="${fallback}"><span style="display:none">${fallback}</span>`;
 
 const CYCLE_ICONS = {
-    cetus:   s => s==='night' ? cycleImg('cycle-cetus-night.png','🌙')  : cycleImg('cycle-cetus-day.png','☀️'),
-    vallis:  s => s==='warm'  ? cycleImg('cycle-vallis-warm.png','🔥')  : cycleImg('cycle-vallis-cold.png','❄️'),
-    cambion: s => s==='vome'  ? cycleImg('cycle-cambion-vome.png','🟣') : cycleImg('cycle-cambion-fass.png','🔴'),
-    zariman: ()  => cycleImg('cycle-zariman.png','✨'),
-    earth:   s => s==='night' ? cycleImg('cycle-earth-night.png','🌑')  : cycleImg('cycle-earth-day.png','🌍'),
-    duviri:  ()  => cycleImg('cycle-duviri.png','🌀'),
-    default: ()  => cycleImg('cycle-earth-day.png','🌍'),
+    cetus:   s => s==='night' ? cycleImg('cycles/cycle-cetus-night.png','🌙') : cycleImg('cycles/cycle-cetus-day.png','☀️'),
+    vallis:  s => s==='warm' ? cycleImg('cycles/cycle-vallis-warm.png','🔥') : cycleImg('cycles/cycle-vallis-cold.png','❄️'),
+    cambion: s => s==='vome' ? cycleImg('cycles/32px-VomeRequiemIcon.png','🟣') : cycleImg('cycles/32px-FassRequiemIcon.png','🔴'),
+    zariman: s => s==='corpus' ? cycleImg('factions/32px-CorpusIcon.png','🔵') : cycleImg('factions/32px-GrineerIcon.png','🟠'),
+    earth:   s => s==='night' ? cycleImg('cycles/cycle-earth-night.png','🌑') : cycleImg('cycles/cycle-earth-day.png','🌍'),
+    duviri:  ()  => cycleImg('cycles/cycle-duviri.png','🌀'),
+    default: ()  => cycleImg('cycles/cycle-earth-day.png','🌍'),
 };
 
 const createWorldCycle = (name, state, expiry, type) => {
