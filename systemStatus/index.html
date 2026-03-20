@@ -387,6 +387,7 @@ body {
     white-space: nowrap;
 }
 .timer.expired { color: var(--error-color); background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); }
+.card h2 .timer { font-size: 0.82rem; font-weight: 600; text-transform: none; letter-spacing: 0; }
 @keyframes pulse-critical { 0%,100%{opacity:1} 50%{opacity:0.6} }
 .cycle-timer.critical { color: var(--error-color); animation: pulse-critical 1.5s infinite; }
 .cycle-timer.warning  { color: var(--warning-color); }
@@ -958,8 +959,8 @@ const makeToggle = (btn, body) => {
 /* ════════════════════════════════════════════════════════
    ICONS
 ════════════════════════════════════════════════════════ */
-const PT_ICON = `<img src="https://wiki.warframe.com/images/thumb/PlatinumLarge.png/32px-Platinum.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="pt">`;
-const SE_ICON = `<img src="https://wiki.warframe.com/images/thumb/SteelEssence.png/32px-SteelEssence.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="se">`;
+const PT_ICON = `<img src="https://www-static.warframe.com/images/icons/material/platinum.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="pt">`;
+const SE_ICON = `<img src="https://wiki.warframe.com/images/thumb/SteelEssence.png/32px-SteelEssence.png?ee70b" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="se">`;
 const ptStr = (val) => `${PT_ICON}<span style="font-family:var(--font-mono)">${val}</span>`;
 const seStr = (val) => `${SE_ICON}<span style="font-family:var(--font-mono)">${val}</span>`;
 const missionTypeFormat = (t) => t || 'Unknown';
@@ -970,8 +971,33 @@ const missionTypeFormat = (t) => t || 'Unknown';
 const factionColor = (f) => ({
     grineer:'#ff6b35', corpus:'#4fc3f7', infested:'#8bc34a',
     corrupted:'#ffc107', orokin:'#ffeb3b', sentient:'#c084fc',
-    narmer:'#d97706', murmur:'#94a3b8', tenno:'#60a5fa'
+    narmer:'#d97706', murmur:'#94a3b8', tenno:'#60a5fa',
+    scaldra:'#e53e3e', techrot:'#68d391', anarchs:'#f6ad55',
+    duviri:'#e879f9', wild:'#68d391'
 })[f?.toLowerCase()] || '#9e9e9e';
+
+const FACTION_ICONS = {
+    corpus:   'https://wiki.warframe.com/images/thumb/IconCorpusOn.png/32px-IconCorpusOn.png',
+    grineer:  'https://wiki.warframe.com/images/thumb/IconGrineerOn.png/32px-IconGrineerOn.png',
+    infested: 'https://wiki.warframe.com/images/Infestation_w.svg',
+    orokin:   'https://wiki.warframe.com/images/thumb/IconOrokinOn.png/32px-IconOrokinOn.png',
+    corrupted:'https://wiki.warframe.com/images/thumb/IconOrokinOn.png/32px-IconOrokinOn.png',
+    sentient: 'https://wiki.warframe.com/images/thumb/SentientFactionIcon.png/32px-SentientFactionIcon.png',
+    narmer:   'https://wiki.warframe.com/images/thumb/IconNarmer.png/32px-IconNarmer.png',
+    scaldra:  'https://wiki.warframe.com/images/thumb/ScaldraIcon.png/32px-ScaldraIcon.png',
+    techrot:  'https://wiki.warframe.com/images/thumb/TechrotIcon.png/32px-TechrotIcon.png',
+    anarchs:  'https://wiki.warframe.com/images/thumb/IconAnarchs.png/32px-IconAnarchs.png',
+    duviri:   'https://wiki.warframe.com/images/thumb/DuviriIcon.png/32px-DuviriIcon.png',
+    wild:     'https://wiki.warframe.com/images/thumb/IconWild.png/32px-IconWild.png',
+    tenno:    'https://wiki.warframe.com/images/thumb/TennoIcon.png/32px-TennoIcon.png',
+};
+
+const factionIcon = (f, size = 14) => {
+    const key = f?.toLowerCase();
+    const url = FACTION_ICONS[key];
+    if (!url) return '';
+    return `<img src="${url}" width="${size}" height="${size}" style="display:inline-block;vertical-align:middle;margin:0 3px 1px 0;object-fit:contain" alt="${f}">`;
+};
 
 /* ════════════════════════════════════════════════════════
    CARD FACTORY
@@ -1153,7 +1179,7 @@ const displayAlerts = (alerts) => {
             <div class="alert-header">
                 <div class="alert-title">
                     <h3>${a.mission?.node || 'Unknown'}</h3>
-                    <div class="alert-subtitle" style="color:${fc}">${a.mission?.faction||''} · ${missionTypeFormat(a.mission?.type)}</div>
+                    <div class="alert-subtitle" style="color:${fc}">${factionIcon(a.mission?.faction)}${a.mission?.faction||''} · ${missionTypeFormat(a.mission?.type)}</div>
                 </div>
                 <span class="timer" data-expiry="${a.expiry}"></span>
             </div>
@@ -1227,13 +1253,13 @@ const displayInvasions = (invasions) => {
             div.innerHTML = `
                 <div class="invasion-factions">
                     <div class="faction-side attacker">
-                        <div class="faction-name" style="color:${factionColor(atk)}">${atk}</div>
+                        <div class="faction-name" style="color:${factionColor(atk)}">${atk} ${factionIcon(atk)}</div>
                         <div class="faction-label">Attacker</div>
                         ${atkR ? `<div class="faction-reward">${atkR}</div>` : ''}
                     </div>
                     <div class="invasion-vs">VS</div>
                     <div class="faction-side defender">
-                        <div class="faction-name" style="color:${factionColor(def)}">${def}</div>
+                        <div class="faction-name" style="color:${factionColor(def)}">${factionIcon(def)}${def}</div>
                         <div class="faction-label">Defender</div>
                         ${defR ? `<div class="faction-reward">${defR}</div>` : ''}
                     </div>
@@ -1478,7 +1504,7 @@ const displayArbitration = (d) => {
             <span class="mission-status ${statusClass}">${d.active?'Active':'Inactive'}</span>
         </div>
         <div class="info-grid">
-            <div class="info-row"><span class="info-label">Enemy</span><span class="info-value" style="color:${factionColor(d.enemy)}">${d.enemy}</span></div>
+            <div class="info-row"><span class="info-label">Enemy</span><span class="info-value" style="color:${factionColor(d.enemy)}">${factionIcon(d.enemy)}${d.enemy}</span></div>
             ${d.archwing ? `<div class="info-row"><span class="info-label">Special</span><span class="info-value">Archwing</span></div>` : ''}
             ${d.expiry ? `<div class="info-row"><span class="info-label">Rotation</span><span class="info-value"><span class="timer" data-expiry="${d.expiry}"></span></span></div>` : ''}
         </div>`;
@@ -1500,7 +1526,7 @@ const displaySentientOutposts = (d) => {
             <div class="info-grid">
                 <div class="info-row"><span class="info-label">Node</span><span class="info-value">${d.mission.node}</span></div>
                 <div class="info-row"><span class="info-label">Type</span><span class="info-value">${missionTypeFormat(d.mission.type)}</span></div>
-                <div class="info-row"><span class="info-label">Faction</span><span class="info-value" style="color:${factionColor(d.mission.faction)}">${d.mission.faction}</span></div>
+                <div class="info-row"><span class="info-label">Faction</span><span class="info-value" style="color:${factionColor(d.mission.faction)}">${factionIcon(d.mission.faction)}${d.mission.faction}</span></div>
             </div>`;
     }
     return createCard('Sentient Outposts', content);
@@ -2011,7 +2037,7 @@ const displayKuvaMissions = (missions) => {
             row.innerHTML = `
                 <div>
                     <div style="font-weight:600;color:var(--color-text)">${m.node||'Unknown'}</div>
-                    <div style="font-size:0.72rem;color:var(--color-text-muted)">${missionTypeFormat(m.type)} · <span style="color:${factionColor(m.enemy)}">${m.enemy||''}</span></div>
+                    <div style="font-size:0.72rem;color:var(--color-text-muted)">${missionTypeFormat(m.type)} · ${factionIcon(m.enemy)}<span style="color:${factionColor(m.enemy)}">${m.enemy||''}</span></div>
                 </div>
                 <div style="font-size:0.72rem;color:var(--color-text-muted);white-space:nowrap">Lv ${m.minEnemyLevel||'?'}–${m.maxEnemyLevel||'?'}</div>
                 ${m.expiry ? `<span class="timer" data-expiry="${m.expiry}"></span>` : ''}
