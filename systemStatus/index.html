@@ -959,8 +959,8 @@ const makeToggle = (btn, body) => {
 /* ════════════════════════════════════════════════════════
    ICONS
 ════════════════════════════════════════════════════════ */
-const PT_ICON = `<img src="https://www-static.warframe.com/images/icons/material/platinum.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="pt">`;
-const SE_ICON = `<img src="https://wiki.warframe.com/images/thumb/SteelEssence.png/32px-SteelEssence.png?ee70b" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="se">`;
+const PT_ICON = `<img src="src/32px-Platinum.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="pt">`;
+const SE_ICON = `<img src="src/32px-SteelEssence.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="se">`;
 const ptStr = (val) => `${PT_ICON}<span style="font-family:var(--font-mono)">${val}</span>`;
 const seStr = (val) => `${SE_ICON}<span style="font-family:var(--font-mono)">${val}</span>`;
 const missionTypeFormat = (t) => t || 'Unknown';
@@ -977,19 +977,19 @@ const factionColor = (f) => ({
 })[f?.toLowerCase()] || '#9e9e9e';
 
 const FACTION_ICONS = {
-    corpus:   'https://wiki.warframe.com/images/thumb/IconCorpusOn.png/32px-IconCorpusOn.png',
-    grineer:  'https://wiki.warframe.com/images/thumb/IconGrineerOn.png/32px-IconGrineerOn.png',
-    infested: 'https://wiki.warframe.com/images/Infestation_w.svg',
-    orokin:   'https://wiki.warframe.com/images/thumb/IconOrokinOn.png/32px-IconOrokinOn.png',
-    corrupted:'https://wiki.warframe.com/images/thumb/IconOrokinOn.png/32px-IconOrokinOn.png',
-    sentient: 'https://wiki.warframe.com/images/thumb/SentientFactionIcon.png/32px-SentientFactionIcon.png',
-    narmer:   'https://wiki.warframe.com/images/thumb/IconNarmer.png/32px-IconNarmer.png',
-    scaldra:  'https://wiki.warframe.com/images/thumb/ScaldraIcon.png/32px-ScaldraIcon.png',
-    techrot:  'https://wiki.warframe.com/images/thumb/TechrotIcon.png/32px-TechrotIcon.png',
-    anarchs:  'https://wiki.warframe.com/images/thumb/IconAnarchs.png/32px-IconAnarchs.png',
-    duviri:   'https://wiki.warframe.com/images/thumb/DuviriIcon.png/32px-DuviriIcon.png',
-    wild:     'https://wiki.warframe.com/images/thumb/IconWild.png/32px-IconWild.png',
-    tenno:    'https://wiki.warframe.com/images/thumb/TennoIcon.png/32px-TennoIcon.png',
+    corpus:   'src/factions/32px-CorpusIcon.png',
+    grineer:  'src/factions/32px-GrineerIcon.png',
+    infested: 'src/factions/InfestedIcon.svg',
+    orokin:   'src/factions/32px-OrokinIcon.png',
+    corrupted:'src/factions/32px-OrokinIcon.png',
+    sentient: 'src/factions/32px-SentientIcon.png',
+    narmer:   'src/factions/32px-NarmerIcon.png',
+    scaldra:  'src/factions/32px-ScaldraIcon.png',
+    techrot:  'src/factions/32px-TechrotIcon.png',
+    anarchs:  'src/factions/32px-AnarchsIcon.png',
+    duviri:   'src/factions/32px-DuviriIcon.png',
+    wild:     'src/factions/32px-WildIcon.png',
+    tenno:    'src/factions/32px-TennoIcon.png',
 };
 
 const factionIcon = (f, size = 14) => {
@@ -1035,14 +1035,17 @@ const createDailyResetTimer = () => {
     return div;
 };
 
+const cycleImg = (file, fallback) =>
+    `<img src="/src/${file}" width="26" height="26" style="object-fit:contain;border-radius:50%" onerror="this.style.display='none';this.nextElementSibling.style.display=''" alt="${fallback}"><span style="display:none">${fallback}</span>`;
+
 const CYCLE_ICONS = {
-    cetus:   s => s==='night' ? '🌙' : '☀️',
-    vallis:  s => s==='warm'  ? '🔥' : '❄️',
-    cambion: s => s==='vome'  ? '🟣' : '🔴',
-    zariman: ()  => '✨',
-    earth:   s => s==='night' ? '🌑' : '🌍',
-    duviri:  ()  => '🌀',
-    default: ()  => '🌍'
+    cetus:   s => s==='night' ? cycleImg('cycle-cetus-night.png','🌙')  : cycleImg('cycle-cetus-day.png','☀️'),
+    vallis:  s => s==='warm'  ? cycleImg('cycle-vallis-warm.png','🔥')  : cycleImg('cycle-vallis-cold.png','❄️'),
+    cambion: s => s==='vome'  ? cycleImg('cycle-cambion-vome.png','🟣') : cycleImg('cycle-cambion-fass.png','🔴'),
+    zariman: ()  => cycleImg('cycle-zariman.png','✨'),
+    earth:   s => s==='night' ? cycleImg('cycle-earth-night.png','🌑')  : cycleImg('cycle-earth-day.png','🌍'),
+    duviri:  ()  => cycleImg('cycle-duviri.png','🌀'),
+    default: ()  => cycleImg('cycle-earth-day.png','🌍'),
 };
 
 const createWorldCycle = (name, state, expiry, type) => {
