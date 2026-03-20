@@ -455,9 +455,9 @@ body {
 .cycle-earth .cycle-icon         { background: linear-gradient(135deg,#22c55e,#16a34a); color:#f8fafc; }
 .cycle-earth.state-night .cycle-icon { background: linear-gradient(135deg,#1e293b,#0f172a); color:#f8fafc; }
 .cycle-earth .cycle-state        { color: #4ade80; }
-.cycle-earth.state-night .cycle-state { color: #93c5fd; }
-.cycle-duviri .cycle-icon        { background: linear-gradient(135deg,#e879f9,#a21caf); color:#f8fafc; }
-.cycle-duviri .cycle-state       { color: #e879f9; }
+.cycle-earth.state-night .cycle-state { color: #38bdf8; }
+.cycle-duviri .cycle-icon        { background: linear-gradient(135deg,#ffffff,#7f7f7f); color:#f8fafc; }
+.cycle-duviri .cycle-state       { color:   #b5b5b5; }
 
 /* ─────────────────────────────────────────────────────────
    FISSURES — Wide card, compact rows, collapsible tiers
@@ -1044,7 +1044,16 @@ const CYCLE_ICONS = {
     cambion: s => s==='vome' ? cycleImg('cycles/32px-VomeRequiemIcon.png','🟣') : cycleImg('cycles/32px-FassRequiemIcon.png','🔴'),
     zariman: s => s==='corpus' ? cycleImg('factions/32px-CorpusIcon.png','🔵') : cycleImg('factions/32px-GrineerIcon.png','🟠'),
     earth:   s => s==='night' ? cycleImg('cycles/cycle-earth-night.png','🌑') : cycleImg('cycles/cycle-earth-day.png','🌍'),
-    duviri:  ()  => cycleImg('cycles/cycle-duviri.png','🌀'),
+    duviri:  s => {
+        const map = {
+            joy:     cycleImg('damageType/32px-DmgVoid.png',        '✨'),
+            anger:   cycleImg('damageType/32px-DmgHeat.png',        '🔥'),
+            envy:    cycleImg('damageType/32px-DmgToxin.png',       '🟢'),
+            sorrow:  cycleImg('damageType/32px-DmgCold.png',        '❄️'),
+            fear:    cycleImg('damageType/32px-DmgElectricity.png', '⚡'),
+        };
+        return map[s?.toLowerCase()] || cycleImg('cycles/cycle-duviri.png', '🌀');
+    },
     default: ()  => cycleImg('cycles/cycle-earth-day.png','🌍'),
 };
 
@@ -1055,7 +1064,7 @@ const createWorldCycle = (name, state, expiry, type) => {
     el.innerHTML = `
         <div class="cycle-icon">${icon}</div>
         <div class="cycle-name">${name}</div>
-        <div class="cycle-state">${state || 'Unknown'}</div>
+        <div class="cycle-state">${state ? state.charAt(0).toUpperCase() + state.slice(1) : 'Unknown'}</div>
         <div class="cycle-timer"></div>`;
     const timer = el.querySelector('.cycle-timer');
     const tick = () => {
