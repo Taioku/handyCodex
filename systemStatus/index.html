@@ -1191,7 +1191,7 @@ const displayArchonHunt = (d) => {
     content.appendChild(foot);
     const card = createCard('Archon Hunt', content);
     const title = card.querySelector('h2');
-    title.innerHTML = `Archon Hunt <img src="${NARMER_ICON}" width="14" height="14" style="display:inline-block;vertical-align:middle;object-fit:contain" alt="Narmer">`;
+    title.innerHTML = `<img src="${NARMER_ICON}" width="14" height="14" style="display:inline-block;vertical-align:middle;object-fit:contain" alt="Narmer"> Archon Hunt`;
     startAllTimers(card);
     return card;
 };
