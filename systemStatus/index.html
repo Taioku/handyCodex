@@ -1165,9 +1165,19 @@ const ARCHON_SHARD_ICONS = {
     boreal: 'src/icons/32px-AzureArchonShard.png',
 };
 
+const NARMER_ICON = 'src/factions/32px-NarmerIcon.png';
+
+const getArchonShardIcon = (bossName) => {
+    const archonName = (bossName || '').toLowerCase();
+    return Object.entries(ARCHON_SHARD_ICONS).find(([name]) => archonName.includes(name))?.[1] || '';
+};
+
 const displayArchonHunt = (d) => {
     const content = document.createElement('div');
-    content.innerHTML = `<div class="boss-pill">💀 ${d.boss}</div>`;
+    const shardIcon = getArchonShardIcon(d.boss);
+    content.innerHTML = shardIcon
+        ? `<div class="boss-pill"><img src="${shardIcon}" width="14" height="14" style="display:inline-block;vertical-align:middle;object-fit:contain" alt="Archon shard"> ${d.boss}</div>`
+        : `<div class="boss-pill">${d.boss}</div>`;
     const list = document.createElement('div'); list.className = 'mission-list';
     d.missions.forEach(m => {
         const row = document.createElement('div'); row.className = 'mission-row';
@@ -1181,11 +1191,7 @@ const displayArchonHunt = (d) => {
     content.appendChild(foot);
     const card = createCard('Archon Hunt', content);
     const title = card.querySelector('h2');
-    const archonName = (d.boss || '').toLowerCase();
-    const shardIcon = Object.entries(ARCHON_SHARD_ICONS).find(([name]) => archonName.includes(name))?.[1];
-    title.innerHTML = shardIcon
-        ? `Archon Hunt <img src="${shardIcon}" width="14" height="14" style="display:inline-block;vertical-align:middle;object-fit:contain" alt="Archon shard">`
-        : 'Archon Hunt';
+    title.innerHTML = `Archon Hunt <img src="${NARMER_ICON}" width="14" height="14" style="display:inline-block;vertical-align:middle;object-fit:contain" alt="Narmer">`;
     startAllTimers(card);
     return card;
 };
