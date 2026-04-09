@@ -959,8 +959,8 @@ const makeToggle = (btn, body) => {
 /* ════════════════════════════════════════════════════════
    ICONS
 ════════════════════════════════════════════════════════ */
-const PT_ICON = `<img src="src/32px-Platinum.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="pt">`;
-const SE_ICON = `<img src="src/32px-SteelEssence.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="se">`;
+const PT_ICON = `<img src="src/icons/32px-Platinum.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="pt">`;
+const SE_ICON = `<img src="src/icons/32px-SteelEssence.png" width="13" height="13" style="display:inline-block;vertical-align:middle;margin:0 2px 2px 0;image-rendering:auto" alt="se">`;
 const ptStr = (val) => `${PT_ICON}<span style="font-family:var(--font-mono)">${val}</span>`;
 const seStr = (val) => `${SE_ICON}<span style="font-family:var(--font-mono)">${val}</span>`;
 const missionTypeFormat = (t) => t || 'Unknown';
@@ -1161,7 +1161,7 @@ const displaySortieInfo = (d) => {
 ════════════════════════════════════════════════════════ */
 const displayArchonHunt = (d) => {
     const content = document.createElement('div');
-    content.innerHTML = `<div class="boss-pill">💀 ${d.boss}</div>`;
+    content.innerHTML = `<div class="boss-pill">💀 <span>${d.boss}</span><img src="src/factions/32px-NarmerIcon.png" width="14" height="14" style="display:inline-block;vertical-align:middle;margin-left:0.35rem;object-fit:contain" alt="Narmer"></div>`;
     const list = document.createElement('div'); list.className = 'mission-list';
     d.missions.forEach(m => {
         const row = document.createElement('div'); row.className = 'mission-row';
