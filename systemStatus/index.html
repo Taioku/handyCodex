@@ -1159,9 +1159,15 @@ const displaySortieInfo = (d) => {
 /* ════════════════════════════════════════════════════════
    ARCHON HUNT
 ════════════════════════════════════════════════════════ */
+const ARCHON_SHARD_ICONS = {
+    amar: 'src/icons/32px-CrimsonArchonShard.png',
+    nira: 'src/icons/32px-AmberArchonShard.png',
+    boreal: 'src/icons/32px-AzureArchonShard.png',
+};
+
 const displayArchonHunt = (d) => {
     const content = document.createElement('div');
-    content.innerHTML = `<div class="boss-pill">💀 <span>${d.boss}</span><img src="src/factions/32px-NarmerIcon.png" width="14" height="14" style="display:inline-block;vertical-align:middle;margin-left:0.35rem;object-fit:contain" alt="Narmer"></div>`;
+    content.innerHTML = `<div class="boss-pill">💀 ${d.boss}</div>`;
     const list = document.createElement('div'); list.className = 'mission-list';
     d.missions.forEach(m => {
         const row = document.createElement('div'); row.className = 'mission-row';
@@ -1174,6 +1180,12 @@ const displayArchonHunt = (d) => {
     foot.innerHTML = `Resets in: <span class="timer" data-expiry="${d.expiry}"></span>`;
     content.appendChild(foot);
     const card = createCard('Archon Hunt', content);
+    const title = card.querySelector('h2');
+    const archonName = (d.boss || '').toLowerCase();
+    const shardIcon = Object.entries(ARCHON_SHARD_ICONS).find(([name]) => archonName.includes(name))?.[1];
+    title.innerHTML = shardIcon
+        ? `Archon Hunt <img src="${shardIcon}" width="14" height="14" style="display:inline-block;vertical-align:middle;object-fit:contain" alt="Archon shard">`
+        : 'Archon Hunt';
     startAllTimers(card);
     return card;
 };
