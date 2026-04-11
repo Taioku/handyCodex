@@ -891,7 +891,18 @@ const EMOJI_ICONS = [
     { type: 'emoji', value: '🐺', name: 'hunt' }
 ];
 
-const REMOTE_CATALOG_URL = 'https://raw.githubusercontent.com/wfcd/warframe-items/main/data/json/All.json';
+const REMOTE_CATALOG_BASE = 'https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json';
+const REMOTE_CATALOG_FILES = [
+    'Resources.json',
+    'Warframes.json',
+    'Node.json',
+    'Relics.json',
+    'Arcanes.json',
+    'Mods.json',
+    'Gear.json',
+    'Pets.json',
+    'Sentinels.json',
+];
 
 const FARM_CATEGORY_MAP = {
     Resources: { type: 'resource', label: 'Resources', icon: '📦' },
@@ -1155,11 +1166,17 @@ const normalizeRemoteItem = (item) => {
 };
 
 const loadRemoteCatalog = async () => {
-    const response = await fetch(REMOTE_CATALOG_URL, { cache: 'no-cache' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    if (!Array.isArray(data)) throw new Error('Unexpected catalog format');
-    return data;
+    const responses = await Promise.all(
+        REMOTE_CATALOG_FILES.map(async (file) => {
+            const response = await fetch(`${REMOTE_CATALOG_BASE}/${file}`, { cache: 'no-cache' });
+            if (!response.ok) throw new Error(`${file} HTTP ${response.status}`);
+            const data = await response.json();
+            if (!Array.isArray(data)) throw new Error(`${file} has unexpected format`);
+            return data;
+        })
+    );
+
+    return responses.flat();
 };
 
 const buildCatalog = (remoteItems) => remoteItems
@@ -1550,7 +1567,7 @@ const addNote = () => {
 const exportData = () => {
     const payload = {
         exportedAt: new Date().toISOString(),
-        source: REMOTE_CATALOG_URL,
+        source: `${REMOTE_CATALOG_BASE}/<category>.json`,
         uiState: { activeFilter, query: state.query, selectedItem: state.selectedItem },
         data: allItems,
         notes
