@@ -665,6 +665,7 @@ button, input, select, textarea { font: inherit; }
         <div class="topbar-right">
             <a class="btn ghost" href="../index.html">Home</a>
             <a class="btn ghost" href="../systemStatus/index.html">System Status</a>
+            <a class="btn ghost" href="./glyphs/index.html">Glyph Browser</a>
             <button class="btn" id="exportBtn" type="button">Export JSON</button>
             <button class="btn" id="resetBtn" type="button">Reset View</button>
         </div>
@@ -900,7 +901,7 @@ const EMOJI_ICONS = [
 
 const REMOTE_CATALOG_BASE = 'https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json';
 const REMOTE_CATALOG_API = 'https://api.github.com/repos/WFCD/warframe-items/contents/data/json';
-const REMOTE_CATALOG_EXCLUDE = new Set(['All.json', 'i18n.json']);
+const REMOTE_CATALOG_EXCLUDE = new Set(['All.json', 'Glyphs.json', 'i18n.json']);
 
 const FARM_CATEGORY_MAP = {
     Resources: { type: 'resource', label: 'Resources', icon: '📦' },
@@ -1279,7 +1280,6 @@ const buildQuickFilters = () => {
         { id: 'all', label: 'All', icon: '🌌' },
         { id: 'resource', label: 'Resources', icon: '📦' },
         { id: 'warframe', label: 'Planos de Warframe', icon: '💠' },
-        { id: 'glyph', label: 'Glyphs', icon: '🖼️' },
         { id: 'game-mode', label: 'Modos de Juego', icon: '🛰️' },
         { id: 'rotation', label: 'Rotation', icon: '⏱️' }
     ];
