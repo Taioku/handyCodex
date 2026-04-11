@@ -772,6 +772,7 @@ button, input, select, textarea { font: inherit; }
                     <div class="results-count" id="lastUpdated"></div>
                 </div>
                 <div id="resultsList" class="note-list"></div>
+                <div id="notesMount" style="margin-top:0.85rem"></div>
             </article>
         </section>
 
@@ -817,7 +818,7 @@ button, input, select, textarea { font: inherit; }
 /* =====================================================================
    Warframe Farm Finder
    - All data is local and easy to extend.
-   - Add more entries to WARFRAME_DATA without changing the UI.
+    - Remote item data is normalized from the WFCD catalog without hand-built item lists.
 ===================================================================== */
 const STORAGE_KEY = 'warframe-farm-finder-v1';
 const NOTES_KEY = 'warframe-farm-finder-notes-v1';
@@ -890,162 +891,25 @@ const EMOJI_ICONS = [
     { type: 'emoji', value: '🐺', name: 'hunt' }
 ];
 
-/* ---------------------------------------------------------------------
-   Compact local data set. Extend this object with more entries later.
---------------------------------------------------------------------- */
-const WARFRAME_DATA = {
-    categories: [
-        {
-            id: 'resource',
-            label: 'Resources',
-            icon: '📦',
-            items: [
-                {
-                    name: 'Orokin Cell',
-                    type: 'resource',
-                    planet: 'Ceres / Saturn / Deimos',
-                    bestNodes: ['Gabii (Ceres)', 'Helene (Saturn)', 'Terremors (Deimos)'],
-                    missionType: 'Dark Sector Survival / Defense',
-                    dropSource: 'Common resource drops, bosses, and specific nodes',
-                    rotations: [
-                        { rotation: 'A', chance: 'Varies by enemy/mission table', notes: 'Best treated as a steady farming resource rather than a single rotation target.' },
-                        { rotation: 'B', chance: 'Varies', notes: 'Bring drop boosters if available.' },
-                        { rotation: 'C', chance: 'Varies', notes: 'Nekros, Khora, and Hydroid can improve efficiency.' }
-                    ],
-                    tips: [
-                        'Bring Nekros for additional loot rolls.',
-                        'Use a resource booster if you have one active.',
-                        'Gabii is a fast, repeatable Ceres survival node.'
-                    ],
-                    tags: ['farming', 'resource', 'common']
-                },
-                {
-                    name: 'Polymer Bundle',
-                    type: 'resource',
-                    planet: 'Venus / Uranus / Saturn',
-                    bestNodes: ['Heiracon (Pluto)', 'Ophelia (Uranus)', 'Helene (Saturn)'],
-                    missionType: 'Defense / Survival / Excavation',
-                    dropSource: 'Corpus containers, crates, and enemy drops',
-                    rotations: [
-                        { rotation: 'A', chance: 'Steady accumulation', notes: 'Void missions and long runs tend to be efficient.' },
-                        { rotation: 'B', chance: 'Steady accumulation', notes: 'AOE clear speeds up farming more than target switching.' },
-                        { rotation: 'C', chance: 'Steady accumulation', notes: 'Bring vacuum / fetch and a loot-frame.' }
-                    ],
-                    tips: [
-                        'Run a loot radar build to find containers faster.',
-                        'Smeeta / boosters can accelerate stockpiling.',
-                        'Use a weapon with wide clear to keep pace high.'
-                    ],
-                    tags: ['farming', 'resource']
-                },
-                {
-                    name: 'Plastids',
-                    type: 'resource',
-                    planet: 'Saturn / Uranus / Phobos',
-                    bestNodes: ['Piscinas (Saturn)', 'Ophelia (Uranus)', 'Iliad (Phobos)'],
-                    missionType: 'Survival / Defense',
-                    dropSource: 'Infested-heavy missions and containers',
-                    rotations: [
-                        { rotation: 'A', chance: 'Consistent', notes: 'Kill density matters most.' },
-                        { rotation: 'B', chance: 'Consistent', notes: 'Longer survivals improve total haul.' },
-                        { rotation: 'C', chance: 'Consistent', notes: 'Resource boosters have a strong effect here.' }
-                    ],
-                    tips: [
-                        'Use an Infested survival node for dense enemy spawns.',
-                        'Khora can pair well with defensive farming.'
-                    ],
-                    tags: ['farming', 'resource']
-                }
-            ]
-        },
-        {
-            id: 'warframe',
-            label: 'Warframe Parts',
-            icon: '💠',
-            items: [
-                {
-                    name: 'Khora Systems',
-                    type: 'warframe',
-                    planet: 'Sanctuary Onslaught',
-                    bestNodes: ['Sanctuary Onslaught'],
-                    missionType: 'Endless Assault',
-                    dropSource: 'Rotation C reward pool',
-                    rotations: [
-                        { rotation: 'A', chance: 'No part', notes: 'Initial rotations are for setup and acceleration.' },
-                        { rotation: 'B', chance: 'No part', notes: 'Keep the run going efficiently.' },
-                        { rotation: 'C', chance: 'Part reward', notes: 'Target Rotation C for the Systems drop.' }
-                    ],
-                    tips: [
-                        'Stay efficient so you reach Rotation C faster.',
-                        'A fast squad dramatically improves the farm.'
-                    ],
-                    tags: ['warframe', 'rotation', 'endless']
-                },
-                {
-                    name: 'Gauss Systems',
-                    type: 'warframe',
-                    planet: 'Sedna',
-                    bestNodes: ['Kappa (Sedna)', 'Stribog (Void)', 'Disruption missions'],
-                    missionType: 'Disruption',
-                    dropSource: 'Rotation C / disruption reward logic',
-                    rotations: [
-                        { rotation: 'A', chance: 'Low', notes: 'Early rounds are not the target.' },
-                        { rotation: 'B', chance: 'Medium', notes: 'Survival while preserving tempo matters.' },
-                        { rotation: 'C', chance: 'Best chance', notes: 'Stay on top of keys and complete every wave cleanly.' }
-                    ],
-                    tips: [
-                        'Disruption rewards usually favor fast and clean completions.',
-                        'Bring burst damage for demolysts.'
-                    ],
-                    tags: ['warframe', 'rotation']
-                }
-            ]
-        },
-        {
-            id: 'game-mode',
-            label: 'Modes',
-            icon: '🛰️',
-            items: [
-                {
-                    name: 'Steel Path Survival',
-                    type: 'game-mode',
-                    planet: 'Any Steel Path node',
-                    bestNodes: ['Gabii (Ceres)', 'Ophelia (Uranus)', 'Helene (Saturn)'],
-                    missionType: 'Endless Survival',
-                    dropSource: 'Higher enemy density and bonus Steel Path rewards',
-                    rotations: [
-                        { rotation: 'A', chance: 'General loot', notes: 'Good for baseline farming.' },
-                        { rotation: 'B', chance: 'General loot', notes: 'Sustained survival keeps drops rolling.' },
-                        { rotation: 'C', chance: 'General loot', notes: 'Best if your squad can maintain pace.' }
-                    ],
-                    tips: [
-                        'Steel Path gives stronger enemies but better general farming pressure.',
-                        'Use survivability first, then damage.'
-                    ],
-                    tags: ['mode', 'endless', 'steel path']
-                },
-                {
-                    name: 'Void Relic Crack',
-                    type: 'game-mode',
-                    planet: 'Void',
-                    bestNodes: ['Hepit (Void)', 'Ukko (Void)', 'Mithra (Void)'],
-                    missionType: 'Capture / Exterminate',
-                    dropSource: 'Relic rewards and speed farming',
-                    rotations: [
-                        { rotation: 'A', chance: 'Fast clear', notes: 'Relic missions are usually about run speed, not long rotations.' },
-                        { rotation: 'B', chance: 'Fast clear', notes: 'Pick the node that minimizes time-to-extract.' },
-                        { rotation: 'C', chance: 'Fast clear', notes: 'Use a speed build and skip unnecessary fights.' }
-                    ],
-                    tips: [
-                        'The fastest path is usually the best path.',
-                        'Use Titania, Volt, or Wukong for speed.'
-                    ],
-                    tags: ['mode', 'relic', 'speed']
-                }
-            ]
-        }
-    ]
+const REMOTE_CATALOG_URL = 'https://raw.githubusercontent.com/wfcd/warframe-items/main/data/json/All.json';
+
+const FARM_CATEGORY_MAP = {
+    Resources: { type: 'resource', label: 'Resources', icon: '📦' },
+    Warframes: { type: 'warframe', label: 'Planos de Warframe', icon: '💠' },
+    Node: { type: 'game-mode', label: 'Modes', icon: '🛰️' },
+    Relics: { type: 'rotation', label: 'Relics', icon: '⏱️' },
+    Arcanes: { type: 'rotation', label: 'Arcanes', icon: '🔮' },
+    Mods: { type: 'rotation', label: 'Mods', icon: '🛠️' },
+    Gear: { type: 'resource', label: 'Gear', icon: '🧰' },
+    Pets: { type: 'warframe', label: 'Pets', icon: '🐺' },
+    Sentinels: { type: 'warframe', label: 'Sentinels', icon: '🤖' },
 };
+
+const RELEVANT_CATEGORIES = new Set(Object.keys(FARM_CATEGORY_MAP));
+
+let allItems = [];
+let catalogLoaded = false;
+let catalogError = '';
 
 const DEFAULT_NOTES = [
     {
@@ -1076,6 +940,7 @@ const els = {
     searchInput: document.getElementById('searchInput'),
     quickFilters: document.getElementById('quickFilters'),
     resultsList: document.getElementById('resultsList'),
+    notesMount: document.getElementById('notesMount'),
     resultCount: document.getElementById('resultCount'),
     lastUpdated: document.getElementById('lastUpdated'),
     selectedDetail: document.getElementById('selectedDetail'),
@@ -1177,15 +1042,129 @@ const formatTime = (iso) => {
     });
 };
 
-const flattenItems = () => {
-    const items = [];
-    WARFRAME_DATA.categories.forEach((group) => {
-        group.items.forEach((item) => items.push({ ...item, categoryId: group.id, categoryLabel: group.label, categoryIcon: group.icon }));
-    });
-    return items;
+const unique = (values) => [...new Set(values.filter(Boolean))];
+
+const dropChanceValue = (drop) => {
+    if (typeof drop?.chance === 'number') return drop.chance;
+    const parsed = Number.parseFloat(String(drop?.chance ?? '').replace('%', ''));
+    return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const allItems = flattenItems();
+const collectDrops = (item) => {
+    const drops = [];
+    if (Array.isArray(item?.drops)) drops.push(...item.drops);
+    if (Array.isArray(item?.components)) {
+        item.components.forEach((component) => {
+            if (Array.isArray(component?.drops)) drops.push(...component.drops);
+        });
+    }
+    return drops;
+};
+
+const extractPlanet = (value) => {
+    if (!value) return 'Unknown';
+    const text = String(value);
+    const match = text.match(/\(([^)]+)\)/);
+    if (match) return match[1];
+    return text.split(' - ')[0].trim() || text;
+};
+
+const buildRotations = (drops) => {
+    const rotated = drops.filter((drop) => drop?.rotation);
+    if (!rotated.length) return [];
+
+    const groups = new Map();
+    rotated.forEach((drop) => {
+        const key = String(drop.rotation).toUpperCase();
+        const current = groups.get(key) || [];
+        current.push(drop);
+        groups.set(key, current);
+    });
+
+    return [...groups.entries()].map(([rotation, group]) => ({
+        rotation,
+        chance: unique(group.map((drop) => String(drop.chance))).join(' · '),
+        notes: unique(group.map((drop) => drop.location)).slice(0, 3).join(' · '),
+    }));
+};
+
+const buildTips = (item, farmType, bestNodes, hasRotations) => {
+    const tips = [];
+
+    if (bestNodes.length) {
+        tips.push(`Top nodes: ${bestNodes.slice(0, 3).join(' · ')}`);
+    }
+
+    if (farmType === 'resource') {
+        tips.push('Nekros, Khora, and Hydroid all help stretch a resource run.');
+        tips.push('A resource booster or Smeeta buff can multiply the result.');
+    }
+
+    if (farmType === 'warframe') {
+        tips.push('Blueprint farms are usually about run speed and repeatability.');
+        tips.push('If the part is rotation-based, target the highest reward rotation directly.');
+    }
+
+    if (farmType === 'game-mode') {
+        tips.push('For node farming, pick the fastest frame that clears the objective cleanly.');
+    }
+
+    if (farmType === 'rotation' || hasRotations) {
+        tips.push('Use the rotation table to decide whether to reset early or keep the run going.');
+    }
+
+    if (!tips.length) {
+        tips.push('Use search to compare drops, nodes, and rotation timing quickly.');
+    }
+
+    return unique(tips).slice(0, 4);
+};
+
+const normalizeRemoteItem = (item) => {
+    const meta = FARM_CATEGORY_MAP[item.category] || { type: 'general', label: item.category || 'Other', icon: '📌' };
+    const drops = collectDrops(item).sort((a, b) => dropChanceValue(b) - dropChanceValue(a));
+    const bestNodes = unique(drops.map((drop) => drop.location)).slice(0, 3);
+    const planets = unique(drops.map((drop) => extractPlanet(drop.location))).slice(0, 3);
+    const rotations = buildRotations(drops);
+    const farmType = meta.type;
+    const displayType = item.category || item.type || meta.label;
+
+    return {
+        id: item.uniqueName || item.name,
+        name: item.name,
+        type: farmType,
+        displayType,
+        sourceCategory: item.category,
+        categoryLabel: meta.label,
+        categoryIcon: meta.icon,
+        planet: planets.join(' / ') || item.systemName || item.name || 'Unknown',
+        bestNodes: bestNodes.length ? bestNodes : item.systemName ? [item.systemName] : [],
+        missionType: item.type || displayType || meta.label,
+        dropSource: drops.length
+            ? `Tracked drops from ${drops.length} location${drops.length === 1 ? '' : 's'}`
+            : item.systemName
+                ? `Mission node: ${item.systemName}`
+                : `Source data from WFCD catalog`,
+        rotations,
+        tips: buildTips(item, farmType, bestNodes, rotations.length > 0),
+        tags: unique([item.category, item.type, ...(item.tags || []), farmType]),
+        icon: item.imageName
+            ? { type: 'img', value: `https://cdn.warframestat.us/img/${item.imageName}`, name: item.name }
+            : { type: 'emoji', value: meta.icon, name: meta.label },
+    };
+};
+
+const loadRemoteCatalog = async () => {
+    const response = await fetch(REMOTE_CATALOG_URL, { cache: 'no-cache' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error('Unexpected catalog format');
+    return data;
+};
+
+const buildCatalog = (remoteItems) => remoteItems
+    .filter((item) => item && RELEVANT_CATEGORIES.has(item.category))
+    .map(normalizeRemoteItem);
 
 const seedNotes = () => {
     if (notes.length) return;
@@ -1250,6 +1229,9 @@ const matchesQuery = (item) => {
     return [
         item.name,
         item.type,
+        item.displayType,
+        item.sourceCategory,
+        item.categoryLabel,
         item.planet,
         item.missionType,
         item.dropSource,
@@ -1300,11 +1282,11 @@ const renderSelectedDetail = () => {
 
     els.selectedDetail.innerHTML = `
         <div class="note-head">
-            <div class="note-icon">${iconMarkup(item.categoryIcon ? { type: 'emoji', value: item.categoryIcon, name: item.categoryLabel } : null)}</div>
+            <div class="note-icon">${iconMarkup(item.icon)}</div>
             <div style="min-width:0">
                 <div class="note-title-row">
                     <div class="note-title">${escapeHtml(item.name)}</div>
-                    <span class="pill">${escapeHtml(item.type)}</span>
+                    <span class="pill">${escapeHtml(item.displayType || item.type)}</span>
                     <span class="pill secondary">${escapeHtml(item.categoryLabel)}</span>
                 </div>
                 <div class="note-meta">
@@ -1347,7 +1329,7 @@ const renderTips = () => {
 const renderStats = () => {
     const totalItems = allItems.length;
     const totalNotes = notes.length;
-    const categories = WARFRAME_DATA.categories.length;
+    const categories = Object.keys(FARM_CATEGORY_MAP).length;
     const matching = allItems.filter((item) => matchesQuery(item) && matchesFilter(item)).length;
 
     const stats = [
@@ -1366,6 +1348,20 @@ const renderStats = () => {
 };
 
 const renderResults = () => {
+    if (!catalogLoaded && !catalogError) {
+        els.resultsList.innerHTML = '<div class="results-empty">Loading catalog from the WFCD repository...</div>';
+        els.resultCount.textContent = 'Loading';
+        els.lastUpdated.textContent = 'Fetching remote data';
+        return;
+    }
+
+    if (catalogError && !allItems.length) {
+        els.resultsList.innerHTML = `<div class="results-empty">${escapeHtml(catalogError)}</div>`;
+        els.resultCount.textContent = '0 results';
+        els.lastUpdated.textContent = 'Catalog unavailable';
+        return;
+    }
+
     const visible = allItems.filter((item) => matchesQuery(item) && matchesFilter(item));
     els.resultCount.textContent = `${visible.length} result${visible.length === 1 ? '' : 's'}`;
     els.lastUpdated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
@@ -1378,11 +1374,11 @@ const renderResults = () => {
     els.resultsList.innerHTML = visible.map((item, idx) => `
         <article class="note-card" data-item="${escapeHtml(item.name)}" style="cursor:pointer">
             <div class="note-head">
-                <div class="note-icon">${iconMarkup(item.categoryId === 'warframe' ? { type: 'emoji', value: '💠', name: 'frame' } : item.categoryId === 'game-mode' ? { type: 'emoji', value: '🛰️', name: 'mode' } : { type: 'emoji', value: '📦', name: 'resource' })}</div>
+                <div class="note-icon">${iconMarkup(item.icon)}</div>
                 <div style="min-width:0;flex:1">
                     <div class="note-title-row">
                         <div class="note-title">${escapeHtml(item.name)}</div>
-                        <span class="pill">${escapeHtml(item.type)}</span>
+                        <span class="pill">${escapeHtml(item.displayType || item.type)}</span>
                         <span class="pill secondary">#${idx + 1}</span>
                     </div>
                     <div class="note-meta">
@@ -1461,6 +1457,9 @@ const renderNotes = () => {
         noteSection.innerHTML = '<div class="results-empty">No saved notes match the current filter or search.</div>';
     }
 
+    if (!els.notesMount) return;
+
+    els.notesMount.innerHTML = '';
     const notesContainer = document.createElement('div');
     notesContainer.className = 'card';
     notesContainer.style.padding = '0.85rem';
@@ -1471,8 +1470,7 @@ const renderNotes = () => {
         </div>
     `;
     notesContainer.appendChild(noteSection);
-
-    return notesContainer;
+    els.notesMount.appendChild(notesContainer);
 };
 
 const renderAll = () => {
@@ -1482,6 +1480,7 @@ const renderAll = () => {
     renderSelectedDetail();
     renderTips();
     renderResults();
+    renderNotes();
     saveUIState();
 };
 
@@ -1551,8 +1550,9 @@ const addNote = () => {
 const exportData = () => {
     const payload = {
         exportedAt: new Date().toISOString(),
+        source: REMOTE_CATALOG_URL,
         uiState: { activeFilter, query: state.query, selectedItem: state.selectedItem },
-        data: WARFRAME_DATA,
+        data: allItems,
         notes
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -1644,16 +1644,35 @@ const wireEvents = () => {
     els.editDialog.addEventListener('close', () => { editingNoteId = null; });
 }
 
-/* Notes are stored locally and loaded immediately on startup. */
-readNotes();
-loadUIState();
-seedNotes();
-state.selectedItem = state.selectedItem || allItems[0]?.name || null;
-els.searchInput.value = state.query;
-updateSelectedIconPreview();
-buildIconGrid();
-wireEvents();
-renderAll();
+const loadCatalogAndRender = async () => {
+    readNotes();
+    loadUIState();
+    seedNotes();
+
+    els.searchInput.value = state.query;
+    updateSelectedIconPreview();
+    buildIconGrid();
+    wireEvents();
+
+    try {
+        const remoteItems = await loadRemoteCatalog();
+        allItems = buildCatalog(remoteItems);
+        catalogLoaded = true;
+        catalogError = '';
+    } catch (error) {
+        catalogLoaded = true;
+        catalogError = `Unable to load the WFCD catalog: ${error.message}`;
+        allItems = [];
+    }
+
+    state.selectedItem = state.selectedItem && allItems.some((item) => item.name === state.selectedItem)
+        ? state.selectedItem
+        : allItems[0]?.name || null;
+
+    renderAll();
+};
+
+loadCatalogAndRender();
     </script>
 </body>
 </html>
