@@ -121,21 +121,6 @@ button, input { font: inherit; }
     white-space: nowrap;
 }
 
-.switch {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    font-weight: 700;
-    user-select: none;
-    cursor: pointer;
-}
-.switch input { accent-color: var(--accent); }
-.switch.hidden { display: none; }
-
 .matrix {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(166px, 1fr));
@@ -285,10 +270,6 @@ button, input { font: inherit; }
             </div>
             <div class="side-controls">
                 <div id="glyphCount" class="count">Loading...</div>
-                <label class="switch" for="fastCopySwitch">
-                    <input id="fastCopySwitch" type="checkbox">
-                    Fast copy
-                </label>
             </div>
         </section>
 
@@ -317,7 +298,6 @@ const els = {
     searchInput: document.getElementById('searchInput'),
     matrix: document.getElementById('matrix'),
     glyphCount: document.getElementById('glyphCount'),
-    fastCopySwitch: document.getElementById('fastCopySwitch'),
     glyphDialog: document.getElementById('glyphDialog'),
     dialogTitle: document.getElementById('dialogTitle'),
     dialogCode: document.getElementById('dialogCode'),
@@ -330,7 +310,6 @@ let glyphs = [];
 let filteredGlyphs = [];
 let activeFilter = 'all';
 let searchValue = '';
-let fastCopy = false;
 let popupGlyph = null;
 
 const escapeHtml = (value) => String(value ?? '')
@@ -359,19 +338,7 @@ const extractGlyphCode = (glyph) => {
     return String(glyph?.name || 'glyph').trim().replace(/\s+/g, '-');
 };
 
-const glyphCode = (glyph) => `${GLYPH_CODE_PREFIX}${extractGlyphCode(glyph)}`;
-
-const updateFastCopyVisibility = () => {
-    const codexOnly = activeFilter === 'codex';
-    if (codexOnly) {
-        els.fastCopySwitch.parentElement.classList.remove('hidden');
-        return;
-    }
-
-    fastCopy = false;
-    els.fastCopySwitch.checked = false;
-    els.fastCopySwitch.parentElement.classList.add('hidden');
-};
+const glyphCode = (glyph) => extractGlyphCode(glyph);
 
 const showToast = (text) => {
     els.toast.textContent = text;
@@ -411,11 +378,9 @@ const loadState = () => {
         const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
         if (typeof parsed.searchValue === 'string') searchValue = parsed.searchValue;
         if (typeof parsed.activeFilter === 'string') activeFilter = parsed.activeFilter;
-        if (typeof parsed.fastCopy === 'boolean') fastCopy = parsed.fastCopy;
     } catch {
         searchValue = '';
         activeFilter = 'all';
-        fastCopy = false;
     }
 };
 
@@ -423,7 +388,6 @@ const saveState = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
         searchValue,
         activeFilter,
-        fastCopy,
     }));
 };
 
@@ -464,12 +428,6 @@ const renderMatrix = () => {
             const glyph = filteredGlyphs[idx];
             const code = glyphCode(glyph);
 
-            if (fastCopy && glyph.categoryClass === 'codex') {
-                const copied = await copyText(code);
-                showToast(copied ? 'Code copied' : 'Copy failed');
-                return;
-            }
-
             popupGlyph = glyph;
             els.dialogTitle.textContent = glyph.name || 'Glyph';
             els.dialogCode.textContent = code;
@@ -491,7 +449,6 @@ const setFilter = (filter) => {
     document.querySelectorAll('[data-filter]').forEach((button) => {
         button.classList.toggle('active', button.dataset.filter === filter);
     });
-    updateFastCopyVisibility();
     applyAndRender();
 };
 
@@ -504,13 +461,6 @@ const wireEvents = () => {
     document.querySelectorAll('[data-filter]').forEach((button) => {
         button.classList.toggle('active', button.dataset.filter === activeFilter);
         button.addEventListener('click', () => setFilter(button.dataset.filter));
-    });
-
-    els.fastCopySwitch.checked = fastCopy;
-    updateFastCopyVisibility();
-    els.fastCopySwitch.addEventListener('change', () => {
-        fastCopy = els.fastCopySwitch.checked;
-        saveState();
     });
 
     els.closeDialogBtn.addEventListener('click', () => {
