@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warframe Farm Finder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --bg: #14110f;
+    --bg2: #231c19;
+    --panel: #2a211e;
+    --panel-2: #352a25;
+    --accent: #c2a24d;
+    --accent-2: #63b3ff;
+    --text: #fff6e8;
+    --muted: rgba(255, 246, 232, 0.58);
+    --border: rgba(194,162,77,0.22);
+    --border-strong: rgba(194,162,77,0.6);
+    --good: #10b981;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+    --font-primary: 'Exo 2', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
+    --radius-sm: 0.35rem;
+    --radius-md: 0.65rem;
+    --radius-lg: 0.9rem;
+    --shadow: 0 12px 36px rgba(0,0,0,0.35);
+    --transition: 220ms cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-primary);
+    color: var(--text);
+    background:
+        radial-gradient(ellipse at 10% 12%, rgba(194,162,77,0.08) 0%, transparent 40%),
+        radial-gradient(ellipse at 88% 82%, rgba(99,179,255,0.08) 0%, transparent 42%),
+        linear-gradient(180deg, #11100f 0%, #181412 100%);
+    overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; }
+
+.topbar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 30;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    background: rgba(42,33,30,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 2px 18px rgba(0,0,0,0.25);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: 0;
+}
+
+.brand-mark {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(194,162,77,0.2), rgba(99,179,255,0.12));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+.brand-title {
+    font-size: 0.98rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-style: italic;
+    white-space: nowrap;
+}
+.brand-title span { color: var(--accent); }
+.brand-subtitle {
+    font-size: 0.7rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 320px;
+}
+
+.topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.btn {
+    border: 1px solid var(--border);
+    background: rgba(194,162,77,0.08);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    padding: 0.42rem 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: transform var(--transition), border-color var(--transition), background var(--transition), color var(--transition);
+}
+.btn:hover { background: rgba(194,162,77,0.16); border-color: var(--border-strong); }
+.btn:active { transform: translateY(1px); }
+.btn.primary {
+    background: linear-gradient(135deg, var(--accent), #e0c36f);
+    color: #2a211e;
+    border-color: var(--accent);
+}
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.ghost { background: rgba(255,255,255,0.03); }
+
+.page {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 1rem;
+    padding-top: calc(52px + 1rem);
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 0.85rem;
+    margin-bottom: 0.85rem;
+}
+
+.card {
+    background: linear-gradient(180deg, rgba(42,33,30,0.94), rgba(31,25,22,0.94));
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+
+.hero-copy {
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+.hero-copy::after {
+    content: '';
+    position: absolute;
+    inset: auto -90px -70px auto;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(194,162,77,0.18), transparent 68%);
+    pointer-events: none;
+}
+
+.kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.18rem 0.52rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(194,162,77,0.08);
+    color: var(--accent);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 800;
+}
+
+.hero h1 {
+    margin: 0.65rem 0 0.35rem;
+    font-size: clamp(1.8rem, 3.2vw, 3.2rem);
+    line-height: 0.96;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.hero h1 span { color: var(--accent); }
+.hero p {
+    margin: 0;
+    max-width: 68ch;
+    color: var(--muted);
+    line-height: 1.65;
+    font-size: 0.92rem;
+}
+
+.stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0.9rem;
+}
+.stat {
+    min-width: 130px;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.03);
+}
+.stat-label {
+    display: block;
+    color: var(--muted);
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 800;
+    margin-bottom: 0.2rem;
+}
+.stat-value {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text);
+}
+.stat-value.accent { color: var(--accent); }
+
+.hero-panel {
+    padding: 0.95rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 800;
+    margin-bottom: 0.55rem;
+}
+
+.searchbox {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: rgba(255,255,255,0.03);
+}
+.searchbox input {
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.92rem;
+}
+.searchbox input::placeholder { color: rgba(255,246,232,0.35); }
+.search-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(194,162,77,0.12);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.quick-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+.filter-btn {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(194,162,77,0.07);
+    color: var(--muted);
+    padding: 0.34rem 0.62rem;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.filter-btn.active {
+    background: rgba(194,162,77,0.18);
+    color: var(--accent);
+    border-color: var(--border-strong);
+}
+.filter-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 0.85rem;
+    align-items: start;
+}
+
+.sidebar, .results, .tips {
+    padding: 0.9rem;
+}
+
+.sidebar .section-title, .results .section-title, .tips .section-title { margin-bottom: 0.7rem; }
+
+.sidebar-sticky {
+    position: sticky;
+    top: calc(52px + 1rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.input, .select, .textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg2);
+    color: var(--text);
+    outline: none;
+    padding: 0.48rem 0.55rem;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+.input:focus, .select:focus, .textarea:focus {
+    border-color: var(--border-strong);
+    box-shadow: 0 0 0 2px rgba(194,162,77,0.12);
+}
+.textarea { min-height: 92px; resize: vertical; line-height: 1.5; }
+
+.form-grid {
+    display: grid;
+    gap: 0.65rem;
+}
+.field label {
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+}
+
+.icon-picker {
+    display: grid;
+    gap: 0.45rem;
+}
+.icon-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.icon-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    font-size: 1.15rem;
+}
+.icon-badge img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+.icon-name { font-size: 0.76rem; color: var(--muted); }
+
+.icon-panel {
+    display: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.03);
+    padding: 0.65rem;
+}
+.icon-panel.open { display: block; }
+.icon-tabs {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+}
+.icon-tab {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.03);
+    color: var(--muted);
+    padding: 0.22rem 0.5rem;
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+    cursor: pointer;
+}
+.icon-tab.active {
+    color: var(--accent);
+    border-color: var(--border-strong);
+    background: rgba(194,162,77,0.14);
+}
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+    gap: 0.34rem;
+    max-height: 200px;
+    overflow: auto;
+    padding-right: 0.1rem;
+}
+.icon-option {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition);
+    overflow: hidden;
+}
+.icon-option:hover { border-color: var(--border-strong); background: rgba(194,162,77,0.12); }
+.icon-option.active { box-shadow: inset 0 0 0 1px rgba(194,162,77,0.32); border-color: var(--border-strong); }
+.icon-option img { width: 21px; height: 21px; object-fit: contain; }
+
+.note-list {
+    display: grid;
+    gap: 0.65rem;
+}
+.note-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, rgba(53,42,37,0.92), rgba(39,31,28,0.95));
+    padding: 0.75rem;
+    display: grid;
+    gap: 0.5rem;
+}
+.note-card:hover { border-color: var(--border-strong); }
+.note-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+}
+.note-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    font-size: 1rem;
+}
+.note-icon img { width: 22px; height: 22px; object-fit: contain; }
+.note-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+.note-title {
+    font-size: 0.94rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+.note-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    align-items: center;
+    margin-top: 0.2rem;
+}
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(194,162,77,0.08);
+    color: var(--accent);
+    padding: 0.14rem 0.42rem;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+}
+.pill.secondary { color: var(--accent-2); background: rgba(99,179,255,0.08); }
+.note-body {
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 0.82rem;
+    white-space: pre-wrap;
+}
+.note-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+}
+.note-date {
+    font-size: 0.64rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+}
+.note-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+.small-btn {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    padding: 0.32rem 0.5rem;
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+    cursor: pointer;
+}
+.small-btn:hover { border-color: var(--border-strong); }
+.small-btn.warn { color: #ffd39c; }
+.small-btn.bad { color: #ffb9b9; }
+.small-btn.good { color: #abf7d6; }
+
+.results-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-bottom: 0.7rem;
+    flex-wrap: wrap;
+}
+.results-count {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+}
+.results-empty {
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.tip-stack {
+    display: grid;
+    gap: 0.55rem;
+}
+.tip-card {
+    padding: 0.72rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+}
+.tip-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+.tip-body {
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.55;
+}
+.tip-body strong { color: var(--accent); }
+
+.dialog {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    width: min(720px, calc(100vw - 1.2rem));
+    padding: 0;
+}
+.dialog::backdrop { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+.dialog-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.8rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+}
+.dialog-body { padding: 0.9rem; }
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.4rem;
+    padding: 0 0.9rem 0.9rem;
+}
+
+.mini-kbd {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-bottom-color: rgba(255,255,255,0.08);
+    border-radius: 0.3rem;
+    padding: 0.05rem 0.28rem;
+    background: rgba(255,255,255,0.03);
+}
+
+.footer-note {
+    margin-top: 0.85rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-align: center;
+}
+
+@media (max-width: 1100px) {
+    .hero, .content-grid { grid-template-columns: 1fr; }
+    .sidebar-sticky { position: static; }
+    .brand-subtitle { display: none; }
+}
+
+@media (max-width: 720px) {
+    .topbar { padding: 0 0.7rem; gap: 0.45rem; }
+    .topbar-right .btn { padding: 0.36rem 0.52rem; font-size: 0.64rem; }
+    .page { padding: 0.7rem; padding-top: calc(52px + 0.7rem); }
+    .hero-copy, .hero-panel, .sidebar, .results, .tips { padding: 0.82rem; }
+    .searchbox { padding: 0.65rem; }
+    .note-footer { flex-direction: column; align-items: flex-start; }
+}
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark">⚙</div>
+            <div style="min-width:0">
+                <div class="brand-title">Warframe <span>Farm Finder</span></div>
+                <div class="brand-subtitle">Fast local lookup for resources, frames, rotations, and farming tips</div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <a class="btn ghost" href="../index.html">Home</a>
+            <a class="btn ghost" href="../systemStatus/index.html">System Status</a>
+            <button class="btn" id="exportBtn" type="button">Export JSON</button>
+            <button class="btn" id="resetBtn" type="button">Reset View</button>
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="hero">
+            <article class="card hero-copy">
+                <div class="kicker">Local data browser</div>
+                <h1>Find the <span>best farm</span> route faster than the Wiki.</h1>
+                <p>
+                    Search your own compact data set for resources, Warframe parts, rotation drops, and node recommendations.
+                    Everything is client-side only, so it opens instantly and works offline once loaded.
+                </p>
+                <div class="stats-row" id="statsRow"></div>
+            </article>
+            <aside class="card hero-panel">
+                <div class="section-title">
+                    <span>Quick Search</span>
+                    <span class="mini-kbd">Ctrl / ⌘ K</span>
+                </div>
+                <div class="searchbox">
+                    <div class="search-icon">⌕</div>
+                    <input id="searchInput" type="search" placeholder="Search item, frame, resource, or node..." autocomplete="off">
+                </div>
+                <div class="quick-filters" id="quickFilters"></div>
+                <div style="display:grid;gap:0.55rem">
+                    <div class="section-title" style="margin-bottom:0">
+                        <span>Add Note / Override</span>
+                        <span style="color:var(--muted);font-size:0.66rem;text-transform:none;letter-spacing:0">stored locally</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="noteTitle">Title</label>
+                            <input id="noteTitle" class="input" maxlength="90" placeholder="Example: Nekros on Gabii">
+                        </div>
+                        <div class="field">
+                            <label for="noteType">Type</label>
+                            <select id="noteType" class="select">
+                                <option value="general">General</option>
+                                <option value="resource">Resource</option>
+                                <option value="warframe">Planos de Warframe</option>
+                                <option value="game-mode">Modo de Juego</option>
+                                <option value="rotation">Rotation</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Icon / Recognition</label>
+                            <div class="icon-picker">
+                                <button class="btn" id="toggleIconPicker" type="button" style="justify-content:space-between;display:flex;align-items:center;gap:0.5rem">
+                                    <span>Pick icon</span>
+                                    <span class="icon-preview" style="min-width:0">
+                                        <span class="icon-badge" id="selectedIconPreview">⚔️</span>
+                                    </span>
+                                </button>
+                                <div class="icon-panel" id="iconPanel">
+                                    <div class="icon-tabs">
+                                        <button class="icon-tab active" type="button" data-tab="warframe">Warframe</button>
+                                        <button class="icon-tab" type="button" data-tab="emoji">Emoji</button>
+                                    </div>
+                                    <input id="iconSearch" class="input" placeholder="Filter icons..." style="margin-bottom:0.5rem">
+                                    <div class="icon-grid" id="iconGrid"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="noteBody">Note</label>
+                            <textarea id="noteBody" class="textarea" maxlength="5000" placeholder="Add farming tips, loadouts, drop notes, or your own route..." required></textarea>
+                        </div>
+                        <div style="display:flex;gap:0.45rem;flex-wrap:wrap">
+                            <button class="btn primary" id="saveNoteBtn" type="button">Save Note</button>
+                            <button class="btn ghost" id="clearFormBtn" type="button">Clear Form</button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="content-grid">
+            <article class="card sidebar">
+                <div class="sidebar-sticky">
+                    <div>
+                        <div class="section-title">
+                            <span>Selected Item</span>
+                            <span class="mini-kbd">data-driven</span>
+                        </div>
+                        <div id="selectedDetail" class="note-card"></div>
+                    </div>
+                    <div>
+                        <div class="section-title">
+                            <span>Tips de Farmeo</span>
+                            <span>contextual</span>
+                        </div>
+                        <div id="tipsPanel" class="tip-stack"></div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card results">
+                <div class="results-head">
+                    <div class="section-title" style="margin:0">
+                        <span>Farm Results</span>
+                        <span id="resultCount" class="results-count"></span>
+                    </div>
+                    <div class="results-count" id="lastUpdated"></div>
+                </div>
+                <div id="resultsList" class="note-list"></div>
+            </article>
+        </section>
+
+        <p class="footer-note">
+            Everything is stored locally in your browser. Use <span class="mini-kbd">Export JSON</span> to back up your notes.
+        </p>
+    </main>
+
+    <dialog class="dialog" id="editDialog">
+        <div class="dialog-head">
+            <div style="font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent);font-size:0.75rem">Edit Note</div>
+            <button class="btn ghost" id="closeDialogBtn" type="button">Close</button>
+        </div>
+        <div class="dialog-body">
+            <div class="form-grid">
+                <div class="field">
+                    <label for="editTitle">Title</label>
+                    <input id="editTitle" class="input">
+                </div>
+                <div class="field">
+                    <label for="editType">Type</label>
+                    <select id="editType" class="select">
+                        <option value="general">General</option>
+                        <option value="resource">Resource</option>
+                        <option value="warframe">Planos de Warframe</option>
+                        <option value="game-mode">Modo de Juego</option>
+                        <option value="rotation">Rotation</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="editBody">Note</label>
+                    <textarea id="editBody" class="textarea"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="dialog-actions">
+            <button class="btn ghost" id="cancelDialogBtn" type="button">Cancel</button>
+            <button class="btn primary" id="confirmEditBtn" type="button">Save Changes</button>
+        </div>
+    </dialog>
+
+    <script>
+/* =====================================================================
+   Warframe Farm Finder
+   - All data is local and easy to extend.
+   - Add more entries to WARFRAME_DATA without changing the UI.
+===================================================================== */
+const STORAGE_KEY = 'warframe-farm-finder-v1';
+const NOTES_KEY = 'warframe-farm-finder-notes-v1';
+
+const WARFRAME_ICONS = [
+    { type: 'img', value: '../systemStatus/src/factions/32px-TennoIcon.png', name: 'tenno' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-CorpusIcon.png', name: 'corpus' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-GrineerIcon.png', name: 'grineer' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-NarmerIcon.png', name: 'narmer' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-SentientIcon.png', name: 'sentient' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-ScaldraIcon.png', name: 'scaldra' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-TechrotIcon.png', name: 'techrot' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-AnarchsIcon.png', name: 'anarchs' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-DuviriIcon.png', name: 'duviri' },
+    { type: 'img', value: '../systemStatus/src/factions/InfestedIcon.svg', name: 'infested' },
+    { type: 'img', value: '../systemStatus/src/icons/32px-Platinum.png', name: 'platinum' },
+    { type: 'img', value: '../systemStatus/src/icons/32px-SteelEssence.png', name: 'steel essence' },
+    { type: 'img', value: '../systemStatus/src/icons/32px-CrimsonArchonShard.png', name: 'crimson shard' },
+    { type: 'img', value: '../systemStatus/src/icons/32px-AmberArchonShard.png', name: 'amber shard' },
+    { type: 'img', value: '../systemStatus/src/icons/32px-AzureArchonShard.png', name: 'azure shard' },
+    { type: 'img', value: '../systemStatus/src/damageType/32px-DmgVoid.png', name: 'void' },
+    { type: 'img', value: '../systemStatus/src/damageType/32px-DmgHeat.png', name: 'heat' },
+    { type: 'img', value: '../systemStatus/src/damageType/32px-DmgCold.png', name: 'cold' },
+    { type: 'img', value: '../systemStatus/src/damageType/32px-DmgElectricity.png', name: 'electricity' },
+    { type: 'img', value: '../systemStatus/src/damageType/32px-DmgToxin.png', name: 'toxin' },
+    { type: 'img', value: '../systemStatus/src/cycles/32px-VomeRequiemIcon.png', name: 'vome' },
+    { type: 'img', value: '../systemStatus/src/cycles/32px-FassRequiemIcon.png', name: 'fass' },
+    { type: 'emoji', value: '⚔️', name: 'combat' },
+    { type: 'emoji', value: '🛡️', name: 'defense' },
+    { type: 'emoji', value: '🎯', name: 'target' },
+    { type: 'emoji', value: '🧪', name: 'crafting' },
+    { type: 'emoji', value: '🔮', name: 'void' },
+    { type: 'emoji', value: '💎', name: 'prime' },
+    { type: 'emoji', value: '🛰️', name: 'space' },
+    { type: 'emoji', value: '📦', name: 'loot' },
+    { type: 'emoji', value: '🗺️', name: 'route' },
+    { type: 'emoji', value: '🏆', name: 'goal' },
+    { type: 'emoji', value: '⭐', name: 'important' },
+    { type: 'emoji', value: '⏱️', name: 'timer' },
+    { type: 'emoji', value: '🔥', name: 'heat' },
+    { type: 'emoji', value: '❄️', name: 'cold' },
+    { type: 'emoji', value: '⚡', name: 'electric' },
+    { type: 'emoji', value: '☣️', name: 'toxin' },
+    { type: 'emoji', value: '🧠', name: 'strategy' },
+    { type: 'emoji', value: '🎨', name: 'fashion' },
+    { type: 'emoji', value: '🪙', name: 'currency' },
+    { type: 'emoji', value: '📜', name: 'quest' },
+    { type: 'emoji', value: '🛠️', name: 'build' },
+    { type: 'emoji', value: '🌌', name: 'star chart' }
+];
+
+const EMOJI_ICONS = [
+    { type: 'emoji', value: '😀', name: 'smile' },
+    { type: 'emoji', value: '😎', name: 'cool' },
+    { type: 'emoji', value: '🤖', name: 'robot' },
+    { type: 'emoji', value: '👾', name: 'alien' },
+    { type: 'emoji', value: '🔧', name: 'tool' },
+    { type: 'emoji', value: '📌', name: 'pin' },
+    { type: 'emoji', value: '✅', name: 'done' },
+    { type: 'emoji', value: '❗', name: 'urgent' },
+    { type: 'emoji', value: '💡', name: 'idea' },
+    { type: 'emoji', value: '🧭', name: 'navigation' },
+    { type: 'emoji', value: '🧱', name: 'foundation' },
+    { type: 'emoji', value: '🎮', name: 'game' },
+    { type: 'emoji', value: '📈', name: 'progress' },
+    { type: 'emoji', value: '🔒', name: 'locked' },
+    { type: 'emoji', value: '📝', name: 'notes' },
+    { type: 'emoji', value: '🎁', name: 'reward' },
+    { type: 'emoji', value: '🛸', name: 'ship' },
+    { type: 'emoji', value: '🐺', name: 'hunt' }
+];
+
+/* ---------------------------------------------------------------------
+   Compact local data set. Extend this object with more entries later.
+--------------------------------------------------------------------- */
+const WARFRAME_DATA = {
+    categories: [
+        {
+            id: 'resource',
+            label: 'Resources',
+            icon: '📦',
+            items: [
+                {
+                    name: 'Orokin Cell',
+                    type: 'resource',
+                    planet: 'Ceres / Saturn / Deimos',
+                    bestNodes: ['Gabii (Ceres)', 'Helene (Saturn)', 'Terremors (Deimos)'],
+                    missionType: 'Dark Sector Survival / Defense',
+                    dropSource: 'Common resource drops, bosses, and specific nodes',
+                    rotations: [
+                        { rotation: 'A', chance: 'Varies by enemy/mission table', notes: 'Best treated as a steady farming resource rather than a single rotation target.' },
+                        { rotation: 'B', chance: 'Varies', notes: 'Bring drop boosters if available.' },
+                        { rotation: 'C', chance: 'Varies', notes: 'Nekros, Khora, and Hydroid can improve efficiency.' }
+                    ],
+                    tips: [
+                        'Bring Nekros for additional loot rolls.',
+                        'Use a resource booster if you have one active.',
+                        'Gabii is a fast, repeatable Ceres survival node.'
+                    ],
+                    tags: ['farming', 'resource', 'common']
+                },
+                {
+                    name: 'Polymer Bundle',
+                    type: 'resource',
+                    planet: 'Venus / Uranus / Saturn',
+                    bestNodes: ['Heiracon (Pluto)', 'Ophelia (Uranus)', 'Helene (Saturn)'],
+                    missionType: 'Defense / Survival / Excavation',
+                    dropSource: 'Corpus containers, crates, and enemy drops',
+                    rotations: [
+                        { rotation: 'A', chance: 'Steady accumulation', notes: 'Void missions and long runs tend to be efficient.' },
+                        { rotation: 'B', chance: 'Steady accumulation', notes: 'AOE clear speeds up farming more than target switching.' },
+                        { rotation: 'C', chance: 'Steady accumulation', notes: 'Bring vacuum / fetch and a loot-frame.' }
+                    ],
+                    tips: [
+                        'Run a loot radar build to find containers faster.',
+                        'Smeeta / boosters can accelerate stockpiling.',
+                        'Use a weapon with wide clear to keep pace high.'
+                    ],
+                    tags: ['farming', 'resource']
+                },
+                {
+                    name: 'Plastids',
+                    type: 'resource',
+                    planet: 'Saturn / Uranus / Phobos',
+                    bestNodes: ['Piscinas (Saturn)', 'Ophelia (Uranus)', 'Iliad (Phobos)'],
+                    missionType: 'Survival / Defense',
+                    dropSource: 'Infested-heavy missions and containers',
+                    rotations: [
+                        { rotation: 'A', chance: 'Consistent', notes: 'Kill density matters most.' },
+                        { rotation: 'B', chance: 'Consistent', notes: 'Longer survivals improve total haul.' },
+                        { rotation: 'C', chance: 'Consistent', notes: 'Resource boosters have a strong effect here.' }
+                    ],
+                    tips: [
+                        'Use an Infested survival node for dense enemy spawns.',
+                        'Khora can pair well with defensive farming.'
+                    ],
+                    tags: ['farming', 'resource']
+                }
+            ]
+        },
+        {
+            id: 'warframe',
+            label: 'Warframe Parts',
+            icon: '💠',
+            items: [
+                {
+                    name: 'Khora Systems',
+                    type: 'warframe',
+                    planet: 'Sanctuary Onslaught',
+                    bestNodes: ['Sanctuary Onslaught'],
+                    missionType: 'Endless Assault',
+                    dropSource: 'Rotation C reward pool',
+                    rotations: [
+                        { rotation: 'A', chance: 'No part', notes: 'Initial rotations are for setup and acceleration.' },
+                        { rotation: 'B', chance: 'No part', notes: 'Keep the run going efficiently.' },
+                        { rotation: 'C', chance: 'Part reward', notes: 'Target Rotation C for the Systems drop.' }
+                    ],
+                    tips: [
+                        'Stay efficient so you reach Rotation C faster.',
+                        'A fast squad dramatically improves the farm.'
+                    ],
+                    tags: ['warframe', 'rotation', 'endless']
+                },
+                {
+                    name: 'Gauss Systems',
+                    type: 'warframe',
+                    planet: 'Sedna',
+                    bestNodes: ['Kappa (Sedna)', 'Stribog (Void)', 'Disruption missions'],
+                    missionType: 'Disruption',
+                    dropSource: 'Rotation C / disruption reward logic',
+                    rotations: [
+                        { rotation: 'A', chance: 'Low', notes: 'Early rounds are not the target.' },
+                        { rotation: 'B', chance: 'Medium', notes: 'Survival while preserving tempo matters.' },
+                        { rotation: 'C', chance: 'Best chance', notes: 'Stay on top of keys and complete every wave cleanly.' }
+                    ],
+                    tips: [
+                        'Disruption rewards usually favor fast and clean completions.',
+                        'Bring burst damage for demolysts.'
+                    ],
+                    tags: ['warframe', 'rotation']
+                }
+            ]
+        },
+        {
+            id: 'game-mode',
+            label: 'Modes',
+            icon: '🛰️',
+            items: [
+                {
+                    name: 'Steel Path Survival',
+                    type: 'game-mode',
+                    planet: 'Any Steel Path node',
+                    bestNodes: ['Gabii (Ceres)', 'Ophelia (Uranus)', 'Helene (Saturn)'],
+                    missionType: 'Endless Survival',
+                    dropSource: 'Higher enemy density and bonus Steel Path rewards',
+                    rotations: [
+                        { rotation: 'A', chance: 'General loot', notes: 'Good for baseline farming.' },
+                        { rotation: 'B', chance: 'General loot', notes: 'Sustained survival keeps drops rolling.' },
+                        { rotation: 'C', chance: 'General loot', notes: 'Best if your squad can maintain pace.' }
+                    ],
+                    tips: [
+                        'Steel Path gives stronger enemies but better general farming pressure.',
+                        'Use survivability first, then damage.'
+                    ],
+                    tags: ['mode', 'endless', 'steel path']
+                },
+                {
+                    name: 'Void Relic Crack',
+                    type: 'game-mode',
+                    planet: 'Void',
+                    bestNodes: ['Hepit (Void)', 'Ukko (Void)', 'Mithra (Void)'],
+                    missionType: 'Capture / Exterminate',
+                    dropSource: 'Relic rewards and speed farming',
+                    rotations: [
+                        { rotation: 'A', chance: 'Fast clear', notes: 'Relic missions are usually about run speed, not long rotations.' },
+                        { rotation: 'B', chance: 'Fast clear', notes: 'Pick the node that minimizes time-to-extract.' },
+                        { rotation: 'C', chance: 'Fast clear', notes: 'Use a speed build and skip unnecessary fights.' }
+                    ],
+                    tips: [
+                        'The fastest path is usually the best path.',
+                        'Use Titania, Volt, or Wukong for speed.'
+                    ],
+                    tags: ['mode', 'relic', 'speed']
+                }
+            ]
+        }
+    ]
+};
+
+const DEFAULT_NOTES = [
+    {
+        id: 'note-1',
+        title: 'Nekros for Orokin Cells',
+        type: 'resource',
+        icon: { type: 'img', value: '../systemStatus/src/factions/32px-NarmerIcon.png', name: 'narmer' },
+        body: 'Lleva a Nekros para aumentar el drop de Células Orokin. Gabii en Ceres sigue siendo uno de los nodos más cómodos para ciclos cortos.',
+        pinned: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        linkedItem: 'Orokin Cell'
+    },
+    {
+        id: 'note-2',
+        title: 'Khora Systems rotation',
+        type: 'warframe',
+        icon: { type: 'emoji', value: '💠', name: 'prime' },
+        body: 'Sanctuary Onslaught es el objetivo principal. Mantén el run limpio para llegar a Rotation C con menos tiempo perdido.',
+        pinned: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        linkedItem: 'Khora Systems'
+    }
+];
+
+const els = {
+    searchInput: document.getElementById('searchInput'),
+    quickFilters: document.getElementById('quickFilters'),
+    resultsList: document.getElementById('resultsList'),
+    resultCount: document.getElementById('resultCount'),
+    lastUpdated: document.getElementById('lastUpdated'),
+    selectedDetail: document.getElementById('selectedDetail'),
+    tipsPanel: document.getElementById('tipsPanel'),
+    statsRow: document.getElementById('statsRow'),
+    saveNoteBtn: document.getElementById('saveNoteBtn'),
+    clearFormBtn: document.getElementById('clearFormBtn'),
+    noteTitle: document.getElementById('noteTitle'),
+    noteType: document.getElementById('noteType'),
+    noteBody: document.getElementById('noteBody'),
+    toggleIconPicker: document.getElementById('toggleIconPicker'),
+    iconPanel: document.getElementById('iconPanel'),
+    iconSearch: document.getElementById('iconSearch'),
+    iconGrid: document.getElementById('iconGrid'),
+    selectedIconPreview: document.getElementById('selectedIconPreview'),
+    exportBtn: document.getElementById('exportBtn'),
+    resetBtn: document.getElementById('resetBtn'),
+    editDialog: document.getElementById('editDialog'),
+    editTitle: document.getElementById('editTitle'),
+    editType: document.getElementById('editType'),
+    editBody: document.getElementById('editBody'),
+    closeDialogBtn: document.getElementById('closeDialogBtn'),
+    cancelDialogBtn: document.getElementById('cancelDialogBtn'),
+    confirmEditBtn: document.getElementById('confirmEditBtn')
+};
+
+let activeFilter = 'all';
+let selectedIcon = { type: 'emoji', value: '⚔️', name: 'combat' };
+let iconTab = 'warframe';
+let notes = [];
+let editingNoteId = null;
+
+const state = {
+    query: '',
+    selectedItem: null
+};
+
+const id = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+const escapeHtml = (value) => String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+const readNotes = () => {
+    try {
+        const raw = localStorage.getItem(NOTES_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        notes = Array.isArray(parsed) ? parsed : [];
+    } catch {
+        notes = [];
+    }
+};
+
+const persistNotes = () => localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+
+const loadUIState = () => {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        activeFilter = parsed.activeFilter || 'all';
+        state.query = parsed.query || '';
+        state.selectedItem = parsed.selectedItem || null;
+        if (parsed.selectedIcon) selectedIcon = parsed.selectedIcon;
+    } catch {
+        activeFilter = 'all';
+        state.query = '';
+        state.selectedItem = null;
+    }
+};
+
+const saveUIState = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        activeFilter,
+        query: state.query,
+        selectedItem: state.selectedItem,
+        selectedIcon
+    }));
+};
+
+const iconMarkup = (icon) => {
+    if (!icon) return '⚔️';
+    if (icon.type === 'img') {
+        return `<img src="${icon.value}" alt="${escapeHtml(icon.name || 'icon')}" onerror="this.outerHTML='⚔️'">`;
+    }
+    return escapeHtml(icon.value);
+};
+
+const formatTime = (iso) => {
+    const date = new Date(iso);
+    return date.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+const flattenItems = () => {
+    const items = [];
+    WARFRAME_DATA.categories.forEach((group) => {
+        group.items.forEach((item) => items.push({ ...item, categoryId: group.id, categoryLabel: group.label, categoryIcon: group.icon }));
+    });
+    return items;
+};
+
+const allItems = flattenItems();
+
+const seedNotes = () => {
+    if (notes.length) return;
+    notes = structuredClone(DEFAULT_NOTES);
+    persistNotes();
+};
+
+const buildQuickFilters = () => {
+    const filters = [
+        { id: 'all', label: 'All', icon: '🌌' },
+        { id: 'resource', label: 'Resources', icon: '📦' },
+        { id: 'warframe', label: 'Planos de Warframe', icon: '💠' },
+        { id: 'game-mode', label: 'Modos de Juego', icon: '🛰️' },
+        { id: 'rotation', label: 'Rotation', icon: '⏱️' }
+    ];
+
+    els.quickFilters.innerHTML = filters.map((f) => `
+        <button class="filter-btn${activeFilter === f.id ? ' active' : ''}" data-filter="${f.id}" type="button">${f.icon} ${f.label}</button>
+    `).join('');
+
+    els.quickFilters.querySelectorAll('.filter-btn').forEach((button) => {
+        button.addEventListener('click', () => {
+            activeFilter = button.dataset.filter;
+            saveUIState();
+            renderAll();
+        });
+    });
+};
+
+const buildIconGrid = () => {
+    const source = iconTab === 'warframe' ? WARFRAME_ICONS : EMOJI_ICONS;
+    const query = els.iconSearch.value.trim().toLowerCase();
+    const filtered = source.filter((icon) => !query || icon.name.includes(query) || String(icon.value).includes(query));
+
+    els.iconGrid.innerHTML = filtered.map((icon, index) => {
+        const active = selectedIcon.type === icon.type && selectedIcon.value === icon.value ? ' active' : '';
+        const content = icon.type === 'img'
+            ? `<img src="${icon.value}" alt="${escapeHtml(icon.name)}" onerror="this.outerHTML='❔'">`
+            : escapeHtml(icon.value);
+        return `<button class="icon-option${active}" type="button" data-index="${index}">${content}</button>`;
+    }).join('');
+
+    els.iconGrid.querySelectorAll('.icon-option').forEach((button) => {
+        button.addEventListener('click', () => {
+            const sourceNow = iconTab === 'warframe' ? WARFRAME_ICONS : EMOJI_ICONS;
+            selectedIcon = sourceNow[Number(button.dataset.index)];
+            els.selectedIconPreview.innerHTML = iconMarkup(selectedIcon);
+            saveUIState();
+            buildIconGrid();
+        });
+    });
+};
+
+const getSelectedItem = () => {
+    if (!state.selectedItem) return null;
+    return allItems.find((item) => item.name === state.selectedItem) || null;
+};
+
+const matchesQuery = (item) => {
+    const q = state.query.trim().toLowerCase();
+    if (!q) return true;
+    return [
+        item.name,
+        item.type,
+        item.planet,
+        item.missionType,
+        item.dropSource,
+        ...(item.bestNodes || []),
+        ...(item.tags || [])
+    ].some((value) => String(value).toLowerCase().includes(q));
+};
+
+const matchesFilter = (item) => {
+    if (activeFilter === 'all') return true;
+    return item.type === activeFilter || (activeFilter === 'rotation' && (item.rotations || []).length > 0);
+};
+
+const renderRotationTable = (item) => {
+    if (!item.rotations || !item.rotations.length) return '<div class="results-empty">No rotation data stored for this entry.</div>';
+    return `
+        <div style="overflow:auto;border:1px solid var(--border);border-radius:var(--radius-md)">
+            <table style="width:100%;border-collapse:collapse;min-width:320px;background:rgba(255,255,255,0.02)">
+                <thead>
+                    <tr style="background:rgba(194,162,77,0.08)">
+                        <th style="text-align:left;padding:0.55rem;border-bottom:1px solid var(--border);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent)">Rotation</th>
+                        <th style="text-align:left;padding:0.55rem;border-bottom:1px solid var(--border);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent)">Chance / Note</th>
+                        <th style="text-align:left;padding:0.55rem;border-bottom:1px solid var(--border);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent)">Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${item.rotations.map((rotation) => `
+                        <tr>
+                            <td style="padding:0.55rem;border-bottom:1px solid var(--border);font-family:var(--font-mono);color:var(--text)">${rotation.rotation}</td>
+                            <td style="padding:0.55rem;border-bottom:1px solid var(--border);color:var(--accent-2)">${rotation.chance}</td>
+                            <td style="padding:0.55rem;border-bottom:1px solid var(--border);color:var(--muted)">${escapeHtml(rotation.notes || '')}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>`;
+};
+
+const renderSelectedDetail = () => {
+    const item = getSelectedItem() || allItems[0];
+    if (!item) {
+        els.selectedDetail.innerHTML = '<div class="results-empty">No item selected.</div>';
+        return;
+    }
+
+    state.selectedItem = item.name;
+    saveUIState();
+
+    els.selectedDetail.innerHTML = `
+        <div class="note-head">
+            <div class="note-icon">${iconMarkup(item.categoryIcon ? { type: 'emoji', value: item.categoryIcon, name: item.categoryLabel } : null)}</div>
+            <div style="min-width:0">
+                <div class="note-title-row">
+                    <div class="note-title">${escapeHtml(item.name)}</div>
+                    <span class="pill">${escapeHtml(item.type)}</span>
+                    <span class="pill secondary">${escapeHtml(item.categoryLabel)}</span>
+                </div>
+                <div class="note-meta">
+                    <span class="pill">${escapeHtml(item.planet)}</span>
+                    <span class="pill secondary">${escapeHtml(item.missionType)}</span>
+                </div>
+            </div>
+        </div>
+        <div class="note-body" style="margin-top:0.25rem">
+            <strong style="color:var(--accent)">Best nodes:</strong> ${(item.bestNodes || []).map((node) => `<div>• ${escapeHtml(node)}</div>`).join('')}
+            <div style="margin-top:0.45rem"><strong style="color:var(--accent)">Drop source:</strong> ${escapeHtml(item.dropSource || 'Unknown')}</div>
+        </div>
+        <div style="margin-top:0.55rem">${renderRotationTable(item)}</div>
+    `;
+};
+
+const renderTips = () => {
+    const item = getSelectedItem() || allItems[0];
+    const tips = item?.tips || [];
+    const noteTips = notes
+        .filter((n) => !state.query || [n.title, n.body, n.type].some((value) => String(value).toLowerCase().includes(state.query.toLowerCase())))
+        .slice(0, 2)
+        .map((n) => ({ title: n.title, body: n.body }));
+
+    const combined = [
+        ...tips.map((tip, i) => ({ title: `Tip ${i + 1}`, body: tip })),
+        ...noteTips.map((tip) => ({ title: `Note: ${tip.title}`, body: tip.body }))
+    ];
+
+    els.tipsPanel.innerHTML = combined.length
+        ? combined.map((tip) => `
+            <div class="tip-card">
+                <div class="tip-title">${escapeHtml(tip.title)}</div>
+                <div class="tip-body">${escapeHtml(tip.body)}</div>
+            </div>
+        `).join('')
+        : '<div class="results-empty">No tips found for the current selection.</div>';
+};
+
+const renderStats = () => {
+    const totalItems = allItems.length;
+    const totalNotes = notes.length;
+    const categories = WARFRAME_DATA.categories.length;
+    const matching = allItems.filter((item) => matchesQuery(item) && matchesFilter(item)).length;
+
+    const stats = [
+        { label: 'Data items', value: totalItems, accent: true },
+        { label: 'Visible results', value: matching, accent: false },
+        { label: 'Saved notes', value: totalNotes, accent: false },
+        { label: 'Groups', value: categories, accent: false }
+    ];
+
+    els.statsRow.innerHTML = stats.map((stat) => `
+        <div class="stat">
+            <span class="stat-label">${stat.label}</span>
+            <span class="stat-value${stat.accent ? ' accent' : ''}">${stat.value}</span>
+        </div>
+    `).join('');
+};
+
+const renderResults = () => {
+    const visible = allItems.filter((item) => matchesQuery(item) && matchesFilter(item));
+    els.resultCount.textContent = `${visible.length} result${visible.length === 1 ? '' : 's'}`;
+    els.lastUpdated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+    if (!visible.length) {
+        els.resultsList.innerHTML = '<div class="results-empty">No matching farm data found. Try a different item name, resource, or node.</div>';
+        return;
+    }
+
+    els.resultsList.innerHTML = visible.map((item, idx) => `
+        <article class="note-card" data-item="${escapeHtml(item.name)}" style="cursor:pointer">
+            <div class="note-head">
+                <div class="note-icon">${iconMarkup(item.categoryId === 'warframe' ? { type: 'emoji', value: '💠', name: 'frame' } : item.categoryId === 'game-mode' ? { type: 'emoji', value: '🛰️', name: 'mode' } : { type: 'emoji', value: '📦', name: 'resource' })}</div>
+                <div style="min-width:0;flex:1">
+                    <div class="note-title-row">
+                        <div class="note-title">${escapeHtml(item.name)}</div>
+                        <span class="pill">${escapeHtml(item.type)}</span>
+                        <span class="pill secondary">#${idx + 1}</span>
+                    </div>
+                    <div class="note-meta">
+                        <span class="pill">${escapeHtml(item.planet)}</span>
+                        <span class="pill secondary">${escapeHtml(item.missionType)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="note-body">
+                <div><strong style="color:var(--accent)">Best nodes:</strong> ${escapeHtml((item.bestNodes || []).join(' · '))}</div>
+                <div style="margin-top:0.25rem"><strong style="color:var(--accent)">Source:</strong> ${escapeHtml(item.dropSource || 'Unknown')}</div>
+            </div>
+            <div style="margin-top:0.35rem">${renderRotationTable(item)}</div>
+        </article>
+    `).join('');
+
+    els.resultsList.querySelectorAll('[data-item]').forEach((card) => {
+        card.addEventListener('click', (event) => {
+            if (event.target.closest('button, input, a')) return;
+            state.selectedItem = card.dataset.item;
+            saveUIState();
+            renderSelectedDetail();
+            renderTips();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+};
+
+const renderNotes = () => {
+    if (!notes.length) {
+        persistNotes();
+    }
+    const q = state.query.trim().toLowerCase();
+    const filtered = notes.filter((note) => {
+        if (activeFilter !== 'all' && note.type !== activeFilter) return false;
+        if (!q) return true;
+        return [note.title, note.body, note.type, note.linkedItem].some((value) => String(value).toLowerCase().includes(q));
+    }).sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return new Date(b.updatedAt) - new Date(a.updatedAt);
+    });
+
+    const noteSection = document.createElement('div');
+    noteSection.style.display = 'grid';
+    noteSection.style.gap = '0.65rem';
+
+    if (filtered.length) {
+        noteSection.innerHTML = filtered.map((note) => `
+            <article class="note-card">
+                <div class="note-head">
+                    <div class="note-icon">${iconMarkup(note.icon)}</div>
+                    <div style="min-width:0;flex:1">
+                        <div class="note-title-row">
+                            <div class="note-title">${escapeHtml(note.title)}</div>
+                            ${note.pinned ? '<span class="pill">Pinned</span>' : ''}
+                            <span class="pill secondary">${escapeHtml(note.type)}</span>
+                        </div>
+                        <div class="note-meta">
+                            ${note.linkedItem ? `<span class="pill">Linked: ${escapeHtml(note.linkedItem)}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="note-body">${escapeHtml(note.body)}</div>
+                <div class="note-footer">
+                    <span class="note-date">${formatTime(note.updatedAt)}</span>
+                    <div class="note-actions">
+                        <button class="small-btn good" data-action="pin" data-id="${note.id}" type="button">${note.pinned ? 'Unpin' : 'Pin'}</button>
+                        <button class="small-btn" data-action="edit" data-id="${note.id}" type="button">Edit</button>
+                        <button class="small-btn bad" data-action="delete" data-id="${note.id}" type="button">Delete</button>
+                    </div>
+                </div>
+            </article>
+        `).join('');
+    } else {
+        noteSection.innerHTML = '<div class="results-empty">No saved notes match the current filter or search.</div>';
+    }
+
+    const notesContainer = document.createElement('div');
+    notesContainer.className = 'card';
+    notesContainer.style.padding = '0.85rem';
+    notesContainer.innerHTML = `
+        <div class="section-title">
+            <span>Saved Local Notes</span>
+            <span>${notes.length}</span>
+        </div>
+    `;
+    notesContainer.appendChild(noteSection);
+
+    return notesContainer;
+};
+
+const renderAll = () => {
+    buildQuickFilters();
+    buildIconGrid();
+    renderStats();
+    renderSelectedDetail();
+    renderTips();
+    renderResults();
+    saveUIState();
+};
+
+const updateSelectedIconPreview = () => {
+    els.selectedIconPreview.innerHTML = iconMarkup(selectedIcon);
+};
+
+const clearForm = () => {
+    editingNoteId = null;
+    els.noteTitle.value = '';
+    els.noteType.value = 'general';
+    els.noteBody.value = '';
+    selectedIcon = { type: 'emoji', value: '⚔️', name: 'combat' };
+    updateSelectedIconPreview();
+    buildIconGrid();
+    saveUIState();
+};
+
+const openEditDialog = (note) => {
+    editingNoteId = note.id;
+    els.editTitle.value = note.title;
+    els.editType.value = note.type;
+    els.editBody.value = note.body;
+    if (typeof els.editDialog.showModal === 'function') {
+        els.editDialog.showModal();
+    } else {
+        alert('Your browser does not support dialog.');
+    }
+};
+
+const commitEdit = () => {
+    const idx = notes.findIndex((note) => note.id === editingNoteId);
+    if (idx < 0) return;
+    notes[idx] = {
+        ...notes[idx],
+        title: els.editTitle.value.trim() || notes[idx].title,
+        type: els.editType.value,
+        body: els.editBody.value.trim() || notes[idx].body,
+        updatedAt: new Date().toISOString()
+    };
+    persistNotes();
+    renderAll();
+    if (typeof els.editDialog.close === 'function') els.editDialog.close();
+}
+
+const addNote = () => {
+    const title = els.noteTitle.value.trim();
+    const body = els.noteBody.value.trim();
+    if (!title || !body) return;
+
+    notes.push({
+        id: id(),
+        title,
+        type: els.noteType.value,
+        body,
+        icon: selectedIcon,
+        pinned: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        linkedItem: state.selectedItem || ''
+    });
+    persistNotes();
+    clearForm();
+    renderAll();
+};
+
+const exportData = () => {
+    const payload = {
+        exportedAt: new Date().toISOString(),
+        uiState: { activeFilter, query: state.query, selectedItem: state.selectedItem },
+        data: WARFRAME_DATA,
+        notes
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `warframe-farm-finder-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+};
+
+const resetView = () => {
+    state.query = '';
+    activeFilter = 'all';
+    state.selectedItem = allItems[0]?.name || null;
+    els.searchInput.value = '';
+    saveUIState();
+    renderAll();
+};
+
+const wireEvents = () => {
+    els.searchInput.addEventListener('input', (event) => {
+        state.query = event.target.value;
+        saveUIState();
+        renderAll();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        const isMac = navigator.platform.toLowerCase().includes('mac');
+        if ((isMac ? event.metaKey : event.ctrlKey) && event.key.toLowerCase() === 'k') {
+            event.preventDefault();
+            els.searchInput.focus();
+        }
+    });
+
+    els.toggleIconPicker.addEventListener('click', () => {
+        els.iconPanel.classList.toggle('open');
+        if (els.iconPanel.classList.contains('open')) buildIconGrid();
+    });
+
+    els.iconSearch.addEventListener('input', buildIconGrid);
+
+    document.querySelectorAll('.icon-tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+            iconTab = tab.dataset.tab;
+            document.querySelectorAll('.icon-tab').forEach((t) => t.classList.toggle('active', t === tab));
+            buildIconGrid();
+        });
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!els.iconPanel.contains(event.target) && !els.toggleIconPicker.contains(event.target)) {
+            els.iconPanel.classList.remove('open');
+        }
+    });
+
+    els.saveNoteBtn.addEventListener('click', addNote);
+    els.clearFormBtn.addEventListener('click', clearForm);
+    els.exportBtn.addEventListener('click', exportData);
+    els.resetBtn.addEventListener('click', resetView);
+
+    els.resultsList.addEventListener('click', (event) => {
+        const btn = event.target.closest('button[data-action]');
+        if (!btn) return;
+        const noteId = btn.dataset.id;
+        const noteIndex = notes.findIndex((note) => note.id === noteId);
+        if (noteIndex < 0) return;
+
+        const action = btn.dataset.action;
+        if (action === 'pin') {
+            notes[noteIndex].pinned = !notes[noteIndex].pinned;
+            notes[noteIndex].updatedAt = new Date().toISOString();
+        } else if (action === 'delete') {
+            if (!confirm('Delete this note?')) return;
+            notes.splice(noteIndex, 1);
+        } else if (action === 'edit') {
+            openEditDialog(notes[noteIndex]);
+            return;
+        }
+        persistNotes();
+        renderAll();
+    });
+
+    els.closeDialogBtn.addEventListener('click', () => els.editDialog.close());
+    els.cancelDialogBtn.addEventListener('click', () => els.editDialog.close());
+    els.confirmEditBtn.addEventListener('click', commitEdit);
+    els.editDialog.addEventListener('close', () => { editingNoteId = null; });
+}
+
+/* Notes are stored locally and loaded immediately on startup. */
+readNotes();
+loadUIState();
+seedNotes();
+state.selectedItem = state.selectedItem || allItems[0]?.name || null;
+els.searchInput.value = state.query;
+updateSelectedIconPreview();
+buildIconGrid();
+wireEvents();
+renderAll();
+    </script>
+</body>
+</html>
