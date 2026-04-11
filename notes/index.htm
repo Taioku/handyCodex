@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warframe Notes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --color-bg: #1a1412;
+    --color-bg2: #3e312a;
+    --color-panel: #2a211e;
+    --color-accent: #be9b7b;
+    --color-text: #fff4e6;
+    --color-text-accent: #be9b7b;
+    --color-text-muted: rgba(255, 244, 230, 0.55);
+    --color-border: rgba(190,155,123,0.3);
+    --color-border-strong: rgba(190,155,123,0.7);
+    --success-color: #10b981;
+    --error-color: #ef4444;
+    --warning-color: #f59e0b;
+    --font-primary: 'Exo 2', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
+    --radius-sm: 0.35rem;
+    --radius-md: 0.55rem;
+    --radius-lg: 0.8rem;
+    --topbar-h: 50px;
+    --transition: 220ms cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { font-size: 15px; }
+body {
+    min-height: 100vh;
+    font-family: var(--font-primary);
+    color: var(--color-text);
+    background: var(--color-bg);
+    background-image:
+        radial-gradient(ellipse at 10% 20%, rgba(190,155,123,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 85%, rgba(62,49,42,0.45) 0%, transparent 60%);
+    overflow-x: hidden;
+}
+
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    height: var(--topbar-h);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    background: var(--color-panel);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 2px 14px rgba(0,0,0,0.35);
+}
+
+.topbar-title {
+    font-size: 1.03rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    font-style: italic;
+    text-transform: uppercase;
+}
+.topbar-title span { color: var(--color-accent); }
+
+.topbar-sub {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+}
+
+.topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.btn {
+    border: 1px solid var(--color-border);
+    background: rgba(190,155,123,0.08);
+    color: var(--color-text-accent);
+    font-family: var(--font-primary);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    padding: 0.35rem 0.62rem;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition), transform var(--transition);
+}
+.btn:hover { background: rgba(190,155,123,0.16); border-color: var(--color-border-strong); }
+.btn:active { transform: translateY(1px); }
+.btn.primary {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border-color: var(--color-accent);
+}
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger {
+    color: #ffb4b4;
+    border-color: rgba(239,68,68,0.4);
+    background: rgba(239,68,68,0.08);
+}
+
+.page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+    padding-top: calc(var(--topbar-h) + 0.95rem);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 0.85rem;
+}
+
+.card {
+    background: var(--color-panel);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+}
+
+.card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.78rem;
+    color: var(--color-text-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-weight: 700;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.65rem 0.8rem;
+}
+
+.card-body { padding: 0.8rem; }
+
+.form-group { margin-bottom: 0.62rem; }
+.label {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.2rem;
+    font-weight: 700;
+}
+
+.input, .textarea, .select {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg2);
+    color: var(--color-text);
+    font-family: var(--font-primary);
+    outline: none;
+    padding: 0.45rem 0.55rem;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+.input:focus, .textarea:focus, .select:focus {
+    border-color: var(--color-border-strong);
+    box-shadow: 0 0 0 2px rgba(190,155,123,0.12);
+}
+.textarea { min-height: 130px; resize: vertical; line-height: 1.5; }
+
+.icon-picker-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    justify-content: space-between;
+}
+.selected-icon-preview {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: rgba(255,255,255,0.05);
+    font-size: 1rem;
+    overflow: hidden;
+}
+.selected-icon-preview img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.42rem;
+    margin-bottom: 0.62rem;
+}
+
+.chip {
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: rgba(190,155,123,0.07);
+    color: var(--color-text-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.chip.active {
+    color: var(--color-accent);
+    border-color: var(--color-border-strong);
+    background: rgba(190,155,123,0.15);
+}
+
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.7rem;
+}
+
+.note {
+    position: relative;
+    background: linear-gradient(160deg, rgba(62,49,42,0.9), rgba(42,33,30,0.95));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.65rem;
+    min-height: 155px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.note:hover {
+    border-color: var(--color-border-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(0,0,0,0.25);
+}
+.note.pinned { border-left: 3px solid var(--warning-color); }
+
+.note-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+}
+.note-icon {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    font-size: 1.05rem;
+}
+.note-icon img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+.note-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.note-tag {
+    margin-top: 0.15rem;
+    display: inline-block;
+    font-size: 0.62rem;
+    font-family: var(--font-mono);
+    color: var(--color-text-accent);
+    background: rgba(190,155,123,0.14);
+    border: 1px solid var(--color-border);
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+}
+.note-body {
+    font-size: 0.79rem;
+    line-height: 1.46;
+    color: var(--color-text);
+    white-space: pre-wrap;
+    flex: 1;
+}
+.note-foot {
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.note-date {
+    font-size: 0.64rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+}
+.note-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.icon-panel {
+    display: none;
+    margin-top: 0.45rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg2);
+    padding: 0.5rem;
+}
+.icon-panel.open { display: block; }
+.icon-toolbar {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 0.42rem;
+}
+.icon-tab {
+    border: 1px solid var(--color-border);
+    background: rgba(255,255,255,0.04);
+    color: var(--color-text-muted);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 700;
+}
+.icon-tab.active {
+    color: var(--color-accent);
+    border-color: var(--color-border-strong);
+    background: rgba(190,155,123,0.16);
+}
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+    gap: 0.33rem;
+    max-height: 180px;
+    overflow: auto;
+    padding-right: 0.15rem;
+}
+.icon-option {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.03);
+    color: var(--color-text);
+    font-size: 1rem;
+    height: 34px;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.icon-option img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+.icon-option:hover {
+    border-color: var(--color-border-strong);
+    background: rgba(190,155,123,0.14);
+}
+.icon-option.active {
+    border-color: var(--color-border-strong);
+    box-shadow: inset 0 0 0 1px rgba(190,155,123,0.35);
+}
+
+.empty {
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 1.1rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+}
+
+@media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 520px) {
+    .topbar-sub { display: none; }
+    .topbar-right .btn { padding: 0.32rem 0.5rem; font-size: 0.66rem; }
+    .notes-grid { grid-template-columns: 1fr; }
+}
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-title">Warframe <span>Notes</span></div>
+        <div class="topbar-sub">Local notebook for builds, farms, and goals</div>
+        <div class="topbar-right">
+            <button class="btn" id="exportBtn" type="button">Export</button>
+            <button class="btn danger" id="clearAllBtn" type="button">Clear All</button>
+            <a class="btn" href="../index.html">Home</a>
+            <a class="btn" href="../systemStatus/index.html">System Status</a>
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="layout">
+            <article class="card">
+                <div class="card-head">Create / Edit Note</div>
+                <div class="card-body">
+                    <form id="noteForm">
+                        <div class="form-group">
+                            <label for="noteTitle" class="label">Title</label>
+                            <input id="noteTitle" class="input" maxlength="90" placeholder="Ex: Prime Part Farm Route" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="noteTag" class="label">Tag</label>
+                            <select id="noteTag" class="select">
+                                <option value="general">General</option>
+                                <option value="build">Build</option>
+                                <option value="farm">Farm</option>
+                                <option value="relic">Relic</option>
+                                <option value="resource">Resource</option>
+                                <option value="syndicate">Syndicate</option>
+                                <option value="fashion">Fashion</option>
+                                <option value="wishlist">Wishlist</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="label">Icon / Emoji</span>
+                            <button type="button" class="btn icon-picker-trigger" id="openIconPicker">
+                                <span>Select icon</span>
+                                <span class="selected-icon-preview" id="selectedIconPreview">⚔️</span>
+                            </button>
+                            <div class="icon-panel" id="iconPanel">
+                                <div class="icon-toolbar">
+                                    <button class="icon-tab active" type="button" data-tab="warframe">Warframe</button>
+                                    <button class="icon-tab" type="button" data-tab="emoji">Emoji</button>
+                                </div>
+                                <input id="iconSearch" class="input" placeholder="Search icon name..." style="margin-bottom:0.4rem">
+                                <div class="icon-grid" id="iconGrid"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="noteBody" class="label">Details</label>
+                            <textarea id="noteBody" class="textarea" maxlength="5000" placeholder="Write your note here..." required></textarea>
+                        </div>
+
+                        <div style="display:flex;gap:0.42rem;flex-wrap:wrap">
+                            <button type="submit" class="btn primary" id="saveBtn">Save Note</button>
+                            <button type="button" class="btn" id="cancelEditBtn" style="display:none">Cancel Edit</button>
+                        </div>
+                    </form>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="card-head">Stored Notes</div>
+                <div class="card-body">
+                    <div class="toolbar">
+                        <input id="searchInput" class="input" style="max-width:230px" placeholder="Search notes...">
+                        <button class="chip active" data-filter="all" type="button">All</button>
+                        <button class="chip" data-filter="pinned" type="button">Pinned</button>
+                        <button class="chip" data-filter="general" type="button">General</button>
+                        <button class="chip" data-filter="build" type="button">Build</button>
+                        <button class="chip" data-filter="farm" type="button">Farm</button>
+                        <button class="chip" data-filter="relic" type="button">Relic</button>
+                        <button class="chip" data-filter="resource" type="button">Resource</button>
+                        <button class="chip" data-filter="syndicate" type="button">Syndicate</button>
+                        <button class="chip" data-filter="fashion" type="button">Fashion</button>
+                        <button class="chip" data-filter="wishlist" type="button">Wishlist</button>
+                    </div>
+                    <div class="notes-grid" id="notesGrid"></div>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <script>
+const STORAGE_KEY = 'warframe-notes-v1';
+
+const WARFRAME_ICONS = [
+    { type: 'img', value: '../systemStatus/src/factions/32px-TennoIcon.png', name: 'tenno' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-CorpusIcon.png', name: 'corpus' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-GrineerIcon.png', name: 'grineer' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-SentientIcon.png', name: 'sentient' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-NarmerIcon.png', name: 'narmer' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-ScaldraIcon.png', name: 'scaldra' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-TechrotIcon.png', name: 'techrot' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-AnarchsIcon.png', name: 'anarchs' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-DuviriIcon.png', name: 'duviri' },
+    { type: 'img', value: '../systemStatus/src/factions/32px-WildIcon.png', name: 'wild' },
+    { type: 'img', value: '../systemStatus/src/factions/InfestedIcon.svg', name: 'infested' },
+    { type: 'img', value: '../systemStatus/src/icons/32px-Platinum.png', name: 'platinum' },
+    { type: 'img', value: '../systemStatus/src/icons/32px-SteelEssence.png', name: 'steel essence' },
+    { type: 'img', value: '../systemStatus/src/icons/32px-CrimsonArchonShard.png', name: 'crimson shard' },
+    { type: 'img', value: '../systemStatus/src/icons/32px-AmberArchonShard.png', name: 'amber shard' },
+    { type: 'img', value: '../systemStatus/src/icons/32px-AzureArchonShard.png', name: 'azure shard' },
+    { type: 'img', value: '../systemStatus/src/damageType/32px-DmgVoid.png', name: 'void' },
+    { type: 'img', value: '../systemStatus/src/damageType/32px-DmgHeat.png', name: 'heat' },
+    { type: 'img', value: '../systemStatus/src/damageType/32px-DmgCold.png', name: 'cold' },
+    { type: 'img', value: '../systemStatus/src/damageType/32px-DmgElectricity.png', name: 'electricity' },
+    { type: 'img', value: '../systemStatus/src/damageType/32px-DmgToxin.png', name: 'toxin' },
+    { type: 'img', value: '../systemStatus/src/cycles/32px-VomeRequiemIcon.png', name: 'vome' },
+    { type: 'img', value: '../systemStatus/src/cycles/32px-FassRequiemIcon.png', name: 'fass' },
+    { type: 'emoji', value: '🛡️', name: 'shield' },
+    { type: 'emoji', value: '⚔️', name: 'combat' },
+    { type: 'emoji', value: '🎯', name: 'objective' },
+    { type: 'emoji', value: '🧬', name: 'mutation' },
+    { type: 'emoji', value: '🛰️', name: 'space' },
+    { type: 'emoji', value: '🧠', name: 'strategy' },
+    { type: 'emoji', value: '🔥', name: 'damage' },
+    { type: 'emoji', value: '❄️', name: 'cold status' },
+    { type: 'emoji', value: '⚡', name: 'electric status' },
+    { type: 'emoji', value: '☣️', name: 'toxin status' },
+    { type: 'emoji', value: '💠', name: 'mod' },
+    { type: 'emoji', value: '🧿', name: 'arcane' },
+    { type: 'emoji', value: '🪙', name: 'currency' },
+    { type: 'emoji', value: '📦', name: 'loot' },
+    { type: 'emoji', value: '📜', name: 'quest' },
+    { type: 'emoji', value: '🧪', name: 'crafting' },
+    { type: 'emoji', value: '🛠️', name: 'build setup' },
+    { type: 'emoji', value: '🎨', name: 'fashionframe' },
+    { type: 'emoji', value: '💎', name: 'prime' },
+    { type: 'emoji', value: '🔮', name: 'focus' },
+    { type: 'emoji', value: '🗺️', name: 'route' },
+    { type: 'emoji', value: '⏱️', name: 'timer' },
+    { type: 'emoji', value: '🚀', name: 'speedrun' },
+    { type: 'emoji', value: '🐺', name: 'hunt' },
+    { type: 'emoji', value: '🏆', name: 'goal' },
+    { type: 'emoji', value: '⭐', name: 'important' }
+];
+
+const EMOJI_ICONS = [
+    { type: 'emoji', value: '😀', name: 'smile' },
+    { type: 'emoji', value: '😎', name: 'cool' },
+    { type: 'emoji', value: '🤖', name: 'robot' },
+    { type: 'emoji', value: '👾', name: 'alien' },
+    { type: 'emoji', value: '🧙', name: 'wizard' },
+    { type: 'emoji', value: '⚙️', name: 'gear' },
+    { type: 'emoji', value: '📌', name: 'pin' },
+    { type: 'emoji', value: '✅', name: 'done' },
+    { type: 'emoji', value: '❗', name: 'urgent' },
+    { type: 'emoji', value: '📝', name: 'notes' },
+    { type: 'emoji', value: '💡', name: 'idea' },
+    { type: 'emoji', value: '🎮', name: 'game' },
+    { type: 'emoji', value: '📈', name: 'progress' },
+    { type: 'emoji', value: '🧲', name: 'farm pull' },
+    { type: 'emoji', value: '🗃️', name: 'storage' },
+    { type: 'emoji', value: '🧭', name: 'navigation' },
+    { type: 'emoji', value: '🕹️', name: 'controller' },
+    { type: 'emoji', value: '🔧', name: 'tool' },
+    { type: 'emoji', value: '🔒', name: 'locked' },
+    { type: 'emoji', value: '🌌', name: 'star chart' },
+    { type: 'emoji', value: '🌠', name: 'void sky' },
+    { type: 'emoji', value: '🌕', name: 'luna' },
+    { type: 'emoji', value: '🧱', name: 'foundation' },
+    { type: 'emoji', value: '🎁', name: 'reward' },
+    { type: 'emoji', value: '🛸', name: 'ship' },
+    { type: 'emoji', value: '🧨', name: 'blast' },
+    { type: 'emoji', value: '🌿', name: 'organic' }
+];
+
+const noteForm = document.getElementById('noteForm');
+const noteTitle = document.getElementById('noteTitle');
+const noteTag = document.getElementById('noteTag');
+const noteBody = document.getElementById('noteBody');
+const notesGrid = document.getElementById('notesGrid');
+const searchInput = document.getElementById('searchInput');
+const clearAllBtn = document.getElementById('clearAllBtn');
+const exportBtn = document.getElementById('exportBtn');
+const saveBtn = document.getElementById('saveBtn');
+const cancelEditBtn = document.getElementById('cancelEditBtn');
+const openIconPicker = document.getElementById('openIconPicker');
+const iconPanel = document.getElementById('iconPanel');
+const iconSearch = document.getElementById('iconSearch');
+const iconGrid = document.getElementById('iconGrid');
+const selectedIconPreview = document.getElementById('selectedIconPreview');
+const filterChips = [...document.querySelectorAll('.chip')];
+const iconTabs = [...document.querySelectorAll('.icon-tab')];
+
+let notes = [];
+let editingId = null;
+let activeFilter = 'all';
+let iconTab = 'warframe';
+let selectedIcon = { type: 'emoji', value: '⚔️', name: 'combat' };
+
+const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+const loadNotes = () => {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        notes = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(notes)) notes = [];
+    } catch {
+        notes = [];
+    }
+};
+
+const saveNotes = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+};
+
+const formatDate = (iso) => {
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, {
+        year: '2-digit',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+const escapeHtml = (s) => String(s)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+const renderIcon = (icon) => {
+    if (!icon || !icon.value) return '⚔️';
+    if (icon.type === 'img') return `<img src="${icon.value}" alt="icon" onerror="this.outerHTML='⚔️'">`;
+    return escapeHtml(icon.value);
+};
+
+const renderSelectedIconPreview = () => {
+    selectedIconPreview.innerHTML = renderIcon(selectedIcon);
+};
+
+const filteredNotes = () => {
+    const q = searchInput.value.trim().toLowerCase();
+    return notes
+        .filter((n) => {
+            if (activeFilter === 'pinned' && !n.pinned) return false;
+            if (activeFilter !== 'all' && activeFilter !== 'pinned' && n.tag !== activeFilter) return false;
+            if (!q) return true;
+            return [n.title, n.body, n.tag].some((v) => (v || '').toLowerCase().includes(q));
+        })
+        .sort((a, b) => {
+            if (a.pinned && !b.pinned) return -1;
+            if (!a.pinned && b.pinned) return 1;
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+        });
+};
+
+const renderNotes = () => {
+    const list = filteredNotes();
+    if (!list.length) {
+        notesGrid.innerHTML = '<div class="empty">No notes found. Create your first Warframe note on the left panel.</div>';
+        return;
+    }
+    notesGrid.innerHTML = list.map((n) => `
+        <article class="note${n.pinned ? ' pinned' : ''}">
+            <div class="note-head">
+                <div class="note-icon">${renderIcon(n.icon)}</div>
+                <div>
+                    <div class="note-title">${escapeHtml(n.title)}</div>
+                    <div class="note-tag">${escapeHtml(n.tag || 'general')}</div>
+                </div>
+            </div>
+            <div class="note-body">${escapeHtml(n.body)}</div>
+            <div class="note-foot">
+                <span class="note-date">${formatDate(n.updatedAt)}</span>
+                <div class="note-actions">
+                    <button class="btn" data-action="pin" data-id="${n.id}" type="button">${n.pinned ? 'Unpin' : 'Pin'}</button>
+                    <button class="btn" data-action="edit" data-id="${n.id}" type="button">Edit</button>
+                    <button class="btn danger" data-action="delete" data-id="${n.id}" type="button">Delete</button>
+                </div>
+            </div>
+        </article>
+    `).join('');
+};
+
+const resetForm = () => {
+    noteForm.reset();
+    editingId = null;
+    selectedIcon = { type: 'emoji', value: '⚔️', name: 'combat' };
+    renderSelectedIconPreview();
+    saveBtn.textContent = 'Save Note';
+    cancelEditBtn.style.display = 'none';
+};
+
+const setEditMode = (note) => {
+    editingId = note.id;
+    noteTitle.value = note.title;
+    noteTag.value = note.tag || 'general';
+    noteBody.value = note.body;
+    selectedIcon = note.icon || { type: 'emoji', value: '⚔️', name: 'combat' };
+    renderSelectedIconPreview();
+    saveBtn.textContent = 'Update Note';
+    cancelEditBtn.style.display = 'inline-flex';
+};
+
+const renderIconGrid = () => {
+    const src = iconTab === 'warframe' ? WARFRAME_ICONS : EMOJI_ICONS;
+    const q = iconSearch.value.trim().toLowerCase();
+    const list = src.filter((x) => !q || x.name.includes(q));
+
+    iconGrid.innerHTML = list.map((x, i) => {
+        const active = selectedIcon.type === x.type && selectedIcon.value === x.value ? ' active' : '';
+        const content = x.type === 'img'
+            ? `<img src="${x.value}" alt="${escapeHtml(x.name)}" onerror="this.outerHTML='❔'">`
+            : escapeHtml(x.value);
+        return `<button class="icon-option${active}" type="button" data-idx="${i}" title="${escapeHtml(x.name)}">${content}</button>`;
+    }).join('');
+
+    [...iconGrid.querySelectorAll('.icon-option')].forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const srcNow = iconTab === 'warframe' ? WARFRAME_ICONS : EMOJI_ICONS;
+            selectedIcon = srcNow[Number(btn.dataset.idx)];
+            renderSelectedIconPreview();
+            renderIconGrid();
+            iconPanel.classList.remove('open');
+        });
+    });
+};
+
+noteForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = noteTitle.value.trim();
+    const body = noteBody.value.trim();
+    const tag = noteTag.value;
+    if (!title || !body) return;
+
+    if (editingId) {
+        const idx = notes.findIndex((n) => n.id === editingId);
+        if (idx >= 0) {
+            notes[idx] = {
+                ...notes[idx],
+                title,
+                body,
+                tag,
+                icon: selectedIcon,
+                updatedAt: new Date().toISOString()
+            };
+        }
+    } else {
+        notes.push({
+            id: uid(),
+            title,
+            body,
+            tag,
+            icon: selectedIcon,
+            pinned: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        });
+    }
+
+    saveNotes();
+    renderNotes();
+    resetForm();
+});
+
+cancelEditBtn.addEventListener('click', () => resetForm());
+
+notesGrid.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+    const idx = notes.findIndex((n) => n.id === id);
+    if (idx < 0) return;
+
+    if (action === 'edit') {
+        setEditMode(notes[idx]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
+
+    if (action === 'pin') {
+        notes[idx].pinned = !notes[idx].pinned;
+        notes[idx].updatedAt = new Date().toISOString();
+    }
+
+    if (action === 'delete') {
+        if (!confirm('Delete this note?')) return;
+        notes.splice(idx, 1);
+        if (editingId === id) resetForm();
+    }
+
+    saveNotes();
+    renderNotes();
+});
+
+searchInput.addEventListener('input', renderNotes);
+
+filterChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+        activeFilter = chip.dataset.filter;
+        filterChips.forEach((c) => c.classList.toggle('active', c === chip));
+        renderNotes();
+    });
+});
+
+clearAllBtn.addEventListener('click', () => {
+    if (!notes.length) return;
+    if (!confirm('Delete all notes from local storage?')) return;
+    notes = [];
+    saveNotes();
+    renderNotes();
+    resetForm();
+});
+
+exportBtn.addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(notes, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `warframe-notes-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+});
+
+openIconPicker.addEventListener('click', () => {
+    iconPanel.classList.toggle('open');
+    if (iconPanel.classList.contains('open')) renderIconGrid();
+});
+
+iconTabs.forEach((tabBtn) => {
+    tabBtn.addEventListener('click', () => {
+        iconTab = tabBtn.dataset.tab;
+        iconTabs.forEach((t) => t.classList.toggle('active', t === tabBtn));
+        renderIconGrid();
+    });
+});
+
+iconSearch.addEventListener('input', renderIconGrid);
+
+document.addEventListener('click', (e) => {
+    if (!iconPanel.contains(e.target) && !openIconPicker.contains(e.target)) {
+        iconPanel.classList.remove('open');
+    }
+});
+
+loadNotes();
+renderSelectedIconPreview();
+renderNotes();
+    </script>
+</body>
+</html>
