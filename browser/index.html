@@ -766,12 +766,19 @@ button, input, select, textarea { font: inherit; }
             <article class="card results">
                 <div class="results-head">
                     <div class="section-title" style="margin:0">
-                        <span>Farm Results</span>
+                            <span>Search Results</span>
                         <span id="resultCount" class="results-count"></span>
                     </div>
                     <div class="results-count" id="lastUpdated"></div>
                 </div>
                 <div id="resultsList" class="note-list"></div>
+                    <div style="margin-top:0.85rem">
+                        <div class="section-title">
+                            <span>WFCD Resource Browser</span>
+                            <span>all JSON resources</span>
+                        </div>
+                        <div id="catalogMount"></div>
+                    </div>
                 <div id="notesMount" style="margin-top:0.85rem"></div>
             </article>
         </section>
@@ -892,17 +899,8 @@ const EMOJI_ICONS = [
 ];
 
 const REMOTE_CATALOG_BASE = 'https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json';
-const REMOTE_CATALOG_FILES = [
-    'Resources.json',
-    'Warframes.json',
-    'Node.json',
-    'Relics.json',
-    'Arcanes.json',
-    'Mods.json',
-    'Gear.json',
-    'Pets.json',
-    'Sentinels.json',
-];
+const REMOTE_CATALOG_API = 'https://api.github.com/repos/WFCD/warframe-items/contents/data/json';
+const REMOTE_CATALOG_EXCLUDE = new Set(['All.json', 'i18n.json']);
 
 const FARM_CATEGORY_MAP = {
     Resources: { type: 'resource', label: 'Resources', icon: '📦' },
@@ -919,6 +917,7 @@ const FARM_CATEGORY_MAP = {
 const RELEVANT_CATEGORIES = new Set(Object.keys(FARM_CATEGORY_MAP));
 
 let allItems = [];
+let catalogSections = [];
 let catalogLoaded = false;
 let catalogError = '';
 
@@ -956,6 +955,7 @@ const els = {
     lastUpdated: document.getElementById('lastUpdated'),
     selectedDetail: document.getElementById('selectedDetail'),
     tipsPanel: document.getElementById('tipsPanel'),
+    catalogMount: document.getElementById('catalogMount'),
     statsRow: document.getElementById('statsRow'),
     saveNoteBtn: document.getElementById('saveNoteBtn'),
     clearFormBtn: document.getElementById('clearFormBtn'),
@@ -1165,23 +1165,108 @@ const normalizeRemoteItem = (item) => {
     };
 };
 
-const loadRemoteCatalog = async () => {
-    const responses = await Promise.all(
-        REMOTE_CATALOG_FILES.map(async (file) => {
-            const response = await fetch(`${REMOTE_CATALOG_BASE}/${file}`, { cache: 'no-cache' });
-            if (!response.ok) throw new Error(`${file} HTTP ${response.status}`);
-            const data = await response.json();
-            if (!Array.isArray(data)) throw new Error(`${file} has unexpected format`);
-            return data;
-        })
-    );
+const loadRemoteCatalogFiles = async () => {
+    const response = await fetch(REMOTE_CATALOG_API, { cache: 'no-cache' });
+    if (!response.ok) throw new Error(`GitHub API HTTP ${response.status}`);
+    const files = await response.json();
+    if (!Array.isArray(files)) throw new Error('Unexpected GitHub API response');
 
-    return responses.flat();
+    return files
+        .filter((file) => file?.type === 'file' && file.name?.endsWith('.json') && !REMOTE_CATALOG_EXCLUDE.has(file.name))
+        .map((file) => ({
+            name: file.name.replace('.json', ''),
+            downloadUrl: file.download_url || `${REMOTE_CATALOG_BASE}/${file.name}`,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
 };
 
-const buildCatalog = (remoteItems) => remoteItems
-    .filter((item) => item && RELEVANT_CATEGORIES.has(item.category))
-    .map(normalizeRemoteItem);
+const categoryMetaFromName = (name) => {
+    const meta = FARM_CATEGORY_MAP[name];
+    if (meta) return meta;
+    if (name === 'Glyphs') return { type: 'glyph', label: 'Glyphs', icon: '🖼️' };
+    if (name === 'Node') return { type: 'game-mode', label: 'Node', icon: '🛰️' };
+    return { type: 'general', label: name, icon: '📌' };
+};
+
+const normalizeSectionItem = (item, sectionName) => {
+    const meta = categoryMetaFromName(sectionName);
+    const base = normalizeRemoteItem({ ...item, category: item.category || sectionName });
+    const glyphBrowser = sectionName === 'Glyphs';
+
+    return {
+        ...base,
+        type: meta.type,
+        categoryLabel: meta.label,
+        icon: glyphBrowser && item.imageName
+            ? { type: 'img', value: `https://cdn.warframestat.us/img/${item.imageName}`, name: item.name }
+            : base.icon,
+        displayType: item.type || meta.label,
+    };
+};
+
+const buildSectionCards = (sections) => sections.map((section) => {
+    const meta = categoryMetaFromName(section.name);
+    const glyphBrowser = section.name === 'Glyphs';
+    const heading = `${meta.icon} ${section.name}`;
+
+    const cards = section.items.map((item, index) => {
+        const glyphThumb = glyphBrowser && item.icon?.type === 'img'
+            ? `<div class="note-icon" style="width:42px;height:42px"><img src="${item.icon.value}" alt="${escapeHtml(item.name)}"></div>`
+            : `<div class="note-icon">${iconMarkup(item.icon)}</div>`;
+
+        return `
+            <article class="note-card" data-item="${escapeHtml(item.name)}" data-section="${escapeHtml(section.name)}" style="cursor:pointer">
+                <div class="note-head">
+                    ${glyphThumb}
+                    <div style="min-width:0;flex:1">
+                        <div class="note-title-row">
+                            <div class="note-title">${escapeHtml(item.name)}</div>
+                            <span class="pill">${escapeHtml(item.displayType || item.type)}</span>
+                            <span class="pill secondary">#${index + 1}</span>
+                        </div>
+                        <div class="note-meta">
+                            <span class="pill">${escapeHtml(item.planet)}</span>
+                            <span class="pill secondary">${escapeHtml(item.missionType)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="note-body">
+                    <div><strong style="color:var(--accent)">Best nodes:</strong> ${escapeHtml((item.bestNodes || []).join(' · '))}</div>
+                    <div style="margin-top:0.25rem"><strong style="color:var(--accent)">Source:</strong> ${escapeHtml(item.dropSource || 'Unknown')}</div>
+                </div>
+                <div style="margin-top:0.35rem">${renderRotationTable(item)}</div>
+            </article>
+        `;
+    }).join('');
+
+    return `
+        <section class="card" style="padding:0.85rem;scroll-margin-top:72px" id="section-${escapeHtml(section.name)}">
+            <div class="section-title">
+                <span>${heading}</span>
+                <span>${section.items.length}</span>
+            </div>
+            <div class="note-list">${cards || '<div class="results-empty">No items in this resource.</div>'}</div>
+        </section>
+    `;
+});
+
+const loadRemoteCatalog = async () => {
+    const files = await loadRemoteCatalogFiles();
+    const sections = [];
+
+    for (const file of files) {
+        const response = await fetch(file.downloadUrl, { cache: 'no-cache' });
+        if (!response.ok) throw new Error(`${file.name} HTTP ${response.status}`);
+        const rawItems = await response.json();
+        if (!Array.isArray(rawItems)) throw new Error(`${file.name} has unexpected format`);
+        sections.push({
+            name: file.name,
+            items: rawItems.map((item) => normalizeSectionItem(item, file.name)),
+        });
+    }
+
+    return sections;
+};
 
 const seedNotes = () => {
     if (notes.length) return;
@@ -1194,6 +1279,7 @@ const buildQuickFilters = () => {
         { id: 'all', label: 'All', icon: '🌌' },
         { id: 'resource', label: 'Resources', icon: '📦' },
         { id: 'warframe', label: 'Planos de Warframe', icon: '💠' },
+        { id: 'glyph', label: 'Glyphs', icon: '🖼️' },
         { id: 'game-mode', label: 'Modos de Juego', icon: '🛰️' },
         { id: 'rotation', label: 'Rotation', icon: '⏱️' }
     ];
@@ -1424,6 +1510,47 @@ const renderResults = () => {
     });
 };
 
+const renderCatalog = () => {
+    if (!els.catalogMount) return;
+
+    if (!catalogLoaded && !catalogError) {
+        els.catalogMount.innerHTML = '<div class="results-empty">Loading resource sections from WFCD...</div>';
+        return;
+    }
+
+    if (catalogError && !catalogSections.length) {
+        els.catalogMount.innerHTML = `<div class="results-empty">${escapeHtml(catalogError)}</div>`;
+        return;
+    }
+
+    const q = state.query.trim().toLowerCase();
+    const visibleSections = catalogSections
+        .map((section) => ({
+            name: section.name,
+            items: section.items.filter((item) => {
+                const textMatch = !q || matchesQuery(item);
+                const filterMatch = activeFilter === 'all' || item.type === activeFilter || (activeFilter === 'rotation' && (item.rotations || []).length > 0);
+                return textMatch && filterMatch;
+            }),
+        }))
+        .filter((section) => section.items.length > 0);
+
+    els.catalogMount.innerHTML = visibleSections.length
+        ? buildSectionCards(visibleSections).join('')
+        : '<div class="results-empty">No resource sections match your current search or filter.</div>';
+
+    els.catalogMount.querySelectorAll('[data-item]').forEach((card) => {
+        card.addEventListener('click', (event) => {
+            if (event.target.closest('button, input, a')) return;
+            state.selectedItem = card.dataset.item;
+            saveUIState();
+            renderSelectedDetail();
+            renderTips();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+};
+
 const renderNotes = () => {
     if (!notes.length) {
         persistNotes();
@@ -1497,6 +1624,7 @@ const renderAll = () => {
     renderSelectedDetail();
     renderTips();
     renderResults();
+    renderCatalog();
     renderNotes();
     saveUIState();
 };
@@ -1672,14 +1800,15 @@ const loadCatalogAndRender = async () => {
     wireEvents();
 
     try {
-        const remoteItems = await loadRemoteCatalog();
-        allItems = buildCatalog(remoteItems);
+        catalogSections = await loadRemoteCatalog();
+        allItems = catalogSections.flatMap((section) => section.items);
         catalogLoaded = true;
         catalogError = '';
     } catch (error) {
         catalogLoaded = true;
         catalogError = `Unable to load the WFCD catalog: ${error.message}`;
         allItems = [];
+        catalogSections = [];
     }
 
     state.selectedItem = state.selectedItem && allItems.some((item) => item.name === state.selectedItem)
