@@ -338,7 +338,7 @@ const extractGlyphCode = (glyph) => {
     return String(glyph?.name || 'glyph').trim().replace(/\s+/g, '-');
 };
 
-const glyphCode = (glyph) => extractGlyphCode(glyph);
+const glyphCode = (glyph) => `${GLYPH_CODE_PREFIX}${extractGlyphCode(glyph)}`;
 
 const showToast = (text) => {
     els.toast.textContent = text;
