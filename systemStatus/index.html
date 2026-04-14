@@ -589,6 +589,30 @@ body {
 .faction-name { font-size: 0.82rem; font-weight: 700; }
 .faction-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); }
 .faction-reward { font-size: 0.72rem; color: var(--color-text-accent); font-style: italic; }
+.faction-reward-wrap { display: inline-flex; align-items: center; gap: 0.35rem; max-width: 100%; }
+.faction-reward-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 2px;
+}
+.faction-reward-fallback {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.faction-reward-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 .invasion-vs { font-size: 0.72rem; font-weight: 800; color: var(--color-accent); text-align: center; letter-spacing: 0.06em; opacity: 0.7; }
 .progress-track { height: 5px; background: var(--color-bg); border-radius: 3px; overflow: hidden; display: flex; }
 .progress-fill { height: 100%; transition: width 0.5s ease; }
@@ -999,6 +1023,47 @@ const factionIcon = (f, size = 14) => {
     return `<img src="${url}" width="${size}" height="${size}" style="display:inline-block;vertical-align:middle;margin:0 3px 1px 0;object-fit:contain" alt="${f}">`;
 };
 
+const getRewardDisplay = (reward) => {
+    if (!reward) return { name: '', icon: '' };
+
+    const counted = Array.isArray(reward.countedItems) ? reward.countedItems : [];
+    const items = Array.isArray(reward.items) ? reward.items : [];
+
+    let name = reward.asString || '';
+    if (!name && counted.length) {
+        name = counted
+            .map((it) => {
+                const count = Number.isFinite(it?.count) ? it.count : 1;
+                const label = it?.type || it?.key || '';
+                return label ? `${count > 1 ? `${count}x ` : ''}${label}` : '';
+            })
+            .filter(Boolean)
+            .join(', ');
+    }
+    if (!name && items.length) name = items.join(', ');
+    if (!name && reward.credits) name = `${reward.credits.toLocaleString()} Credits`;
+
+    return {
+        name,
+        icon: reward.thumbnail || ''
+    };
+};
+
+const rewardMarkup = (rewardData) => {
+    if (!rewardData?.name) return '';
+    const safeName = rewardData.name
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    const iconHtml = rewardData.icon
+        ? `<img class="faction-reward-icon" src="${rewardData.icon}" alt="${safeName}">`
+        : `<span class="faction-reward-fallback" aria-hidden="true">🎁</span>`;
+
+    return `<div class="faction-reward"><span class="faction-reward-wrap">${iconHtml}<span class="faction-reward-text">${safeName}</span></span></div>`;
+};
+
 /* ════════════════════════════════════════════════════════
    CARD FACTORY
 ════════════════════════════════════════════════════════ */
@@ -1277,21 +1342,21 @@ const displayInvasions = (invasions) => {
             const clampPct = Math.max(0, Math.min(100, pct));
             const atk = inv.attackingFaction || inv.attacker?.faction || 'Unknown';
             const def = inv.defendingFaction || inv.defender?.faction || 'Unknown';
-            const atkR = (inv.attackerReward||inv.attacker?.reward)?.asString || '';
-            const defR = (inv.defenderReward||inv.defender?.reward)?.asString || '';
+            const atkReward = getRewardDisplay(inv.attackerReward || inv.attacker?.reward);
+            const defReward = getRewardDisplay(inv.defenderReward || inv.defender?.reward);
             const div = document.createElement('div'); div.className = 'invasion-item';
             div.innerHTML = `
                 <div class="invasion-factions">
                     <div class="faction-side attacker">
                         <div class="faction-name" style="color:${factionColor(atk)}">${atk} ${factionIcon(atk)}</div>
                         <div class="faction-label">Attacker</div>
-                        ${atkR ? `<div class="faction-reward">${atkR}</div>` : ''}
+                        ${rewardMarkup(atkReward)}
                     </div>
                     <div class="invasion-vs">VS</div>
                     <div class="faction-side defender">
                         <div class="faction-name" style="color:${factionColor(def)}">${factionIcon(def)}${def}</div>
                         <div class="faction-label">Defender</div>
-                        ${defR ? `<div class="faction-reward">${defR}</div>` : ''}
+                        ${rewardMarkup(defReward)}
                     </div>
                 </div>
                 <div class="progress-track">
