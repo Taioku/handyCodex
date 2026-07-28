@@ -1,46 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operator Dashboard</title>
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #000;
-            color: #fff;
-            text-align: center;
-            font-family: sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operator Dashboard</title>
+<style>
+  :root{
+    --void:       #07080d;
+    --orokin:     #cfa15e;
+    --orokin-dim: #6b5a3c;
+    --ink:        #e9e6de;
+    --ink-dim:    #7c7d87;
+    --line:       rgba(207,161,94,0.14);
+  }
 
-        ul {
-            list-style-position: inside;
-            padding: 0;
-            margin: 1rem 0 0;
-        }
+  *{ box-sizing:border-box; }
 
-        a {
-            color: #fff;
-        }
-    </style>
+  html, body{ height:100%; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background: var(--void);
+    color:var(--ink);
+    font-family: 'Segoe UI', Inter, system-ui, sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 1.5rem 1.25rem;
+  }
+
+  main{ width:100%; max-width: 1100px; }
+
+  header{
+    margin-bottom: 1rem;
+  }
+
+  h1{
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+    font-size: 1.5rem;
+    letter-spacing: 0.04em;
+    color: var(--orokin);
+    margin: 0;
+  }
+
+  #dashboard{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.75rem 2rem;
+    align-items: start;
+  }
+
+  section.category{
+    margin-bottom: 0;
+  }
+
+  .category-title{
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--orokin-dim);
+    font-weight: 700;
+    margin-bottom: 0.05rem;
+    padding-bottom: 0.1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  ul.links{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+
+  ul.links li a{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap: 0.6rem;
+    padding: 0.14rem 0.1rem;
+    text-decoration:none;
+    color: var(--ink);
+    font-size: 1.12rem;
+    line-height: 1.35;
+    border-radius: 3px;
+  }
+
+  ul.links li a:hover,
+  ul.links li a:focus-visible{
+    color: var(--orokin);
+    outline: none;
+  }
+
+  .link-doc{
+    font-size: 0.72rem;
+    color: var(--ink-dim);
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .link-doc:hover{
+    color: var(--orokin);
+  }
+</style>
 </head>
 <body>
-    <h1>Operator Dashboard</h1>
+  <main>
+    <header>
+      <h1>Operator Dashboard</h1>
+    </header>
 
-    <ul>
-        <li><a href="https://www.arsenyx.com/">Aarsenyx</a></li>
-        <li><a href="https://overframe.gg">Overframe</a></li>
-        <li><a href="warframetaskchecklist/">task.checklist</a></li>
-        <li><a href="https://wiki.warframe.com/">wiki.warframe</a></li>
-        <li><a href="https://warframe.market">warframe.market</a></li>
-        <li><a href="systemStatus/">system.status</a></li>
-        <li><a href="https://www.browse.wf">browse.wf</a></li>
-        <li><a href="notes/">notes</a></li>
-    </ul>
+    <div id="dashboard"></div>
+  </main>
+
+<script>
+  /*
+   * ---------------------------------------------------------------
+   * To add a link: add an object to the matching category's `items`
+   * array below (or create a new category object). Each item needs:
+   *   name  – label shown on the dashboard
+   *   url   – destination link
+   *   doc   – optional secondary "docs" link
+   * That's it — the page renders itself from this list.
+   * ---------------------------------------------------------------
+   */
+  const LINKS = [
+    {
+      category: "Tools & Utilities",
+      items: [
+        { name: "Warframe Wiki", url: "https://wiki.warframe.com/" },
+        { name: "Daily/Weekly Task Checklist", url: "warframetaskchecklist/" },
+        { name: "Warframe Market", url: "https://warframe.market" },
+        { name: "Riven Market",    url: "https://riven.market/" },
+
+      ],
+    },
+    {
+      category: "Build Planning",
+      items: [
+        { name: "Aarsenyx",           url: "https://www.arsenyx.com/" },
+        { name: "Overframe",          url: "https://overframe.gg" },
+        { name: "Dojocad",            url: "https://buff0000n.github.io/dojocad/" },
+      ],
+    },
+    {
+      category: "Status & Tracking",
+      items: [
+        { name: "Origin System Status", url: "systemStatus/" },
+        { name: "Warframe Hub",      url: "https://hub.warframestat.us/" },
+        { name: "Tenno Tools",       url: "https://tenno.tools/" },
+        { name: "Notes", url: "notes/" },
+      ],
+    },
+    {
+      category: "Resources & References",
+      items: [
+        { name: "Synthesis Target Locations", url: "https://steamcommunity.com/sharedfiles/filedetails/?id=666483447" },
+        { name: "Browse.wf", url: "https://www.browse.wf" },
+      ],
+    },
+    {
+      category: "Fashion Frame",
+      items: [
+        { name: "Fashion Frame Reddit", url: "https://www.reddit.com/r/WarframeRunway/" },
+        { name: "Color Picker",         url: "https://www.warframecolorpicker.app/" },
+      ],
+    },
+  ];
+
+  function renderDashboard(data){
+    const root = document.getElementById("dashboard");
+    root.innerHTML = "";
+
+    data.forEach(group => {
+      const section = document.createElement("section");
+      section.className = "category";
+
+      const head = document.createElement("div");
+      head.className = "category-title";
+      head.textContent = group.category;
+      section.appendChild(head);
+
+      const list = document.createElement("ul");
+      list.className = "links";
+
+      group.items.forEach(item => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = item.url;
+
+        const docHtml = item.doc
+          ? `<a class="link-doc" href="${item.doc}" onclick="event.stopPropagation()">docs</a>`
+          : "";
+
+        a.innerHTML = `<span>${item.name}</span>${docHtml}`;
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+
+      section.appendChild(list);
+      root.appendChild(section);
+    });
+  }
+
+  renderDashboard(LINKS);
+</script>
 </body>
 </html>
