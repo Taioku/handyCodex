@@ -495,9 +495,8 @@
                 const ghost = DragDrop.ghost;
                 if (!dragged || !ghost || this === dragged || this === ghost) return;
                 const parent = this.parentElement;
-                const sibling = event.offsetY > this.offsetHeight / 2 ? this.nextSibling : this;
-                if (sibling !== ghost) {
-                    parent.insertBefore(ghost, sibling);
+                if (this.nextSibling !== ghost) {
+                    parent.insertBefore(ghost, this.nextSibling);
                 }
             }
 
