@@ -1,0 +1,295 @@
+export default [
+  {
+    id: 'daily-login',
+    name: 'Log in: Collect the daily login reward.',
+    category: 'daily',
+    resetRule: {
+      type: 'daily',
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'daily-forma',
+    name: 'Craft Forma, Fieldron, Detonite Injector, Mutagen Mass',
+    category: 'daily',
+    resetRule: {
+      type: 'daily',
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'daily-syndicate',
+    name: 'Syndicate gains',
+    category: 'daily',
+    resetRule: {
+      type: 'daily',
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'daily-sortie',
+    name: 'Sortie: Complete the 3 daily Sortie missions (requires The War Within).',
+    category: 'daily',
+    resetRule: {
+      type: 'daily',
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'daily-focus',
+    name: 'Focus: Max out daily Focus gain (e.g., via Sanctuary Onslaught) (requires The Second Dream).',
+    category: 'daily',
+    resetRule: {
+      type: 'daily',
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'daily-steel-path',
+    name: 'Steel Path Incursions: Complete daily Steel Path missions for Steel Essence (requires Steel Path unlocked).',
+    category: 'daily',
+    resetRule: {
+      type: 'daily',
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-nightwave-missions',
+    name: 'Nightwave: Complete relevant weekly missions',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-nightwave-offerings',
+    name: 'Check weekly Nightwave offerings',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-ayatan-hunt',
+    name: "Ayatan Treasure Hunt: Complete Maroo's weekly mission for an Ayatan Sculpture (Maroo's Bazaar)",
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-clem',
+    name: 'Help Clem: Help Clem with his weekly survival, or he will die. (Relay)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-break-narmer',
+    name: "Weekly Break Narmer Mission: Complete Kahl's weekly mission for Stock (requires Veilbreaker)",
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-iron-wake',
+    name: 'Iron Wake (Paladino): Trade Riven Slivers with Paladino (requires The Chains of Harrow)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-yonta',
+    name: 'Archimedian Yonta (Zariman): Buy weekly Kuva with Voidplumes (requires Angels of the Zariman)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-acridies',
+    name: 'Acridies (Duviri/Dormizone): Check wares and spend Pathos Clamps if desired (Catalysts/Reactors recommended if needed)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-archon-hunt',
+    name: 'Archon Hunt: Complete the weekly Archon Hunt for a guaranteed Archon Shard (requires The New War)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-circuit-normal',
+    name: 'Duviri Circuit (Normal): Check weekly Warframe options & run Circuit if desired (requires Duviri)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-circuit-steel-path',
+    name: 'Duviri Circuit (Steel Path): Check weekly Incarnon Adapters & run Circuit if desired (requires Steel Path & Duviri)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-teshin',
+    name: "Teshin (Steel Path): Check Teshin's Steel Essence shop (especially for Umbra Forma rotation - approx. every 8 weeks)",
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-bird3',
+    name: 'Bird 3 (Cavia Syndicate): Buy the weekly Archon Shard for 30k Cavia Standing (requires Rank 5 Cavia)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-netracells',
+    name: 'Netracells (Tagfer): Complete up to 5 weekly Netracell missions for Archon Shard chances (requires Whispers in the Walls)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-eda',
+    name: 'Elite Deep Archimedea (Necraloid): Attempt weekly Elite Deep Archimedea for high Archon Shard chances (very endgame, requires Whispers in the Walls & Rank 5 Cavia)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-temporal-eda',
+    name: 'Elite Temporal Archimedea (Kaya): Attempt weekly Elite Temporal Archimedea for high Archon Shard chances (very endgame, requires Warframe 1999 & Rank 5 Hex)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-calendar',
+    name: 'Calendar (POM-2 Terminal): Complete weekly Calendar tasks (requires Warframe 1999)',
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'weekly-baro',
+    name: "Baro Ki'Teer: Check Baro Ki'Teer's inventory on a Relay and purchase desired items with Ducats (trade Prime parts for Ducats)",
+    category: 'weekly',
+    resetRule: {
+      type: 'weekly',
+      weekday: 1,
+      hourUTC: 0,
+      minuteUTC: 0,
+    },
+  },
+  {
+    id: 'unique-mend-family',
+    name: 'Mend the Family: Purchase Family Tokens from Grandmother in the Necralisk (requires Heart of Deimos)',
+    category: 'unique',
+    resetRule: {
+      type: 'interval',
+      intervalHours: 4,
+    },
+  },
+  {
+    id: 'unique-voidplumes',
+    name: 'Trade for Voidplumes: Purchase Voidplumes from Archimedean Yonta in the Chrysalith (requires Angels of the Zariman)',
+    category: 'unique',
+    resetRule: {
+      type: 'interval',
+      intervalHours: 4,
+    },
+  },
+  {
+    id: 'unique-voca',
+    name: 'Trade for Voca: Purchase Voca from Loid in the Sanctum Anatomica (requires Whispers in the Walls)',
+    category: 'unique',
+    resetRule: {
+      type: 'interval',
+      intervalHours: 4,
+    },
+  },
+  {
+    id: 'unique-invasions',
+    name: 'Invasions for resources and weapon parts',
+    category: 'unique',
+    resetRule: {
+      type: 'custom',
+    },
+  },
+];

@@ -1,0 +1,789 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warframe Checklist</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+    <style>
+        :root{
+            --void:#07080d;
+            --orokin:#cfa15e;
+            --orokin-dim:#6b5a3c;
+            --ink:#e9e6de;
+            --ink-dim:#7c7d87;
+            --line:rgba(207,161,94,0.14);
+        }
+
+        *{ box-sizing:border-box; }
+        html, body{ height:100%; }
+
+        body{
+            margin:0;
+            min-height:100vh;
+            background:var(--void);
+            color:var(--ink);
+            font-family:'Segoe UI', Inter, system-ui, sans-serif;
+            padding:1.5rem 1.25rem;
+            line-height:1.6;
+        }
+
+        main.container{ width:100%; max-width:1100px; margin:0 auto; }
+        .header{ margin-bottom:1rem; text-align:left; }
+        .header h1,
+        .modal-title{ font-family:Georgia, 'Times New Roman', serif; font-weight:400; letter-spacing:0.04em; color:var(--orokin); margin:0; }
+        .header h1{ font-size:1.5rem; margin-bottom:0.2rem; }
+        .header p{ color:var(--orokin-dim); margin:0; font-size:0.95rem; }
+        .progress-bar{ width:100%; height:1px; background:var(--line); margin:1rem 0 1.25rem; overflow:hidden; }
+        .progress-fill{ height:100%; background:var(--orokin); width:0; }
+
+        .stats{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.85rem 1rem; align-items:start; margin-bottom:1.2rem; }
+        .stat-item{ padding:0.75rem 0; border-top:1px solid var(--line); }
+        .stat-number{ color:var(--orokin); font-size:1.2rem; font-weight:700; line-height:1.2; }
+        .stat-label{ color:var(--ink-dim); font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; margin-top:0.15rem; }
+        .reset-menu-container{ position:relative; padding-top:0.25rem; }
+
+        .section{ margin:0 0 1.2rem; padding:0 0 0.35rem; border-bottom:1px solid var(--line); }
+        .section-title{ font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--orokin-dim); font-weight:700; margin-bottom:0.5rem; padding-bottom:0.1rem; border-bottom:1px solid var(--line); }
+        .task-list{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.85rem 1rem; align-items:start; }
+
+        .task-item{ position:relative; padding:0.2rem 2.2rem 0.25rem 0; cursor:pointer; display:flex; flex-direction:column; gap:0.35rem; }
+        .task-item.completed .task-text{ text-decoration:line-through; color:var(--ink-dim); }
+        .task-item.hidden{ display:none; }
+        .task-main{ display:flex; align-items:flex-start; gap:0.55rem; }
+        .checkbox{ width:14px; height:14px; border:1px solid var(--orokin-dim); flex-shrink:0; margin-top:0.28rem; position:relative; }
+        .checkbox.checked{ border-color:var(--orokin); }
+        .checkbox.checked::after{ content:''; position:absolute; inset:2px; background:var(--orokin); }
+        .task-text{ color:var(--ink); font-size:0.95rem; line-height:1.4; word-break:break-word; }
+
+        .task-meta,
+        .task-timer-container{ display:flex; align-items:center; gap:0.45rem; padding-left:1.1rem; flex-wrap:wrap; }
+        .task-timer,
+        .task-reset-clock{ font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--orokin-dim); white-space:nowrap; }
+        .task-timer{ color:var(--orokin); }
+        .task-controls{ position:absolute; top:0.05rem; right:0; display:flex; gap:0.35rem; opacity:0; }
+        .task-item:hover .task-controls,
+        .task-item:focus-within .task-controls{ opacity:1; }
+        .delete-btn,
+        .eye-btn,
+        .timer-bell{ background:transparent; border:0; padding:0; color:var(--ink-dim); cursor:pointer; line-height:1; font-size:0.9rem; }
+        .delete-btn:hover,
+        .eye-btn:hover,
+        .timer-bell:hover,
+        .timer-bell.active .bell-icon{ color:var(--orokin); }
+        .timer-bell.active .bell-icon{ font-weight:700; }
+
+        .add-task-row{ display:flex; justify-content:flex-start; margin:0.4rem 0 1rem; }
+        .add-task-btn,
+        .btn-primary,
+        .btn-secondary,
+        .reset-menu button{ border-radius:0; box-shadow:none; text-shadow:none; transition:color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
+        .add-task-btn,
+        .btn-primary{ background:transparent; color:var(--orokin); border:1px solid var(--line); padding:0.45rem 0.85rem; font-size:0.85rem; font-weight:600; }
+        .add-task-btn:hover,
+        .btn-primary:hover,
+        .btn-secondary:hover,
+        .reset-menu button:hover{ color:var(--orokin); border-color:var(--orokin-dim); background:rgba(207,161,94,0.04); }
+        .btn-secondary{ background:transparent !important; color:var(--orokin-dim) !important; border:1px solid var(--line) !important; padding:0.45rem 0.85rem !important; font-size:0.85rem !important; font-weight:600 !important; }
+        .btn-secondary:hover{ color:var(--orokin) !important; border-color:var(--orokin-dim) !important; background:rgba(207,161,94,0.04) !important; }
+        .reset-menu{ display:none; position:absolute; right:0; top:100%; min-width:200px; margin-top:0.35rem; background:var(--void); border:1px solid var(--line); z-index:1000; }
+        .reset-menu button{ width:100%; background:transparent; border:0; text-align:left; padding:0.55rem 0.75rem; color:var(--ink); font-size:0.82rem; font-weight:600; }
+
+        .modal{ display:none; position:fixed; inset:0; z-index:1000; background:rgba(7,8,13,0.88); }
+        .modal-content{ width:min(90vw, 500px); margin:10vh auto 0; background:var(--void); border:1px solid var(--line); padding:1.2rem; }
+        .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.6rem; border-bottom:1px solid var(--line); }
+        .modal-title{ font-size:1.3rem; }
+        .close{ color:var(--orokin-dim); font-size:1.5rem; cursor:pointer; }
+        .close:hover{ color:var(--orokin); }
+        .form-group{ margin-bottom:0.9rem; }
+        .form-label{ display:block; margin-bottom:0.35rem; color:var(--orokin-dim); font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; }
+        .form-input,
+        .form-select{ width:100%; padding:0.6rem 0.7rem; background:var(--void); border:1px solid var(--line); color:var(--ink); font-size:0.95rem; border-radius:0; }
+        .form-input:focus,
+        .form-select:focus{ outline:none; border-color:var(--orokin-dim); }
+        .modal-buttons{ display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem; }
+        .hidden{ display:none !important; }
+
+        @media (max-width:768px){
+            body{ padding:1rem; }
+            .task-list{ grid-template-columns:1fr; }
+            .stats{ grid-template-columns:1fr 1fr; }
+            .task-controls{ opacity:1; }
+        }
+
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="header">
+            <h1>Warframe Task Checklist</h1>
+            <p>Stay organized with your daily Tenno duties</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="completedTasks">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalTasks">0</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="progressPercent">0%</div>
+                <div class="stat-label">Progress</div>
+            </div>
+            <div class="stat-item">
+                <div class="reset-menu-container">
+                    <button id="resetMenuBtn" class="btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Reset Options ▼</button>
+                    <div id="resetMenu" class="reset-menu">
+                        <button onclick="TaskManager.uncheckAll()">Uncheck All Tasks</button>
+                        <button onclick="TaskManager.showHiddenTasks()">Show Hidden Tasks</button>
+                        <button onclick="TaskManager.restoreDefaults()">Restore Deleted Defaults</button>
+                        <button onclick="TaskManager.resetPage()">Reset Entire Page</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="add-task-row">
+            <button class="add-task-btn" onclick="TaskModal.show()">📝 Add Task</button>
+        </div>
+
+        <div class="section" id="dailySection">
+            <div class="section-title">Daily Tasks</div>
+            <div class="task-list" id="dailyTasks"></div>
+        </div>
+
+        <div class="section" id="weeklySection">
+            <div class="section-title">Weekly Tasks</div>
+            <div class="task-list" id="weeklyTasks"></div>
+        </div>
+
+        <div class="section" id="otherSection">
+            <div class="section-title">Other Tasks</div>
+            <div class="task-list" id="otherTasks"></div>
+        </div>
+    </main>
+
+    <div id="addTaskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Custom Task</h2>
+                <span class="close" onclick="TaskModal.hide()">&times;</span>
+            </div>
+            <form onsubmit="TaskModal.addTask(event)">
+                <div class="form-group">
+                    <label class="form-label" for="taskText">Task Description</label>
+                    <input type="text" id="taskText" class="form-input" placeholder="You can use <Resets-mon-00:00-utc>" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="taskCategory">Category</label>
+                    <select id="taskCategory" class="form-select">
+                        <option value="daily">Daily Tasks</option>
+                        <option value="weekly">Weekly Tasks</option>
+                        <option value="other">Other Tasks</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-secondary" onclick="TaskModal.hide()">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import TASKS from './tasks.js';
+
+        function resetRuleToTag(resetRule) {
+            if (!resetRule) return '';
+            if (resetRule.type === 'daily') {
+                return `<${String(resetRule.hourUTC ?? 0).padStart(2, '0')}:${String(resetRule.minuteUTC ?? 0).padStart(2, '0')}-utc>`;
+            }
+            if (resetRule.type === 'weekly') {
+                const weekdayMap = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                const weekday = weekdayMap[resetRule.weekday ?? 1] || 'mon';
+                return `<${weekday}-${String(resetRule.hourUTC ?? 0).padStart(2, '0')}:${String(resetRule.minuteUTC ?? 0).padStart(2, '0')}-utc>`;
+            }
+            if (resetRule.type === 'interval' && typeof resetRule.intervalHours === 'number') {
+                const totalHours = resetRule.intervalHours;
+                const wholeHours = Math.floor(totalHours);
+                const minutes = Math.round((totalHours - wholeHours) * 60);
+                return `<every-${String(wholeHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}-utc>`;
+            }
+            return '';
+        }
+
+        function taskToText(task) {
+            const tag = resetRuleToTag(task.resetRule);
+            return tag ? `${task.name} ${tag}` : task.name;
+        }
+
+        function buildDefaultTasks(tasks) {
+            const grouped = { daily: [], weekly: [], other: [] };
+            tasks.forEach((task) => {
+                const section = task.category === 'daily' ? 'daily' : task.category === 'weekly' ? 'weekly' : 'other';
+                grouped[section].push(taskToText(task));
+            });
+            return grouped;
+        }
+
+        const DEFAULT_TASKS = buildDefaultTasks(TASKS);
+
+        class TimerUtils {
+            static parseTimerFromText(text) {
+                const weeklyOrDaily = /<(?:(mon|tue|wed|thu|fri|sat|sun)-)?(\d{1,2}):(\d{2})-utc>/i;
+                const interval = /<every-(\d{1,2}):(\d{2})-utc>/i;
+                let match = text.match(weeklyOrDaily);
+                if (match) {
+                    return {
+                        type: match[1] ? 'weekly' : 'daily',
+                        weekday: match[1]?.toLowerCase(),
+                        hour: parseInt(match[2], 10),
+                        minute: parseInt(match[3], 10),
+                        label: match[0]
+                    };
+                }
+                match = text.match(interval);
+                if (match) {
+                    return {
+                        type: 'interval',
+                        hours: parseInt(match[1], 10),
+                        minutes: parseInt(match[2], 10),
+                        label: match[0]
+                    };
+                }
+                return null;
+            }
+
+            static removeTimerFromText(text) {
+                return text.replace(/<[^<>]+-?\d{1,2}:\d{2}-utc>/i, '').trim();
+            }
+
+            static getTimerConfigForTask(rawText, category) {
+                const explicit = this.parseTimerFromText(rawText);
+                if (explicit) {
+                    return explicit;
+                }
+                if (category === 'daily') {
+                    return { type: 'daily', hour: 0, minute: 0, label: '<00:00-utc>', implicit: true };
+                }
+                if (category === 'weekly') {
+                    return { type: 'weekly', weekday: 'mon', hour: 0, minute: 0, label: '<mon-00:00-utc>', implicit: true };
+                }
+                return null;
+            }
+
+            static getNextResetDate(timerConfig, now = new Date()) {
+                if (!timerConfig) return null;
+                if (timerConfig.type === 'interval') {
+                    const totalMs = (timerConfig.hours * 60 + timerConfig.minutes) * 60 * 1000;
+                    const msSinceEpoch = now.getUTCHours() * 3600000 + now.getUTCMinutes() * 60000 + now.getUTCSeconds() * 1000 + now.getUTCMilliseconds();
+                    const msSinceLast = msSinceEpoch % totalMs;
+                    const msUntilNext = totalMs - msSinceLast;
+                    return new Date(now.getTime() + msUntilNext);
+                }
+
+                const nextResetUTC = new Date(Date.UTC(
+                    now.getUTCFullYear(),
+                    now.getUTCMonth(),
+                    now.getUTCDate(),
+                    timerConfig.hour,
+                    timerConfig.minute,
+                    0
+                ));
+
+                if (timerConfig.type === 'weekly') {
+                    const weekdayMap = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
+                    const targetDay = weekdayMap[timerConfig.weekday || 'mon'];
+                    let daysAhead = (targetDay - nextResetUTC.getUTCDay() + 7) % 7;
+                    if (daysAhead === 0 && nextResetUTC <= now) daysAhead = 7;
+                    nextResetUTC.setUTCDate(nextResetUTC.getUTCDate() + daysAhead);
+                } else if (nextResetUTC <= now) {
+                    nextResetUTC.setUTCDate(nextResetUTC.getUTCDate() + 1);
+                }
+
+                return nextResetUTC;
+            }
+
+            static calculateTimeRemaining(timerConfig, now = new Date()) {
+                const nextResetUTC = this.getNextResetDate(timerConfig, now);
+                if (!nextResetUTC) return '';
+                const totalSeconds = Math.floor((nextResetUTC - now) / 1000);
+
+                if (timerConfig.type === 'interval') {
+                    const hours = Math.floor(totalSeconds / 3600);
+                    const minutes = Math.floor((totalSeconds % 3600) / 60);
+                    const seconds = totalSeconds % 60;
+                    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+
+                const days = Math.floor(totalSeconds / 86400);
+                const hours = Math.floor((totalSeconds % 86400) / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                const parts = [];
+                if (days > 0) parts.push(`${days}d`);
+                parts.push(String(hours).padStart(2, '0'), String(minutes).padStart(2, '0'), String(seconds).padStart(2, '0'));
+                return parts.join(':');
+            }
+
+            static formatLocalResetClock(nextResetDate) {
+                if (!nextResetDate) return '';
+                return `resets ${nextResetDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+            }
+        }
+
+        class TaskElement {
+            static create(rawText, category = 'other') {
+                const timerConfig = TimerUtils.getTimerConfigForTask(rawText, category);
+                const cleanText = TimerUtils.removeTimerFromText(rawText);
+                const taskItem = document.createElement('div');
+                taskItem.dataset.originalText = rawText;
+                taskItem.dataset.category = category;
+                taskItem.className = 'task-item';
+                taskItem.draggable = category === 'daily' || category === 'weekly';
+
+                if (timerConfig) {
+                    taskItem.dataset.timerType = timerConfig.type;
+                    taskItem.dataset.timerHour = timerConfig.hour ?? timerConfig.hours ?? '';
+                    taskItem.dataset.timerMinute = timerConfig.minute ?? timerConfig.minutes ?? '';
+                    taskItem.dataset.timerLabel = timerConfig.label;
+                    if (timerConfig.weekday) taskItem.dataset.timerWeekday = timerConfig.weekday;
+                }
+
+                taskItem.innerHTML = `
+                    <div class="task-main">
+                        <div class="checkbox"></div>
+                        <div class="task-text">${cleanText}</div>
+                    </div>
+                    ${timerConfig ? `
+                        <div class="task-timer-container">
+                            <div class="task-timer"></div>
+                            <div class="task-reset-clock"></div>
+                            <button class="timer-bell" type="button" title="Notify when timer resets"><span class="bell-icon">🔔</span></button>
+                        </div>
+                    ` : ''}
+                    <div class="task-controls">
+                        <button class="eye-btn" type="button" title="Hide task">👁</button>
+                        <button class="delete-btn" type="button" title="Delete task">×</button>
+                    </div>
+                `;
+
+                taskItem.onclick = (event) => {
+                    if (event.target.closest('.delete-btn, .eye-btn, .timer-bell')) return;
+                    TaskManager.toggleTask(taskItem);
+                };
+
+                const eyeBtn = taskItem.querySelector('.eye-btn');
+                eyeBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    TaskManager.toggleHidden(taskItem);
+                });
+
+                const deleteBtn = taskItem.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', (event) => TaskManager.deleteTask(event, deleteBtn));
+
+                if (taskItem.draggable) {
+                    taskItem.addEventListener('dragstart', DragDrop.handleDragStart);
+                    taskItem.addEventListener('dragover', DragDrop.handleDragOver);
+                    taskItem.addEventListener('drop', DragDrop.handleDrop);
+                    taskItem.addEventListener('dragend', DragDrop.handleDragEnd);
+                }
+
+                if (timerConfig) {
+                    const bellBtn = taskItem.querySelector('.timer-bell');
+                    let bellTimeout = null;
+                    let bellActive = false;
+
+                    bellBtn.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        const nextReset = TimerUtils.getNextResetDate(timerConfig);
+                        if (!nextReset) return;
+
+                        if (bellActive) {
+                            bellActive = false;
+                            bellBtn.classList.remove('active');
+                            bellBtn.title = 'Notify when timer resets';
+                            if (bellTimeout) clearTimeout(bellTimeout);
+                            return;
+                        }
+
+                        bellActive = true;
+                        bellBtn.classList.add('active');
+                        bellBtn.title = 'Notification scheduled! Click to cancel.';
+
+                        bellTimeout = setTimeout(() => {
+                            const audio = new Audio('notify.mp3');
+                            audio.volume = 0.5;
+                            audio.play().catch(() => alert('🔔 Timer reset! (Enable sound in your browser for audio notification.)'));
+
+                            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                                new Notification('Warframe Checklist', {
+                                    body: `Timer "${timerConfig.label}" has reset!`,
+                                    icon: 'favicon.ico'
+                                });
+                            } else {
+                                alert(`Timer "${timerConfig.label}" has reset!`);
+                            }
+
+                            bellActive = false;
+                            bellBtn.classList.remove('active');
+                            bellBtn.title = 'Notify when timer resets';
+                        }, Math.max(0, nextReset - new Date()));
+                    });
+                }
+
+                return taskItem;
+            }
+
+            static getTimerConfig(taskItem) {
+                const timerType = taskItem.dataset.timerType;
+                if (!timerType) return null;
+                if (timerType === 'interval') {
+                    return {
+                        type: 'interval',
+                        hours: parseInt(taskItem.dataset.timerHour, 10),
+                        minutes: parseInt(taskItem.dataset.timerMinute, 10),
+                        label: taskItem.dataset.timerLabel
+                    };
+                }
+                return {
+                    type: timerType,
+                    hour: parseInt(taskItem.dataset.timerHour, 10),
+                    minute: parseInt(taskItem.dataset.timerMinute, 10),
+                    weekday: taskItem.dataset.timerWeekday,
+                    label: taskItem.dataset.timerLabel
+                };
+            }
+
+            static updateTimer(taskItem) {
+                const timerDiv = taskItem.querySelector('.task-timer');
+                const localClock = taskItem.querySelector('.task-reset-clock');
+                const timerConfig = this.getTimerConfig(taskItem);
+                if (!timerDiv || !localClock || !timerConfig) return;
+
+                const nextReset = TimerUtils.getNextResetDate(timerConfig);
+                timerDiv.textContent = TimerUtils.calculateTimeRemaining(timerConfig);
+                localClock.textContent = TimerUtils.formatLocalResetClock(nextReset);
+            }
+        }
+
+        class DragDrop {
+            static draggedTask = null;
+
+            static handleDragStart() {
+                DragDrop.draggedTask = this;
+                this.classList.add('dragging');
+            }
+
+            static handleDragOver(event) {
+                event.preventDefault();
+                const dragged = DragDrop.draggedTask;
+                if (!dragged || dragged === this) return;
+                const parent = this.parentElement;
+                const sibling = event.offsetY > this.offsetHeight / 2 ? this.nextSibling : this;
+                parent.insertBefore(dragged, sibling);
+                document.querySelectorAll('.task-item').forEach((element) => element.classList.remove('drag-over'));
+                this.classList.add('drag-over');
+            }
+
+            static handleDrop(event) {
+                event.stopPropagation();
+                this.classList.remove('drag-over');
+                ProgressTracker.update();
+                TaskStorage.save();
+            }
+
+            static handleDragEnd() {
+                this.classList.remove('dragging');
+                document.querySelectorAll('.task-item').forEach((element) => element.classList.remove('drag-over'));
+                DragDrop.draggedTask = null;
+            }
+        }
+
+        class ProgressTracker {
+            static update() {
+                const visibleTasks = Array.from(document.querySelectorAll('.task-item:not(.hidden)'));
+                const completed = visibleTasks.filter((task) => task.classList.contains('completed')).length;
+                const total = visibleTasks.length;
+                const percent = total ? Math.round((completed / total) * 100) : 0;
+                document.getElementById('completedTasks').textContent = completed;
+                document.getElementById('totalTasks').textContent = total;
+                document.getElementById('progressPercent').textContent = `${percent}%`;
+                document.getElementById('progressFill').style.width = `${percent}%`;
+            }
+        }
+
+        class TaskStorage {
+            static save() {
+                const data = [];
+                ['daily', 'weekly', 'other'].forEach((section) => {
+                    const container = document.getElementById(`${section}Tasks`);
+                    if (!container) return;
+                    Array.from(container.querySelectorAll('.task-item')).forEach((taskItem) => {
+                        let originalText = taskItem.dataset.originalText;
+                        if (!originalText) {
+                            const label = taskItem.dataset.timerLabel;
+                            if (label) {
+                                originalText = `${taskItem.querySelector('.task-text').textContent} ${label}`;
+                            } else {
+                                originalText = taskItem.querySelector('.task-text').textContent;
+                            }
+                        }
+
+                        data.push({
+                            text: originalText,
+                            completed: taskItem.classList.contains('completed'),
+                            category: section,
+                            hidden: taskItem.classList.contains('hidden'),
+                            lastKnownResetBoundary: taskItem.dataset.lastKnownResetBoundary || null
+                        });
+                    });
+                });
+                localStorage.setItem('warframeChecklistTasks', JSON.stringify(data));
+            }
+
+            static load() {
+                const saved = localStorage.getItem('warframeChecklistTasks');
+                if (!saved) return false;
+                try {
+                    const savedTasks = JSON.parse(saved);
+                    ['daily', 'weekly', 'other'].forEach((category) => {
+                        const container = document.getElementById(`${category}Tasks`);
+                        if (container) container.innerHTML = '';
+                    });
+
+                    savedTasks.forEach(({ text, completed, category, hidden, lastKnownResetBoundary }) => {
+                        const targetCategory = category || 'other';
+                        const container = document.getElementById(`${targetCategory}Tasks`);
+                        if (!container) return;
+                        const taskElement = TaskElement.create(text, targetCategory);
+                        taskElement.dataset.originalText = text;
+                        taskElement.dataset.lastKnownResetBoundary = lastKnownResetBoundary || '';
+                        taskElement.dataset.hidden = hidden ? '1' : '0';
+                        if (hidden) taskElement.classList.add('hidden');
+                        if (completed) {
+                            taskElement.classList.add('completed');
+                            taskElement.querySelector('.checkbox').classList.add('checked');
+                        }
+                        container.appendChild(taskElement);
+                    });
+                    return true;
+                } catch (error) {
+                    console.error('Failed to load tasks from storage:', error);
+                    return false;
+                }
+            }
+        }
+
+        class TaskManager {
+            static initialize() {
+                const loadedFromStorage = TaskStorage.load();
+                if (!loadedFromStorage) {
+                    this.loadDefaultTasks();
+                }
+                this.reconcileResetBoundaries();
+                ProgressTracker.update();
+                this.updateAllTimers();
+                this.startTimerUpdates();
+                this.setupResetMenu();
+            }
+
+            static loadDefaultTasks() {
+                Object.entries(DEFAULT_TASKS).forEach(([category, tasks]) => {
+                    const container = document.getElementById(`${category}Tasks`);
+                    if (!container) return;
+                    tasks.forEach((taskText) => {
+                        container.appendChild(TaskElement.create(taskText, category));
+                    });
+                });
+            }
+
+            static setTaskCompleted(taskItem, completed) {
+                const checkbox = taskItem.querySelector('.checkbox');
+                taskItem.classList.toggle('completed', completed);
+                checkbox.classList.toggle('checked', completed);
+            }
+
+            static toggleTask(taskItem) {
+                this.setTaskCompleted(taskItem, !taskItem.classList.contains('completed'));
+                ProgressTracker.update();
+                TaskStorage.save();
+            }
+
+            static toggleHidden(taskItem) {
+                const hidden = !taskItem.classList.contains('hidden');
+                taskItem.classList.toggle('hidden', hidden);
+                taskItem.dataset.hidden = hidden ? '1' : '0';
+                TaskStorage.save();
+                ProgressTracker.update();
+            }
+
+            static deleteTask(event, deleteBtn) {
+                event.stopPropagation();
+                if (!confirm('Delete this task?')) return;
+                const taskItem = deleteBtn.closest('.task-item');
+                taskItem.remove();
+                ProgressTracker.update();
+                TaskStorage.save();
+            }
+
+            static addCustomTask(text, category) {
+                const container = document.getElementById(`${category}Tasks`);
+                if (!container) return;
+                container.appendChild(TaskElement.create(text, category));
+                ProgressTracker.update();
+                TaskStorage.save();
+                this.reconcileResetBoundaries();
+            }
+
+            static updateAllTimers() {
+                document.querySelectorAll('.task-item').forEach((taskItem) => TaskElement.updateTimer(taskItem));
+            }
+
+            static getTaskBoundary(taskItem, now = new Date()) {
+                return TimerUtils.getNextResetDate(TaskElement.getTimerConfig(taskItem), now);
+            }
+
+            static reconcileResetBoundaries() {
+                let changed = false;
+                const now = new Date();
+                document.querySelectorAll('.task-item').forEach((taskItem) => {
+                    const boundary = this.getTaskBoundary(taskItem, now);
+                    if (!boundary) return;
+                    const boundaryKey = boundary.toISOString();
+                    const previousKey = taskItem.dataset.lastKnownResetBoundary || '';
+                    if (previousKey !== boundaryKey) {
+                        if (previousKey && boundary.getTime() > new Date(previousKey).getTime()) {
+                            this.setTaskCompleted(taskItem, false);
+                        }
+                        taskItem.dataset.lastKnownResetBoundary = boundaryKey;
+                        changed = true;
+                    }
+                });
+                if (changed) {
+                    ProgressTracker.update();
+                    TaskStorage.save();
+                }
+                return changed;
+            }
+
+            static startTimerUpdates() {
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                if (this.resetInterval) clearInterval(this.resetInterval);
+                this.timerInterval = setInterval(() => this.updateAllTimers(), 1000);
+                this.resetInterval = setInterval(() => this.reconcileResetBoundaries(), 60000);
+            }
+
+            static setupResetMenu() {
+                const resetMenuBtn = document.getElementById('resetMenuBtn');
+                const resetMenu = document.getElementById('resetMenu');
+                resetMenuBtn.addEventListener('click', () => {
+                    resetMenu.style.display = resetMenu.style.display === 'block' ? 'none' : 'block';
+                });
+                window.addEventListener('click', (event) => {
+                    if (!resetMenuBtn.contains(event.target) && !resetMenu.contains(event.target)) {
+                        resetMenu.style.display = 'none';
+                    }
+                });
+            }
+
+            static uncheckAll() {
+                if (!confirm('Uncheck all tasks?')) return;
+                document.querySelectorAll('.task-item').forEach((taskItem) => this.setTaskCompleted(taskItem, false));
+                ProgressTracker.update();
+                TaskStorage.save();
+                document.getElementById('resetMenu').style.display = 'none';
+            }
+
+            static showHiddenTasks() {
+                document.querySelectorAll('.task-item.hidden').forEach((taskItem) => {
+                    taskItem.classList.remove('hidden');
+                    taskItem.dataset.hidden = '0';
+                });
+                ProgressTracker.update();
+                TaskStorage.save();
+                document.getElementById('resetMenu').style.display = 'none';
+            }
+
+            static restoreDefaults() {
+                if (!confirm('Restore all deleted default tasks? This will not affect custom tasks.')) return;
+                Object.entries(DEFAULT_TASKS).forEach(([category, defaultTasks]) => {
+                    const container = document.getElementById(`${category}Tasks`);
+                    if (!container) return;
+                    const currentTexts = Array.from(container.querySelectorAll('.task-text')).map((element) => element.textContent.trim());
+                    defaultTasks.forEach((taskText) => {
+                        const cleanText = TimerUtils.removeTimerFromText(taskText);
+                        if (!currentTexts.includes(cleanText)) {
+                            container.appendChild(TaskElement.create(taskText, category));
+                        }
+                    });
+                });
+                ProgressTracker.update();
+                TaskStorage.save();
+                this.reconcileResetBoundaries();
+                document.getElementById('resetMenu').style.display = 'none';
+            }
+
+            static resetPage() {
+                if (!confirm('Completely reset the page? This will remove all custom tasks and progress.')) return;
+                ['daily', 'weekly', 'other'].forEach((category) => {
+                    const container = document.getElementById(`${category}Tasks`);
+                    if (container) container.innerHTML = '';
+                });
+                this.loadDefaultTasks();
+                this.reconcileResetBoundaries();
+                ProgressTracker.update();
+                TaskStorage.save();
+                document.getElementById('resetMenu').style.display = 'none';
+            }
+        }
+
+        class TaskModal {
+            static show() {
+                document.getElementById('addTaskModal').style.display = 'block';
+            }
+
+            static hide() {
+                document.getElementById('addTaskModal').style.display = 'none';
+                document.getElementById('taskText').value = '';
+                document.getElementById('taskCategory').value = 'daily';
+            }
+
+            static addTask(event) {
+                event.preventDefault();
+                const text = document.getElementById('taskText').value.trim();
+                const category = document.getElementById('taskCategory').value;
+                if (!text) return;
+                TaskManager.addCustomTask(text, category);
+                this.hide();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            TaskManager.initialize();
+        });
+
+        window.TaskManager = TaskManager;
+        window.TaskModal = TaskModal;
+        window.TaskStorage = TaskStorage;
+        window.ProgressTracker = ProgressTracker;
+        window.TaskElement = TaskElement;
+        window.TimerUtils = TimerUtils;
+        window.DragDrop = DragDrop;
+
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('addTaskModal');
+            if (event.target === modal) {
+                TaskModal.hide();
+            }
+        });
+    </script>
+</body>
+</html>
