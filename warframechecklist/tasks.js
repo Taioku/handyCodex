@@ -24,7 +24,7 @@
  * separately in a UI.
  */
 
-const tasks = [
+export default [
 
   // ============================================================
   // DAILY RESET — 0:00 UTC
