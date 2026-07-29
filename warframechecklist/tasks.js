@@ -1,3 +1,18 @@
+/**
+{
+  id: string,
+  name: string,
+  category: "daily" | "weekly" | "unique",
+  resetRule: {
+    type: "daily" | "weekly" | "interval" | "custom",
+    hourUTC: number,          // for daily/weekly, e.g. 0, 16, 18
+    minuteUTC: number,
+    weekday?: number,         // 0=Sunday..6=Saturday, only for weekly
+    intervalHours?: number    // for interval-based resets (e.g. 4, 2.5, 2)
+  },
+  notes?: string
+}
+ */
 export default [
   {
     id: 'daily-login',
