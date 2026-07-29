@@ -30,9 +30,7 @@
 
         main.container{ width:100%; max-width:1100px; margin:0 auto; }
         .header{ margin-bottom:1rem; text-align:left; }
-        .header h1,
-        .modal-title{ font-family:Georgia, 'Times New Roman', serif; font-weight:400; letter-spacing:0.04em; color:var(--orokin); margin:0; }
-        .header h1{ font-size:1.5rem; margin-bottom:0.2rem; }
+        .header h1{ font-family:Georgia, 'Times New Roman', serif; font-weight:400; letter-spacing:0.04em; color:var(--orokin); margin:0; font-size:1.5rem; margin-bottom:0.2rem; }
         .header p{ color:var(--orokin-dim); margin:0; font-size:0.95rem; }
         .progress-bar{ width:100%; height:1px; background:var(--line); margin:1rem 0 1.25rem; overflow:hidden; }
         .progress-fill{ height:100%; background:var(--orokin); width:0; }
@@ -42,15 +40,12 @@
         .stat-number{ color:var(--orokin); font-size:1.2rem; font-weight:700; line-height:1.2; }
         .stat-label{ color:var(--ink-dim); font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; margin-top:0.15rem; }
         .reset-menu-container{ position:relative; }
-        .actions-row{ display:flex; align-items:center; gap:0.6rem; padding-top:0.25rem; flex-wrap:wrap; }
 
         .section{ margin:0 0 1.2rem; padding:0 0 0.35rem; border-bottom:1px solid var(--line); }
         .section-title{ font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--orokin-dim); font-weight:700; margin-bottom:0.5rem; padding-bottom:0.1rem; border-bottom:1px solid var(--line); }
         .task-list{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.85rem 1rem; align-items:start; }
 
         .task-item{ position:relative; padding:0.2rem 2.2rem 0.25rem 0; cursor:pointer; display:flex; flex-direction:column; gap:0.35rem; }
-        .task-item.dragging{ display:none; }
-        .drop-ghost{ border:1px dashed var(--orokin-dim); background:rgba(207,161,94,0.05); box-sizing:border-box; }
         .task-item.completed .task-text{ text-decoration:line-through; color:var(--ink-dim); }
         .task-item.hidden{ display:none; }
         .task-main{ display:flex; align-items:flex-start; gap:0.55rem; }
@@ -76,14 +71,8 @@
         .timer-bell.active .bell-icon{ color:var(--orokin); }
         .timer-bell.active .bell-icon{ font-weight:700; }
 
-        .add-task-btn,
-        .btn-primary,
         .btn-secondary,
         .reset-menu button{ border-radius:0; box-shadow:none; text-shadow:none; transition:color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
-        .add-task-btn,
-        .btn-primary{ background:transparent; color:var(--orokin); border:1px solid var(--line); padding:0.45rem 0.85rem; font-size:0.85rem; font-weight:600; }
-        .add-task-btn:hover,
-        .btn-primary:hover,
         .btn-secondary:hover,
         .reset-menu button:hover{ color:var(--orokin); border-color:var(--orokin-dim); background:rgba(207,161,94,0.04); }
         .btn-secondary{ background:transparent !important; color:var(--orokin-dim) !important; border:1px solid var(--line) !important; padding:0.45rem 0.85rem !important; font-size:0.85rem !important; font-weight:600 !important; }
@@ -91,19 +80,6 @@
         .reset-menu{ display:none; position:absolute; right:0; top:100%; min-width:200px; margin-top:0.35rem; background:var(--void); border:1px solid var(--line); z-index:1000; }
         .reset-menu button{ width:100%; background:transparent; border:0; text-align:left; padding:0.55rem 0.75rem; color:var(--ink); font-size:0.82rem; font-weight:600; }
 
-        .modal{ display:none; position:fixed; inset:0; z-index:1000; background:rgba(7,8,13,0.88); }
-        .modal-content{ width:min(90vw, 500px); margin:10vh auto 0; background:var(--void); border:1px solid var(--line); padding:1.2rem; }
-        .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.6rem; border-bottom:1px solid var(--line); }
-        .modal-title{ font-size:1.3rem; }
-        .close{ color:var(--orokin-dim); font-size:1.5rem; cursor:pointer; }
-        .close:hover{ color:var(--orokin); }
-        .form-group{ margin-bottom:0.9rem; }
-        .form-label{ display:block; margin-bottom:0.35rem; color:var(--orokin-dim); font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; }
-        .form-input,
-        .form-select{ width:100%; padding:0.6rem 0.7rem; background:var(--void); border:1px solid var(--line); color:var(--ink); font-size:0.95rem; border-radius:0; }
-        .form-input:focus,
-        .form-select:focus{ outline:none; border-color:var(--orokin-dim); }
-        .modal-buttons{ display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem; }
         .hidden{ display:none !important; }
 
         @media (max-width:768px){
@@ -140,16 +116,13 @@
                 <div class="stat-label">Progress</div>
             </div>
             <div class="stat-item">
-                <div class="actions-row">
-                    <button class="add-task-btn" onclick="TaskModal.show()">📝 Add Task</button>
-                    <div class="reset-menu-container">
-                        <button id="resetMenuBtn" class="btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Reset Options ▼</button>
-                        <div id="resetMenu" class="reset-menu">
-                            <button onclick="TaskManager.uncheckAll()">Uncheck All Tasks</button>
-                            <button onclick="TaskManager.showHiddenTasks()">Show Hidden Tasks</button>
-                            <button onclick="TaskManager.restoreDefaults()">Restore Deleted Defaults</button>
-                            <button onclick="TaskManager.resetPage()">Reset Entire Page</button>
-                        </div>
+                <div class="reset-menu-container">
+                    <button id="resetMenuBtn" class="btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Reset Options ▼</button>
+                    <div id="resetMenu" class="reset-menu">
+                        <button onclick="TaskManager.uncheckAll()">Uncheck All Tasks</button>
+                        <button onclick="TaskManager.showHiddenTasks()">Show Hidden Tasks</button>
+                        <button onclick="TaskManager.restoreDefaults()">Restore Deleted Defaults</button>
+                        <button onclick="TaskManager.resetPage()">Reset Entire Page</button>
                     </div>
                 </div>
             </div>
@@ -170,33 +143,6 @@
             <div class="task-list" id="otherTasks"></div>
         </div>
     </main>
-
-    <div id="addTaskModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Add Custom Task</h2>
-                <span class="close" onclick="TaskModal.hide()">&times;</span>
-            </div>
-            <form onsubmit="TaskModal.addTask(event)">
-                <div class="form-group">
-                    <label class="form-label" for="taskText">Task Description</label>
-                    <input type="text" id="taskText" class="form-input" placeholder="You can use <Resets-mon-00:00-utc>" required />
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="taskCategory">Category</label>
-                    <select id="taskCategory" class="form-select">
-                        <option value="daily">Daily Tasks</option>
-                        <option value="weekly">Weekly Tasks</option>
-                        <option value="other">Other Tasks</option>
-                    </select>
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" class="btn-secondary" onclick="TaskModal.hide()">Cancel</button>
-                    <button type="submit" class="btn-primary">Add Task</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <script type="module">
         import TASKS from './tasks.js';
@@ -341,15 +287,13 @@
         }
 
         class TaskElement {
-            static create(rawText, category = 'other', isCustom = false) {
+            static create(rawText, category = 'other') {
                 const timerConfig = TimerUtils.getTimerConfigForTask(rawText, category);
                 const cleanText = TimerUtils.removeTimerFromText(rawText);
                 const taskItem = document.createElement('div');
                 taskItem.dataset.originalText = rawText;
                 taskItem.dataset.category = category;
-                taskItem.dataset.custom = isCustom ? '1' : '0';
                 taskItem.className = 'task-item';
-                taskItem.draggable = isCustom && (category === 'daily' || category === 'weekly');
 
                 if (timerConfig) {
                     taskItem.dataset.timerType = timerConfig.type;
@@ -390,13 +334,6 @@
 
                 const deleteBtn = taskItem.querySelector('.delete-btn');
                 deleteBtn.addEventListener('click', (event) => TaskManager.deleteTask(event, deleteBtn));
-
-                if (taskItem.draggable) {
-                    taskItem.addEventListener('dragstart', DragDrop.handleDragStart);
-                    taskItem.addEventListener('dragover', DragDrop.handleDragOver);
-                    taskItem.addEventListener('drop', DragDrop.handleDrop);
-                    taskItem.addEventListener('dragend', DragDrop.handleDragEnd);
-                }
 
                 if (timerConfig) {
                     const bellBtn = taskItem.querySelector('.timer-bell');
@@ -476,56 +413,6 @@
             }
         }
 
-        class DragDrop {
-            static draggedTask = null;
-            static ghost = null;
-
-            static handleDragStart() {
-                DragDrop.draggedTask = this;
-                const el = this;
-                setTimeout(() => el.classList.add('dragging'), 0);
-                const ghost = document.createElement('div');
-                ghost.className = 'drop-ghost';
-                ghost.style.height = `${this.offsetHeight}px`;
-                DragDrop.ghost = ghost;
-                this.parentElement.insertBefore(ghost, this.nextSibling);
-            }
-
-            static handleDragOver(event) {
-                event.preventDefault();
-                const dragged = DragDrop.draggedTask;
-                const ghost = DragDrop.ghost;
-                if (!dragged || !ghost || this === dragged || this === ghost) return;
-                const parent = this.parentElement;
-                if (this.nextSibling !== ghost) {
-                    parent.insertBefore(ghost, this.nextSibling);
-                }
-            }
-
-            static handleDrop(event) {
-                event.stopPropagation();
-                const dragged = DragDrop.draggedTask;
-                const ghost = DragDrop.ghost;
-                if (dragged && ghost && ghost.parentElement) {
-                    ghost.parentElement.insertBefore(dragged, ghost);
-                }
-                DragDrop.cleanup();
-                ProgressTracker.update();
-                TaskStorage.save();
-            }
-
-            static handleDragEnd() {
-                DragDrop.cleanup();
-            }
-
-            static cleanup() {
-                if (DragDrop.draggedTask) DragDrop.draggedTask.classList.remove('dragging');
-                if (DragDrop.ghost && DragDrop.ghost.parentElement) DragDrop.ghost.parentElement.removeChild(DragDrop.ghost);
-                DragDrop.ghost = null;
-                DragDrop.draggedTask = null;
-            }
-        }
-
         class ProgressTracker {
             static update() {
                 const visibleTasks = Array.from(document.querySelectorAll('.task-item:not(.hidden)'));
@@ -561,7 +448,6 @@
                             completed: taskItem.classList.contains('completed'),
                             category: section,
                             hidden: taskItem.classList.contains('hidden'),
-                            custom: taskItem.dataset.custom === '1',
                             lastKnownResetBoundary: taskItem.dataset.lastKnownResetBoundary || null
                         });
                     });
@@ -579,11 +465,11 @@
                         if (container) container.innerHTML = '';
                     });
 
-                    savedTasks.forEach(({ text, completed, category, hidden, custom, lastKnownResetBoundary }) => {
+                    savedTasks.forEach(({ text, completed, category, hidden, lastKnownResetBoundary }) => {
                         const targetCategory = category || 'other';
                         const container = document.getElementById(`${targetCategory}Tasks`);
                         if (!container) return;
-                        const taskElement = TaskElement.create(text, targetCategory, !!custom);
+                        const taskElement = TaskElement.create(text, targetCategory);
                         taskElement.dataset.originalText = text;
                         taskElement.dataset.lastKnownResetBoundary = lastKnownResetBoundary || '';
                         taskElement.dataset.hidden = hidden ? '1' : '0';
@@ -652,15 +538,6 @@
                 taskItem.remove();
                 ProgressTracker.update();
                 TaskStorage.save();
-            }
-
-            static addCustomTask(text, category) {
-                const container = document.getElementById(`${category}Tasks`);
-                if (!container) return;
-                container.appendChild(TaskElement.create(text, category, true));
-                ProgressTracker.update();
-                TaskStorage.save();
-                this.reconcileResetBoundaries();
             }
 
             static updateAllTimers() {
@@ -765,45 +642,15 @@
             }
         }
 
-        class TaskModal {
-            static show() {
-                document.getElementById('addTaskModal').style.display = 'block';
-            }
-
-            static hide() {
-                document.getElementById('addTaskModal').style.display = 'none';
-                document.getElementById('taskText').value = '';
-                document.getElementById('taskCategory').value = 'daily';
-            }
-
-            static addTask(event) {
-                event.preventDefault();
-                const text = document.getElementById('taskText').value.trim();
-                const category = document.getElementById('taskCategory').value;
-                if (!text) return;
-                TaskManager.addCustomTask(text, category);
-                this.hide();
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             TaskManager.initialize();
         });
 
         window.TaskManager = TaskManager;
-        window.TaskModal = TaskModal;
         window.TaskStorage = TaskStorage;
         window.ProgressTracker = ProgressTracker;
         window.TaskElement = TaskElement;
         window.TimerUtils = TimerUtils;
-        window.DragDrop = DragDrop;
-
-        window.addEventListener('click', (event) => {
-            const modal = document.getElementById('addTaskModal');
-            if (event.target === modal) {
-                TaskModal.hide();
-            }
-        });
     </script>
 </body>
 </html>
