@@ -447,7 +447,5 @@ export default [
     resetRule: { type: "interval", intervalHours: 2.5 },
     notes: "Rerolls between the two factions every 150 minutes (2h30m).",
   },
-
+  
 ];
-
-module.exports = tasks;
