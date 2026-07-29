@@ -341,14 +341,15 @@
         }
 
         class TaskElement {
-            static create(rawText, category = 'other') {
+            static create(rawText, category = 'other', isCustom = false) {
                 const timerConfig = TimerUtils.getTimerConfigForTask(rawText, category);
                 const cleanText = TimerUtils.removeTimerFromText(rawText);
                 const taskItem = document.createElement('div');
                 taskItem.dataset.originalText = rawText;
                 taskItem.dataset.category = category;
+                taskItem.dataset.custom = isCustom ? '1' : '0';
                 taskItem.className = 'task-item';
-                taskItem.draggable = category === 'daily' || category === 'weekly';
+                taskItem.draggable = isCustom && (category === 'daily' || category === 'weekly');
 
                 if (timerConfig) {
                     taskItem.dataset.timerType = timerConfig.type;
@@ -560,6 +561,7 @@
                             completed: taskItem.classList.contains('completed'),
                             category: section,
                             hidden: taskItem.classList.contains('hidden'),
+                            custom: taskItem.dataset.custom === '1',
                             lastKnownResetBoundary: taskItem.dataset.lastKnownResetBoundary || null
                         });
                     });
@@ -577,11 +579,11 @@
                         if (container) container.innerHTML = '';
                     });
 
-                    savedTasks.forEach(({ text, completed, category, hidden, lastKnownResetBoundary }) => {
+                    savedTasks.forEach(({ text, completed, category, hidden, custom, lastKnownResetBoundary }) => {
                         const targetCategory = category || 'other';
                         const container = document.getElementById(`${targetCategory}Tasks`);
                         if (!container) return;
-                        const taskElement = TaskElement.create(text, targetCategory);
+                        const taskElement = TaskElement.create(text, targetCategory, !!custom);
                         taskElement.dataset.originalText = text;
                         taskElement.dataset.lastKnownResetBoundary = lastKnownResetBoundary || '';
                         taskElement.dataset.hidden = hidden ? '1' : '0';
@@ -655,7 +657,7 @@
             static addCustomTask(text, category) {
                 const container = document.getElementById(`${category}Tasks`);
                 if (!container) return;
-                container.appendChild(TaskElement.create(text, category));
+                container.appendChild(TaskElement.create(text, category, true));
                 ProgressTracker.update();
                 TaskStorage.save();
                 this.reconcileResetBoundaries();
