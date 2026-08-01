@@ -61,11 +61,7 @@
         .task-text{ color:var(--ink); font-size:0.95rem; line-height:1.4; word-break:break-word; }
         .task-location{ display:flex; align-items:center; gap:0.35rem; padding-left:1.1rem; color:var(--ink-dim); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; min-height:1rem; }
         .task-location-pin{ color:var(--orokin); font-size:0.84rem; line-height:1; flex-shrink:0; }
-        .task-location-text{ overflow:hidden; max-width:0; opacity:0; white-space:nowrap; transition:max-width 0.18s ease, opacity 0.18s ease; }
-        .task-item:hover .task-location-text,
-        .task-item:focus-within .task-location-text{ max-width:28rem; opacity:1; }
-        .task-item:hover .task-location,
-        .task-item:focus-within .task-location{ color:var(--orokin); }
+        .task-location-text{ white-space:normal; }
 
         .task-meta,
         .task-timer-container{ display:flex; align-items:center; gap:0.45rem; padding-left:1.1rem; flex-wrap:wrap; }
@@ -76,13 +72,9 @@
         .task-item:hover .task-controls,
         .task-item:focus-within .task-controls{ opacity:1; }
         .delete-btn,
-        .eye-btn,
-        .timer-bell{ background:transparent; border:0; padding:0; color:var(--ink-dim); cursor:pointer; line-height:1; font-size:0.9rem; }
+        .eye-btn{ background:transparent; border:0; padding:0; color:var(--ink-dim); cursor:pointer; line-height:1; font-size:0.9rem; }
         .delete-btn:hover,
-        .eye-btn:hover,
-        .timer-bell:hover,
-        .timer-bell.active .bell-icon{ color:var(--orokin); }
-        .timer-bell.active .bell-icon{ font-weight:700; }
+        .eye-btn:hover{ color:var(--orokin); }
 
         .btn-secondary,
         .reset-menu button{ border-radius:0; box-shadow:none; text-shadow:none; transition:color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
@@ -100,7 +92,6 @@
             .task-list{ grid-template-columns:1fr; }
             .stats{ grid-template-columns:1fr 1fr; }
             .task-controls{ opacity:1; }
-            .task-location-text{ max-width:28rem; opacity:1; }
         }
 
     </style>
@@ -356,7 +347,6 @@
                         <div class="task-timer-container">
                             <div class="task-timer"></div>
                             <div class="task-reset-clock"></div>
-                            <button class="timer-bell" type="button" title="Notify when timer resets"><span class="bell-icon">🔔</span></button>
                         </div>
                     ` : ''}
                     <div class="task-controls">
@@ -366,7 +356,7 @@
                 `;
 
                 taskItem.onclick = (event) => {
-                    if (event.target.closest('.delete-btn, .eye-btn, .timer-bell')) return;
+                    if (event.target.closest('.delete-btn, .eye-btn')) return;
                     TaskManager.toggleTask(taskItem);
                 };
 
@@ -378,49 +368,6 @@
 
                 const deleteBtn = taskItem.querySelector('.delete-btn');
                 deleteBtn.addEventListener('click', (event) => TaskManager.deleteTask(event, deleteBtn));
-
-                if (timerConfig) {
-                    const bellBtn = taskItem.querySelector('.timer-bell');
-                    let bellTimeout = null;
-                    let bellActive = false;
-
-                    bellBtn.addEventListener('click', (event) => {
-                        event.stopPropagation();
-                        const nextReset = TimerUtils.getNextResetDate(timerConfig);
-                        if (!nextReset) return;
-
-                        if (bellActive) {
-                            bellActive = false;
-                            bellBtn.classList.remove('active');
-                            bellBtn.title = 'Notify when timer resets';
-                            if (bellTimeout) clearTimeout(bellTimeout);
-                            return;
-                        }
-
-                        bellActive = true;
-                        bellBtn.classList.add('active');
-                        bellBtn.title = 'Notification scheduled! Click to cancel.';
-
-                        bellTimeout = setTimeout(() => {
-                            const audio = new Audio('notify.mp3');
-                            audio.volume = 0.5;
-                            audio.play().catch(() => alert('🔔 Timer reset! (Enable sound in your browser for audio notification.)'));
-
-                            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                                new Notification('Warframe Checklist', {
-                                    body: `Timer "${timerConfig.label}" has reset!`,
-                                    icon: 'favicon.ico'
-                                });
-                            } else {
-                                alert(`Timer "${timerConfig.label}" has reset!`);
-                            }
-
-                            bellActive = false;
-                            bellBtn.classList.remove('active');
-                            bellBtn.title = 'Notify when timer resets';
-                        }, Math.max(0, nextReset - new Date()));
-                    });
-                }
 
                 return taskItem;
             }
@@ -663,10 +610,10 @@
                     const container = document.getElementById(`${category}Tasks`);
                     if (!container) return;
                     const currentTexts = Array.from(container.querySelectorAll('.task-text')).map((element) => element.textContent.trim());
-                    defaultTasks.forEach((taskText) => {
-                        const cleanText = TimerUtils.removeTimerFromText(taskText);
+                    defaultTasks.forEach(({ text, location }) => {
+                        const cleanText = TimerUtils.removeTimerFromText(text);
                         if (!currentTexts.includes(cleanText)) {
-                            container.appendChild(TaskElement.create(taskText, category));
+                            container.appendChild(TaskElement.create(text, category, location));
                         }
                     });
                 });
