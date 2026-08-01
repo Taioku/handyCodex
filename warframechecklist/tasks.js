@@ -281,7 +281,13 @@ export default [
   },
   {
     id: "descendia-weekly",
-    name: "The Descendia — weekly progress, challenges, reward pools",
+    name: "The Descendia weekly progress, challenges, reward pools",
+    category: "weekly",
+    resetRule: { type: "weekly", hourUTC: 0, minuteUTC: 0, weekday: 1 },
+  },
+  {
+    id: "steel-path-descendia-weekly",
+    name: "Steel Path The Descendia — weekly progress, challenges, reward pools",
     category: "weekly",
     resetRule: { type: "weekly", hourUTC: 0, minuteUTC: 0, weekday: 1 },
   },
