@@ -42,7 +42,13 @@
         .reset-menu-container{ position:relative; }
 
         .section{ margin:0 0 1.2rem; padding:0 0 0.35rem; border-bottom:1px solid var(--line); }
-        .section-title{ font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--orokin-dim); font-weight:700; margin-bottom:0.5rem; padding-bottom:0.1rem; border-bottom:1px solid var(--line); }
+        .section-header{ display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.5rem; padding-bottom:0.1rem; border-bottom:1px solid var(--line); }
+        .section-title{ font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--orokin-dim); font-weight:700; }
+        .section-toggle{ background:transparent; border:0; padding:0; color:var(--orokin-dim); cursor:pointer; font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase; display:flex; align-items:center; gap:0.35rem; }
+        .section-toggle:hover{ color:var(--orokin); }
+        .section-toggle-icon{ transition:transform 0.18s ease; }
+        .section.collapsed .section-toggle-icon{ transform:rotate(-90deg); }
+        .section.collapsed .task-list{ display:none; }
         .task-list{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.85rem 1rem; align-items:start; }
 
         .task-item{ position:relative; padding:0.2rem 2.2rem 0.25rem 0; cursor:pointer; display:flex; flex-direction:column; gap:0.35rem; }
@@ -137,17 +143,35 @@
         </div>
 
         <div class="section" id="dailySection">
-            <div class="section-title">Daily Tasks</div>
+            <div class="section-header">
+                <div class="section-title">Daily Tasks</div>
+                <button class="section-toggle" type="button" data-target="dailySection" aria-expanded="true">
+                    <span class="section-toggle-icon">▾</span>
+                    <span>Collapse</span>
+                </button>
+            </div>
             <div class="task-list" id="dailyTasks"></div>
         </div>
 
         <div class="section" id="weeklySection">
-            <div class="section-title">Weekly Tasks</div>
+            <div class="section-header">
+                <div class="section-title">Weekly Tasks</div>
+                <button class="section-toggle" type="button" data-target="weeklySection" aria-expanded="true">
+                    <span class="section-toggle-icon">▾</span>
+                    <span>Collapse</span>
+                </button>
+            </div>
             <div class="task-list" id="weeklyTasks"></div>
         </div>
 
         <div class="section" id="otherSection">
-            <div class="section-title">Other Tasks</div>
+            <div class="section-header">
+                <div class="section-title">Other Tasks</div>
+                <button class="section-toggle" type="button" data-target="otherSection" aria-expanded="true">
+                    <span class="section-toggle-icon">▾</span>
+                    <span>Collapse</span>
+                </button>
+            </div>
             <div class="task-list" id="otherTasks"></div>
         </div>
     </main>
@@ -193,6 +217,7 @@
 
         const DEFAULT_TASKS = buildDefaultTasks(TASKS);
         const DEFAULT_TASK_LOOKUP = new Map(TASKS.map((task) => [taskToText(task), task]));
+        const COLLAPSED_SECTION_STORAGE_KEY = 'warframeChecklistCollapsedSections';
 
         class TimerUtils {
             static parseTimerFromText(text) {
@@ -512,6 +537,7 @@
 
         class TaskManager {
             static initialize() {
+                this.setupSectionToggles();
                 const loadedFromStorage = TaskStorage.load();
                 if (!loadedFromStorage) {
                     this.loadDefaultTasks();
@@ -661,6 +687,33 @@
                 ProgressTracker.update();
                 TaskStorage.save();
                 document.getElementById('resetMenu').style.display = 'none';
+            }
+
+            static setupSectionToggles() {
+                const collapsedSections = new Set(JSON.parse(localStorage.getItem(COLLAPSED_SECTION_STORAGE_KEY) || '[]'));
+                document.querySelectorAll('.section-toggle').forEach((button) => {
+                    const section = document.getElementById(button.dataset.target);
+                    if (!section) return;
+
+                    const applyState = (collapsed) => {
+                        section.classList.toggle('collapsed', collapsed);
+                        button.setAttribute('aria-expanded', String(!collapsed));
+                        button.querySelector('span:last-child').textContent = collapsed ? 'Expand' : 'Collapse';
+                    };
+
+                    applyState(collapsedSections.has(section.id));
+
+                    button.addEventListener('click', () => {
+                        const collapsed = !section.classList.contains('collapsed');
+                        applyState(collapsed);
+                        if (collapsed) {
+                            collapsedSections.add(section.id);
+                        } else {
+                            collapsedSections.delete(section.id);
+                        }
+                        localStorage.setItem(COLLAPSED_SECTION_STORAGE_KEY, JSON.stringify(Array.from(collapsedSections)));
+                    });
+                });
             }
         }
 
