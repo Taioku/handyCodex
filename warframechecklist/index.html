@@ -194,6 +194,10 @@
             return tag ? `${task.name} ${tag}` : task.name;
         }
 
+        function cleanTaskText(text) {
+            return text.replace(/<[^<>]+-?\d{1,2}:\d{2}-utc>/i, '').trim().toLowerCase();
+        }
+
         function buildDefaultTasks(tasks) {
             const grouped = { daily: [], weekly: [], other: [] };
             tasks.forEach((task) => {
@@ -208,6 +212,7 @@
 
         const DEFAULT_TASKS = buildDefaultTasks(TASKS);
         const DEFAULT_TASK_LOOKUP = new Map(TASKS.map((task) => [taskToText(task), task]));
+        const DEFAULT_TASK_BY_CLEAN_TEXT = new Map(TASKS.map((task) => [cleanTaskText(taskToText(task)), task]));
         const COLLAPSED_SECTION_STORAGE_KEY = 'warframeChecklistCollapsedSections';
 
         class TimerUtils {
@@ -462,7 +467,8 @@
                         const container = document.getElementById(`${targetCategory}Tasks`);
                         if (!container) return;
                         const defaultTask = DEFAULT_TASK_LOOKUP.get(text);
-                        const resolvedLocation = location || defaultTask?.location || '';
+                        const fallbackTask = DEFAULT_TASK_BY_CLEAN_TEXT.get(cleanTaskText(text));
+                        const resolvedLocation = location || defaultTask?.location || fallbackTask?.location || '';
                         const taskElement = TaskElement.create(text, targetCategory, resolvedLocation);
                         taskElement.dataset.originalText = text;
                         taskElement.dataset.lastKnownResetBoundary = lastKnownResetBoundary || '';
