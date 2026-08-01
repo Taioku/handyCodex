@@ -53,6 +53,13 @@
         .checkbox.checked{ border-color:var(--orokin); }
         .checkbox.checked::after{ content:''; position:absolute; inset:2px; background:var(--orokin); }
         .task-text{ color:var(--ink); font-size:0.95rem; line-height:1.4; word-break:break-word; }
+        .task-location{ display:flex; align-items:center; gap:0.35rem; padding-left:1.1rem; color:var(--ink-dim); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; min-height:1rem; }
+        .task-location-pin{ color:var(--orokin); font-size:0.84rem; line-height:1; flex-shrink:0; }
+        .task-location-text{ overflow:hidden; max-width:0; opacity:0; white-space:nowrap; transition:max-width 0.18s ease, opacity 0.18s ease; }
+        .task-item:hover .task-location-text,
+        .task-item:focus-within .task-location-text{ max-width:28rem; opacity:1; }
+        .task-item:hover .task-location,
+        .task-item:focus-within .task-location{ color:var(--orokin); }
 
         .task-meta,
         .task-timer-container{ display:flex; align-items:center; gap:0.45rem; padding-left:1.1rem; flex-wrap:wrap; }
@@ -87,6 +94,7 @@
             .task-list{ grid-template-columns:1fr; }
             .stats{ grid-template-columns:1fr 1fr; }
             .task-controls{ opacity:1; }
+            .task-location-text{ max-width:28rem; opacity:1; }
         }
 
     </style>
@@ -175,12 +183,16 @@
             const grouped = { daily: [], weekly: [], other: [] };
             tasks.forEach((task) => {
                 const section = task.category === 'daily' ? 'daily' : task.category === 'weekly' ? 'weekly' : 'other';
-                grouped[section].push(taskToText(task));
+                grouped[section].push({
+                    text: taskToText(task),
+                    location: task.location || ''
+                });
             });
             return grouped;
         }
 
         const DEFAULT_TASKS = buildDefaultTasks(TASKS);
+        const DEFAULT_TASK_LOOKUP = new Map(TASKS.map((task) => [taskToText(task), task]));
 
         class TimerUtils {
             static parseTimerFromText(text) {
@@ -287,12 +299,13 @@
         }
 
         class TaskElement {
-            static create(rawText, category = 'other') {
+            static create(rawText, category = 'other', location = '') {
                 const timerConfig = TimerUtils.getTimerConfigForTask(rawText, category);
                 const cleanText = TimerUtils.removeTimerFromText(rawText);
                 const taskItem = document.createElement('div');
                 taskItem.dataset.originalText = rawText;
                 taskItem.dataset.category = category;
+                taskItem.dataset.location = location;
                 taskItem.className = 'task-item';
 
                 if (timerConfig) {
@@ -308,6 +321,12 @@
                         <div class="checkbox"></div>
                         <div class="task-text">${cleanText}</div>
                     </div>
+                    ${location ? `
+                        <div class="task-location" title="${location}">
+                            <span class="task-location-pin">📍</span>
+                            <span class="task-location-text">${location}</span>
+                        </div>
+                    ` : ''}
                     ${timerConfig ? `
                         <div class="task-timer-container">
                             <div class="task-timer"></div>
@@ -448,6 +467,7 @@
                             completed: taskItem.classList.contains('completed'),
                             category: section,
                             hidden: taskItem.classList.contains('hidden'),
+                            location: taskItem.dataset.location || '',
                             lastKnownResetBoundary: taskItem.dataset.lastKnownResetBoundary || null
                         });
                     });
@@ -465,11 +485,13 @@
                         if (container) container.innerHTML = '';
                     });
 
-                    savedTasks.forEach(({ text, completed, category, hidden, lastKnownResetBoundary }) => {
+                    savedTasks.forEach(({ text, completed, category, hidden, lastKnownResetBoundary, location }) => {
                         const targetCategory = category || 'other';
                         const container = document.getElementById(`${targetCategory}Tasks`);
                         if (!container) return;
-                        const taskElement = TaskElement.create(text, targetCategory);
+                        const defaultTask = DEFAULT_TASK_LOOKUP.get(text);
+                        const resolvedLocation = location || defaultTask?.location || '';
+                        const taskElement = TaskElement.create(text, targetCategory, resolvedLocation);
                         taskElement.dataset.originalText = text;
                         taskElement.dataset.lastKnownResetBoundary = lastKnownResetBoundary || '';
                         taskElement.dataset.hidden = hidden ? '1' : '0';
@@ -505,8 +527,8 @@
                 Object.entries(DEFAULT_TASKS).forEach(([category, tasks]) => {
                     const container = document.getElementById(`${category}Tasks`);
                     if (!container) return;
-                    tasks.forEach((taskText) => {
-                        container.appendChild(TaskElement.create(taskText, category));
+                    tasks.forEach(({ text, location }) => {
+                        container.appendChild(TaskElement.create(text, category, location));
                     });
                 });
             }
